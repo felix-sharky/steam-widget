@@ -1,5 +1,6 @@
 package de.gamergrotte.steam.widget.service;
 
+import com.google.common.base.Strings;
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
 import com.lukaspradel.steamapi.data.json.ownedgames.GetOwnedGames;
 import com.lukaspradel.steamapi.data.json.playersummaries.GetPlayerSummaries;
@@ -16,7 +17,9 @@ import de.gamergrotte.steam.widget.entity.Profile;
 import de.gamergrotte.steam.widget.model.ShowedGames;
 import de.gamergrotte.steam.widget.repository.HitRepository;
 import de.gamergrotte.steam.widget.repository.ProfileRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.imgscalr.Scalr;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,6 @@ import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +53,26 @@ public class SteamWidgetService {
 
     @Autowired
     private HitRepository hitRepository;
+
+    /**
+     * Retrieves the IP address of the client from the HTTP request.
+     * <p>
+     * This method checks the "X-Forwarded-For" header to determine if the request
+     * was forwarded by a proxy. If the header is present and not empty, it returns
+     * the first IP address in the list. Otherwise, it returns the remote address
+     * of the request.
+     * </p>
+     *
+     * @param request The HttpServletRequest object containing the client's request.
+     * @return The IP address of the client as a String.
+     */
+    public String getIPAddress(@NotNull HttpServletRequest request) {
+        if (Strings.isNullOrEmpty(request.getHeader("X-Forwarded-For")))
+            return request.getRemoteAddr();
+        else {
+            return request.getHeader("X-Forwarded-For").split(",")[0].trim();
+        }
+    }
 
     /**
      * Retrieves a {@link Player} object by their Steam ID. If the Steam ID is not in the correct format,
@@ -168,11 +190,31 @@ public class SteamWidgetService {
      * @param recentGamesCount The number of recent games to be displayed on the widget.
      * @param showPlayingRightNow A boolean indicating whether to show the game the user is currently playing.
      * @param purpose The reason for accessing the user's Steam information, used for logging.
+     * @param request The HttpServletRequest object, used here to get the client's IP address.
+     * @return A BufferedImage object representing the generated widget with the player's information.
+     * @throws SteamApiException If there is an issue with accessing the Steam Web API.
+     */
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, boolean showPlayingRightNow, String purpose, @NotNull HttpServletRequest request) throws SteamApiException {
+        String ip = getIPAddress(request);
+        return generateWidgetImage(steamId, showGames, recentGamesCount, showPlayingRightNow, purpose, ip);
+    }
+
+    /**
+     * Generates a widget image for a given Steam ID, purpose, and IP address.
+     * This method first retrieves the player's information using their Steam ID,
+     * then creates a new BufferedImage and draws the base widget, player's profile image,
+     * and user information onto it.
+     *
+     * @param steamId The Steam ID of the user for whom the widget is being generated.
+     * @param showGames The type of games to be shown on the widget (e.g., top recent games, top total games, recent games).
+     * @param recentGamesCount The number of recent games to be displayed on the widget.
+     * @param showPlayingRightNow A boolean indicating whether to show the game the user is currently playing.
+     * @param purpose The reason for accessing the user's Steam information, used for logging.
      * @param ip The IP address from which the request originated, used for logging.
      * @return A BufferedImage object representing the generated widget with the player's information.
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
-    public BufferedImage generateWidgetImage(String steamId, ShowedGames showGames, int recentGamesCount, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
         Player player = getUserBySteamId(steamId, purpose, ip);
 
         List<Object> games = switch (showGames) {
@@ -211,7 +253,7 @@ public class SteamWidgetService {
      * @param games The list of games to be displayed in the game section. Each game can be an instance of
      *              {@link com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game} or {@link com.lukaspradel.steamapi.data.json.ownedgames.Game}.
      */
-    private void drawGameSection(BufferedImage image, List<Object> games) {
+    private void drawGameSection(BufferedImage image, @NotNull List<Object> games) {
         if (games.isEmpty()) {
             return;
         }
@@ -288,7 +330,7 @@ public class SteamWidgetService {
      * @param image  The BufferedImage object representing the widget onto which the state dot will be drawn.
      * @param player The Player object containing the user's Steam profile information.
      */
-    private void drawStateDot(BufferedImage image, Player player) {
+    private void drawStateDot(@NotNull BufferedImage image, @NotNull Player player) {
         Graphics2D g = (Graphics2D) image.getGraphics();
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -312,7 +354,7 @@ public class SteamWidgetService {
      * @param x        The x-coordinate where the text will start.
      * @param y        The y-coordinate where the text will start.
      */
-    private void drawString(BufferedImage image, String display, String font, int style, String hexColor, Integer size, Integer x, Integer y) {
+    private void drawString(@NotNull BufferedImage image, String display, String font, int style, String hexColor, Integer size, Integer x, Integer y) {
         Graphics2D g = (Graphics2D) image.getGraphics();
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -333,7 +375,7 @@ public class SteamWidgetService {
      * @param x The x-coordinate where the profile image will be drawn.
      * @param y The y-coordinate where the profile image will be drawn.
      */
-    private void drawRoundImage(BufferedImage image, String url, int x, int y, int width, int height) {
+    private void drawRoundImage(@NotNull BufferedImage image, String url, int x, int y, int width, int height) {
         BufferedImage profileImage = this.loadImageFromURL(url);
 
         Graphics2D g = image.createGraphics();
@@ -381,7 +423,7 @@ public class SteamWidgetService {
      *
      * @param image The BufferedImage object representing the widget onto which the base design will be drawn.
      */
-    private void drawBaseWidget(BufferedImage image) {
+    private void drawBaseWidget(@NotNull BufferedImage image) {
         Graphics2D g = image.createGraphics();
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -488,7 +530,7 @@ public class SteamWidgetService {
      * @param purpose The purpose for filtering the hits. If empty, all hits for the profile are counted.
      * @return The number of hits for the profile, filtered by purpose if specified.
      */
-    public long getHitByProfileAndPurpose(String steamId, String purpose) {
+    public long getHitByProfileAndPurpose(String steamId, @NotNull String purpose) {
         if (purpose.isEmpty()) {
             return hitRepository.countHitsBySteam64id(steamId);
         } else {
