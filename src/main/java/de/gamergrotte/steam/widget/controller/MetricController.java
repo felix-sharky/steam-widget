@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class MetricController {
 
-    @Autowired
-    private SteamWidgetService steamWidgetService;
+    private final SteamWidgetService steamWidgetService;
+
+    public MetricController(SteamWidgetService steamWidgetService) {
+        this.steamWidgetService = steamWidgetService;
+    }
 
     /**
      * Retrieves the profile information for a given Steam ID.

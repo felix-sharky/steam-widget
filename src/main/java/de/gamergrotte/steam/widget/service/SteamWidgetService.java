@@ -45,14 +45,17 @@ import java.util.Optional;
 @Service
 public class SteamWidgetService {
 
-    @Autowired
-    private SteamWebAPI api;
+    private final SteamWebAPI api;
 
-    @Autowired
-    private ProfileRepository repository;
+    private final ProfileRepository repository;
 
-    @Autowired
-    private HitRepository hitRepository;
+    private final HitRepository hitRepository;
+
+    public SteamWidgetService(SteamWebAPI api, ProfileRepository repository, HitRepository hitRepository) {
+        this.api = api;
+        this.repository = repository;
+        this.hitRepository = hitRepository;
+    }
 
     /**
      * Retrieves the IP address of the client from the HTTP request.

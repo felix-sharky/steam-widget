@@ -26,8 +26,11 @@ import java.io.IOException;
 @Controller
 public class WidgetController {
 
-    @Autowired
-    private SteamWidgetService steamWidgetService;
+    private final SteamWidgetService steamWidgetService;
+
+    public WidgetController(SteamWidgetService steamWidgetService) {
+        this.steamWidgetService = steamWidgetService;
+    }
 
     /**
      * Handles requests to generate an image widget for a Steam user.
