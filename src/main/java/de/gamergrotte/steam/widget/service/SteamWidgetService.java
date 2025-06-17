@@ -90,14 +90,16 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public Player getUserBySteamId(String steamId, String purpose, String ip) throws SteamApiException {
-        String id = resolveSteamId(steamId);
-        GetPlayerSummariesRequest request = new GetPlayerSummariesRequest.GetPlayerSummariesRequestBuilder(List.of(id == null ? steamId : id)).buildRequest();
-        GetPlayerSummaries playerSummaries = api.getClient().<GetPlayerSummaries>processRequest(request);
-        List<Player> players = playerSummaries.getResponse().getPlayers();
-        if (!players.isEmpty()) {
-            addHitToProfile(id, players.getFirst().getPersonaname(), purpose, ip, LocalDateTime.now());
-            return players.getFirst();
-        }
+        try {
+            String id = resolveSteamId(steamId);
+            GetPlayerSummariesRequest request = new GetPlayerSummariesRequest.GetPlayerSummariesRequestBuilder(List.of(id == null ? steamId : id)).buildRequest();
+            GetPlayerSummaries playerSummaries = api.getClient().<GetPlayerSummaries>processRequest(request);
+            List<Player> players = playerSummaries.getResponse().getPlayers();
+            if (!players.isEmpty()) {
+                addHitToProfile(id, players.getFirst().getPersonaname(), purpose, ip, LocalDateTime.now());
+                return players.getFirst();
+            }
+        } catch (Exception ignored) {}
         return new Player();
     }
 
@@ -115,10 +117,13 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public List<com.lukaspradel.steamapi.data.json.ownedgames.Game> getRecentlyPlayedGames(String steamId) throws SteamApiException {
-        GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
-        GetOwnedGames ownedGames = api.getClient().processRequest(request);
-        ownedGames.getResponse().getGames().sort((g1, g2) -> (Integer) g2.getAdditionalProperties().get("rtime_last_played") - (Integer) g1.getAdditionalProperties().get("rtime_last_played"));
-        return ownedGames.getResponse().getGames();
+        try {
+            GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
+            GetOwnedGames ownedGames = api.getClient().processRequest(request);
+            ownedGames.getResponse().getGames().sort((g1, g2) -> (Integer) g2.getAdditionalProperties().get("rtime_last_played") - (Integer) g1.getAdditionalProperties().get("rtime_last_played"));
+            return ownedGames.getResponse().getGames();
+        } catch (Exception ignored) {}
+        return new ArrayList<>();
     }
 
     /**
@@ -135,10 +140,13 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public List<com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game> getTopRecentlyPlayedGames(String steamId) throws SteamApiException {
+        try {
         GetRecentlyPlayedGamesRequest request = new GetRecentlyPlayedGamesRequest.GetRecentlyPlayedGamesRequestBuilder(steamId).buildRequest();
         GetRecentlyPlayedGames recentlyPlayedGames = api.getClient().processRequest(request);
         recentlyPlayedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytime2weeks() - g1.getPlaytime2weeks()));
         return recentlyPlayedGames.getResponse().getGames();
+        } catch (Exception ignored) {}
+        return new ArrayList<>();
     }
 
     /**
@@ -155,10 +163,13 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public List<com.lukaspradel.steamapi.data.json.ownedgames.Game> getTopOwnedGames(String steamId) throws SteamApiException {
-        GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
-        GetOwnedGames ownedGames = api.getClient().processRequest(request);
-        ownedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytimeForever() - g1.getPlaytimeForever()));
-        return ownedGames.getResponse().getGames();
+        try {
+            GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
+            GetOwnedGames ownedGames = api.getClient().processRequest(request);
+            ownedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytimeForever() - g1.getPlaytimeForever()));
+            return ownedGames.getResponse().getGames();
+        } catch (Exception ignored) {}
+        return new ArrayList<>();
     }
 
     /**
@@ -171,14 +182,16 @@ public class SteamWidgetService {
      */
     public String resolveSteamId(String steamId) throws SteamApiException {
         String id = steamId;
-        if (!(id.matches("[0-9]+")) && id.length() != 17) {
-            if (id.contains("https://steamcommunity.com/id/")) {
-                id = id.replaceAll("https://steamcommunity.com/id/", "").replaceAll("/", "");
+        try {
+            if (!(id.matches("[0-9]+")) && id.length() != 17) {
+                if (id.contains("https://steamcommunity.com/id/")) {
+                    id = id.replaceAll("https://steamcommunity.com/id/", "").replaceAll("/", "");
+                }
+                ResolveVanityUrlRequest request = new ResolveVanityUrlRequest.ResolveVanityUrlRequestBuilder(id).buildRequest();
+                ResolveVanityURL vanityURL = api.getClient().processRequest(request);
+                id = vanityURL.getResponse().getSteamid();
             }
-            ResolveVanityUrlRequest request = new ResolveVanityUrlRequest.ResolveVanityUrlRequestBuilder(id).buildRequest();
-            ResolveVanityURL vanityURL = api.getClient().processRequest(request);
-            id = vanityURL.getResponse().getSteamid();
-        }
+        } catch (Exception ignored) {}
         return id;
     }
 
