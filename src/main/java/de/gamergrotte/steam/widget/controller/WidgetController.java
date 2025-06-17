@@ -26,8 +26,11 @@ import java.io.IOException;
 @Controller
 public class WidgetController {
 
-    @Autowired
-    private SteamWidgetService steamWidgetService;
+    private final SteamWidgetService steamWidgetService;
+
+    public WidgetController(SteamWidgetService steamWidgetService) {
+        this.steamWidgetService = steamWidgetService;
+    }
 
     /**
      * Handles requests to generate an image widget for a Steam user.
@@ -59,11 +62,8 @@ public class WidgetController {
         /* Always check that the gamesCount is not too high */
         gameListSize = gameListSize > 10 ? 10 : gameListSize;
 
-        /* Use the forwarded header instead of the client ip */
-        String ip = request.getHeader("X-Forwarded-For") == null || request.getHeader("X-Forwarded-For").isEmpty() ? request.getRemoteAddr() : request.getHeader("X-Forwarded-For");
-
         /* Generate Image */
-        BufferedImage image = steamWidgetService.generateWidgetImage(id, gameList, gameListSize, playingRightNow, purpose, ip);
+        BufferedImage image = steamWidgetService.generateWidgetImage(id, gameList, gameListSize, playingRightNow, purpose, request);
         if (width > 0) {
             image = steamWidgetService.scaleImage(image, width);
         }

@@ -14,8 +14,11 @@ import java.util.Map;
 @Controller
 public class SteamOpenIDController {
 
-    @Autowired
-    private SteamOpenID steamOpenID;
+    private final SteamOpenID steamOpenID;
+
+    public SteamOpenIDController(SteamOpenID steamOpenID) {
+        this.steamOpenID = steamOpenID;
+    }
 
     @GetMapping("/steam/login")
     public void loginRedirect(HttpServletRequest request, HttpServletResponse httpServletResponse) {
