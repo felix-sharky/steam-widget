@@ -7,12 +7,13 @@
     <link rel="icon" type="image/svg" href="/favicon.svg"/>
     <link rel="stylesheet" type="text/css" href="/css/generator.css" />
     <script type="text/javascript" src="/js/generator.js"></script>
+    <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
 </head>
 <body>
 <div class="container">
     <h1>Steam Widget Generator</h1>
     <!-- OpenID Login Button moved under the h1 -->
-    <a href="/steam/login">
+    <a href="/steam/login" data-umami-event="link_steam_login">
         <img src="/img/steam_login-button_openid.png" alt="Login with Steam" style="margin-top: 20px; cursor: pointer;">
     </a>
     <br />
@@ -37,7 +38,7 @@
         <input type="number" id="gameListSize" min="0" max="10" value="5">
     </div>
     <br />
-    <button onclick="generateWidget()">Generate Widget</button>
+    <button onclick="generateWidget()" data-umami-event="button_generate_click">Generate Widget</button>
     <div class="widget" id="widgetContainer"></div>
 </div>
 </body>
