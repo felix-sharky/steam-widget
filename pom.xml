@@ -68,7 +68,7 @@
         <dependency>
             <groupId>com.lukaspradel</groupId>
             <artifactId>steam-web-api</artifactId>
-            <version>1.8.0</version>
+            <version>1.12.0</version>
         </dependency>
 
         <dependency>
