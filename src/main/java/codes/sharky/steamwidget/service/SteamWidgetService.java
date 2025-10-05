@@ -44,16 +44,13 @@ import java.util.Optional;
 @Service
 public class SteamWidgetService {
 
-    private final SteamWebAPI api;
+    private final SteamWebAPIService steamWebAPIService;
 
-    private final ProfileRepository repository;
+    private final ProfileService profileService;
 
-    private final HitRepository hitRepository;
-
-    public SteamWidgetService(SteamWebAPI api, ProfileRepository repository, HitRepository hitRepository) {
-        this.api = api;
-        this.repository = repository;
-        this.hitRepository = hitRepository;
+    public SteamWidgetService(SteamWebAPIService steamWebAPIService, ProfileService profileService) {
+        this.steamWebAPIService = steamWebAPIService;
+        this.profileService = profileService;
     }
 
     /**
@@ -89,109 +86,12 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public Player getUserBySteamId(String steamId, String purpose, String ip) throws SteamApiException {
-        try {
-            String id = resolveSteamId(steamId);
-            GetPlayerSummariesRequest request = new GetPlayerSummariesRequest.GetPlayerSummariesRequestBuilder(List.of(id == null ? steamId : id)).buildRequest();
-            GetPlayerSummaries playerSummaries = api.getClient().<GetPlayerSummaries>processRequest(request);
-            List<Player> players = playerSummaries.getResponse().getPlayers();
-            if (!players.isEmpty()) {
-                addHitToProfile(id, players.getFirst().getPersonaname(), purpose, ip, LocalDateTime.now());
-                return players.getFirst();
-            }
-        } catch (Exception ignored) {}
-        return new Player();
-    }
+        Player player = steamWebAPIService.getUserBySteamId(steamId);
+        if (!player.getSteamid().isEmpty()) {
+            profileService.addHitToProfile(player.getSteamid(), player.getPersonaname(), purpose, ip, LocalDateTime.now());
+        }
 
-    /**
-     * Retrieves a list of recently played games for a given Steam ID.
-     * <p>
-     * This method sends a request to the Steam Web API to fetch the recently played games
-     * for the specified Steam ID. It constructs a {@link GetOwnedGamesRequest} using the
-     * provided Steam ID, processes the request, and returns a {@link List} of {@link com.lukaspradel.steamapi.data.json.ownedgames.Game} objects.
-     * The games are sorted by the time they were last played, in descending order.
-     * </p>
-     *
-     * @param steamId The Steam ID of the user whose recently played games are to be retrieved.
-     * @return A list of {@link com.lukaspradel.steamapi.data.json.ownedgames.Game} objects representing the recently played games.
-     * @throws SteamApiException If there is an issue with accessing the Steam Web API.
-     */
-    public List<com.lukaspradel.steamapi.data.json.ownedgames.Game> getRecentlyPlayedGames(String steamId) throws SteamApiException {
-        try {
-            GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
-            GetOwnedGames ownedGames = api.getClient().processRequest(request);
-            ownedGames.getResponse().getGames().sort((g1, g2) -> (Integer) g2.getAdditionalProperties().get("rtime_last_played") - (Integer) g1.getAdditionalProperties().get("rtime_last_played"));
-            return ownedGames.getResponse().getGames();
-        } catch (Exception ignored) {}
-        return new ArrayList<>();
-    }
-
-    /**
-     * Retrieves a list of recently played games for a given Steam ID.
-     * <p>
-     * This method sends a request to the Steam Web API to fetch the recently played games
-     * for the specified Steam ID. It constructs a {@link GetRecentlyPlayedGamesRequest} using the
-     * provided Steam ID, processes the request, and returns a {@link List} of {@link com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game} objects.
-     * The games are sorted by the playtime in the last two weeks, in descending order.
-     * </p>
-     *
-     * @param steamId The Steam ID of the user whose recently played games are to be retrieved.
-     * @return A list of {@link com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game} objects representing the recently played games.
-     * @throws SteamApiException If there is an issue with accessing the Steam Web API.
-     */
-    public List<com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game> getTopRecentlyPlayedGames(String steamId) throws SteamApiException {
-        try {
-        GetRecentlyPlayedGamesRequest request = new GetRecentlyPlayedGamesRequest.GetRecentlyPlayedGamesRequestBuilder(steamId).buildRequest();
-        GetRecentlyPlayedGames recentlyPlayedGames = api.getClient().processRequest(request);
-        recentlyPlayedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytime2weeks() - g1.getPlaytime2weeks()));
-        return recentlyPlayedGames.getResponse().getGames();
-        } catch (Exception ignored) {}
-        return new ArrayList<>();
-    }
-
-    /**
-     * Retrieves a list of top owned games for a given Steam ID.
-     * <p>
-     * This method sends a request to the Steam Web API to fetch the owned games
-     * for the specified Steam ID. It constructs a {@link GetOwnedGamesRequest} using the
-     * provided Steam ID, processes the request, and returns a {@link List} of {@link com.lukaspradel.steamapi.data.json.ownedgames.Game} objects.
-     * The games are sorted by the total playtime, in descending order.
-     * </p>
-     *
-     * @param steamId The Steam ID of the user whose owned games are to be retrieved.
-     * @return A list of {@link com.lukaspradel.steamapi.data.json.ownedgames.Game} objects representing the top owned games.
-     * @throws SteamApiException If there is an issue with accessing the Steam Web API.
-     */
-    public List<com.lukaspradel.steamapi.data.json.ownedgames.Game> getTopOwnedGames(String steamId) throws SteamApiException {
-        try {
-            GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
-            GetOwnedGames ownedGames = api.getClient().processRequest(request);
-            ownedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytimeForever() - g1.getPlaytimeForever()));
-            return ownedGames.getResponse().getGames();
-        } catch (Exception ignored) {}
-        return new ArrayList<>();
-    }
-
-    /**
-     * Resolves the Steam ID to a numeric format if it is not already. This method handles both direct numeric Steam IDs
-     * and vanity URLs (custom user URLs). If the input is a vanity URL, it uses the Steam Web API to resolve it to a numeric ID.
-     *
-     * @param steamId The Steam ID or vanity URL of the user.
-     * @return The numeric Steam ID corresponding to the input, or the original input if it's already a numeric ID or cannot be resolved.
-     * @throws SteamApiException If there is an issue with accessing the Steam Web API.
-     */
-    public String resolveSteamId(String steamId) throws SteamApiException {
-        String id = steamId;
-        try {
-            if (!(id.matches("[0-9]+")) && id.length() != 17) {
-                if (id.contains("https://steamcommunity.com/id/")) {
-                    id = id.replaceAll("https://steamcommunity.com/id/", "").replaceAll("/", "");
-                }
-                ResolveVanityUrlRequest request = new ResolveVanityUrlRequest.ResolveVanityUrlRequestBuilder(id).buildRequest();
-                ResolveVanityURL vanityURL = api.getClient().processRequest(request);
-                id = vanityURL.getResponse().getSteamid();
-            }
-        } catch (Exception ignored) {}
-        return id;
+        return player;
     }
 
     /**
@@ -234,15 +134,15 @@ public class SteamWidgetService {
 
         List<Object> games = switch (showGames) {
             case TOP_GAMES_RECENT -> {
-                List<Object> objects = new ArrayList<>(player.getSteamid() != null ? getTopRecentlyPlayedGames(player.getSteamid()) : new ArrayList<>());
+                List<Object> objects = new ArrayList<>(player.getSteamid() != null ? steamWebAPIService.getTopRecentlyPlayedGames(player.getSteamid()) : new ArrayList<>());
                 yield objects.stream().limit(recentGamesCount).toList();
             }
             case TOP_GAMES_TOTAL -> {
-                List<Object> objects = new ArrayList<>(player.getSteamid() != null ? getTopOwnedGames(player.getSteamid()) : new ArrayList<>());
+                List<Object> objects = new ArrayList<>(player.getSteamid() != null ? steamWebAPIService.getTopOwnedGames(player.getSteamid()) : new ArrayList<>());
                 yield objects.stream().limit(recentGamesCount).toList();
             }
             case RECENT_GAMES -> {
-                List<Object> objects = new ArrayList<>(player.getSteamid() != null ? getRecentlyPlayedGames(player.getSteamid()) : new ArrayList<>());
+                List<Object> objects = new ArrayList<>(player.getSteamid() != null ? steamWebAPIService.getRecentlyPlayedGames(player.getSteamid()) : new ArrayList<>());
                 yield objects.stream().limit(recentGamesCount).toList();
             }
             default -> new ArrayList<>();
@@ -498,69 +398,4 @@ public class SteamWidgetService {
         return Scalr.resize(image, width);
     }
 
-    /**
-     * Asynchronously adds a hit to a profile identified by the Steam ID. If the profile does not exist, it creates a new profile
-     * with the given Steam ID and name, initializing the hit count to 1. Otherwise, it increments the hit count for the existing profile.
-     * Additionally, it records the hit details including the Steam ID, timestamp, purpose, and IP address in the Hit entity.
-     *
-     * @param steamId       The Steam ID of the user for whom the hit is being recorded.
-     * @param name          The name of the user associated with the Steam ID.
-     * @param purpose       The reason for the hit, describing why the user's information was accessed.
-     * @param ip            The IP address from which the request to access the user's information originated.
-     * @param localDateTime The timestamp when the hit occurred.
-     */
-    @Async
-    public void addHitToProfile(String steamId, String name, String purpose, String ip, LocalDateTime localDateTime) {
-        if (!repository.existsById(steamId)) {
-            Profile profile = new Profile(steamId, name, 1L);
-            repository.save(profile);
-        } else {
-            repository.incrementHits(steamId, name);
-        }
-
-        Hit hit = new Hit(steamId, localDateTime, purpose, ip);
-        hitRepository.save(hit);
-    }
-
-    /**
-     * Retrieves the total number of hits for a given profile identified by the Steam ID.
-     *
-     * @param steamId The Steam ID of the profile for which the hit count is being queried.
-     * @return The total number of hits for the profile. Returns 0 if the profile does not exist.
-     */
-    public long getProfileHitByProfile(String steamId) {
-        Optional<Profile> profileOptional = repository.findById(steamId);
-        if (profileOptional.isPresent()) {
-            return profileOptional.get().getHits();
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * Retrieves the number of hits for a given profile identified by the Steam ID, optionally filtered by purpose.
-     * If the purpose is not specified (empty string), it returns the total hit count for the profile.
-     *
-     * @param steamId The Steam ID of the profile for which the hit count is being queried.
-     * @param purpose The purpose for filtering the hits. If empty, all hits for the profile are counted.
-     * @return The number of hits for the profile, filtered by purpose if specified.
-     */
-    public long getHitByProfileAndPurpose(String steamId, @NotNull String purpose) {
-        if (purpose.isEmpty()) {
-            return hitRepository.countHitsBySteam64id(steamId);
-        } else {
-            return hitRepository.countHitsBySteam64idAndPurpose(steamId, purpose);
-        }
-    }
-
-    /**
-     * Retrieves the profile information for a given Steam ID. If the profile does not exist, it returns a new, empty Profile object.
-     *
-     * @param steamId The Steam ID of the profile to retrieve.
-     * @return A Profile object containing the profile information. Returns an empty Profile object if the profile does not exist.
-     */
-    public Profile getProfile(String steamId) {
-        Optional<Profile> profileOptional = repository.findById(steamId);
-        return profileOptional.orElseGet(Profile::new);
-    }
 }

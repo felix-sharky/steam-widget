@@ -1,5 +1,7 @@
 package codes.sharky.steamwidget.controller;
 
+import codes.sharky.steamwidget.service.ProfileService;
+import codes.sharky.steamwidget.service.SteamWebAPIService;
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
 import codes.sharky.steamwidget.entity.Profile;
 import codes.sharky.steamwidget.service.SteamWidgetService;
@@ -18,10 +20,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class MetricController {
 
-    private final SteamWidgetService steamWidgetService;
+    private final ProfileService profileService;
 
-    public MetricController(SteamWidgetService steamWidgetService) {
-        this.steamWidgetService = steamWidgetService;
+    private final SteamWebAPIService steamWebAPIService;
+
+    public MetricController(ProfileService profileService, SteamWebAPIService steamWebAPIService) {
+        this.profileService = profileService;
+        this.steamWebAPIService = steamWebAPIService;
     }
 
     /**
@@ -35,8 +40,8 @@ public class MetricController {
      */
     @GetMapping(value = "/metric", produces = {MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody ResponseEntity<Profile> getProfile(@RequestParam(name = "id") String id) throws SteamApiException {
-        String resolvedId = steamWidgetService.resolveSteamId(id);
-        Profile profile = steamWidgetService.getProfile(resolvedId);
+        String resolvedId = steamWebAPIService.resolveSteamId(id);
+        Profile profile = profileService.getProfile(resolvedId);
         return new ResponseEntity<>(profile, profile.getSteam64id() == null ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
@@ -51,8 +56,8 @@ public class MetricController {
      */
     @GetMapping(value = "/metric")
     public @ResponseBody ResponseEntity<Long> getProfileHit(@RequestParam(name = "id") String id) throws SteamApiException {
-        String resolvedId = steamWidgetService.resolveSteamId(id);
-        long hits = steamWidgetService.getProfileHitByProfile(resolvedId);
+        String resolvedId = steamWebAPIService.resolveSteamId(id);
+        long hits = profileService.getProfileHitByProfile(resolvedId);
         return new ResponseEntity<>(hits, hits == 0 ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
@@ -69,8 +74,8 @@ public class MetricController {
      */
     @GetMapping(value = "/metric/hits")
     public @ResponseBody ResponseEntity<Long> getHits(@RequestParam(name = "id") String id, @RequestParam(name = "purpose", required = false, defaultValue = "General") String purpose) throws SteamApiException {
-        String resolvedId = steamWidgetService.resolveSteamId(id);
-        long hits = steamWidgetService.getHitByProfileAndPurpose(resolvedId, purpose);
+        String resolvedId = steamWebAPIService.resolveSteamId(id);
+        long hits = profileService.getHitByProfileAndPurpose(resolvedId, purpose);
         return new ResponseEntity<>(hits, hits == 0 ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 }
