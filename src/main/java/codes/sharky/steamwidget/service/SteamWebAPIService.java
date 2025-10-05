@@ -11,6 +11,7 @@ import com.lukaspradel.steamapi.webapi.request.GetOwnedGamesRequest;
 import com.lukaspradel.steamapi.webapi.request.GetPlayerSummariesRequest;
 import com.lukaspradel.steamapi.webapi.request.GetRecentlyPlayedGamesRequest;
 import com.lukaspradel.steamapi.webapi.request.ResolveVanityUrlRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class SteamWebAPIService {
 
     private final SteamWebAPI api;
@@ -41,7 +43,9 @@ public class SteamWebAPIService {
             if (!players.isEmpty()) {
                 return players.getFirst();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn(ignored.getMessage());
+        }
         return new Player();
     }
 
@@ -63,7 +67,9 @@ public class SteamWebAPIService {
             GetPlayerSummariesRequest request = new GetPlayerSummariesRequest.GetPlayerSummariesRequestBuilder(resolvedIds).buildRequest();
             GetPlayerSummaries playerSummaries = api.getClient().<GetPlayerSummaries>processRequest(request);
             return playerSummaries.getResponse().getPlayers();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn(ignored.getMessage());
+        }
         return new ArrayList<>();
     }
 
@@ -86,7 +92,9 @@ public class SteamWebAPIService {
             GetOwnedGames ownedGames = api.getClient().processRequest(request);
             ownedGames.getResponse().getGames().sort((g1, g2) -> (Integer) g2.getAdditionalProperties().get("rtime_last_played") - (Integer) g1.getAdditionalProperties().get("rtime_last_played"));
             return ownedGames.getResponse().getGames();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn(ignored.getMessage());
+        }
         return new ArrayList<>();
     }
 
@@ -109,7 +117,9 @@ public class SteamWebAPIService {
             GetRecentlyPlayedGames recentlyPlayedGames = api.getClient().processRequest(request);
             recentlyPlayedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytime2weeks() - g1.getPlaytime2weeks()));
             return recentlyPlayedGames.getResponse().getGames();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn(ignored.getMessage());
+        }
         return new ArrayList<>();
     }
 
@@ -132,7 +142,9 @@ public class SteamWebAPIService {
             GetOwnedGames ownedGames = api.getClient().processRequest(request);
             ownedGames.getResponse().getGames().sort((g1, g2) -> Math.toIntExact(g2.getPlaytimeForever() - g1.getPlaytimeForever()));
             return ownedGames.getResponse().getGames();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn(ignored.getMessage());
+        }
         return new ArrayList<>();
     }
 
@@ -155,7 +167,9 @@ public class SteamWebAPIService {
                 ResolveVanityURL vanityURL = api.getClient().processRequest(request);
                 id = vanityURL.getResponse().getSteamid();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn(ignored.getMessage());
+        }
         return id;
     }
 

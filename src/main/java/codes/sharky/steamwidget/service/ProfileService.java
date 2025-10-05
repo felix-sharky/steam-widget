@@ -1,14 +1,17 @@
 package codes.sharky.steamwidget.service;
 
 import codes.sharky.steamwidget.entity.Hit;
+import codes.sharky.steamwidget.entity.PlayingTracker;
 import codes.sharky.steamwidget.entity.Profile;
 import codes.sharky.steamwidget.repository.HitRepository;
+import codes.sharky.steamwidget.repository.PlayingTrackerRepository;
 import codes.sharky.steamwidget.repository.ProfileRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,10 +19,12 @@ public class ProfileService {
 
     private final ProfileRepository repository;
     private final HitRepository hitRepository;
+    private final PlayingTrackerRepository playingTrackerRepository;
 
-    public ProfileService(ProfileRepository repository, HitRepository hitRepository) {
+    public ProfileService(ProfileRepository repository, HitRepository hitRepository, PlayingTrackerRepository playingTrackerRepository) {
         this.repository = repository;
         this.hitRepository = hitRepository;
+        this.playingTrackerRepository = playingTrackerRepository;
     }
 
     /**
@@ -70,6 +75,64 @@ public class ProfileService {
 
         Hit hit = new Hit(steamId, localDateTime, purpose, ip);
         hitRepository.save(hit);
+    }
+
+    /**
+     * Inserts a new profile or updates an existing profile with the given Steam ID, name, and tracking status.
+     * If the profile does not exist, it creates a new profile with the provided details and initializes the hit count to 0.
+     * If the profile already exists, it updates the name and tracking status of the existing profile.
+     *
+     * @param steamId  The Steam ID of the profile to be inserted or updated.
+     * @param name     The name of the user associated with the Steam ID.
+     * @param tracking The tracking status indicating whether tracking is enabled for this profile.
+     */
+    public void upsertProfile(String steamId, String name, boolean tracking) {
+        if (!repository.existsById(steamId)) {
+            Profile profile = new Profile(steamId, name, 0L, tracking);
+            repository.save(profile);
+        } else {
+            repository.updateNameAndTracking(steamId, name, tracking);
+        }
+    }
+
+    public boolean profileTrackingActive(String steamId) {
+        return repository.existsBySteam64idAndTrackingIsTrue(steamId);
+    }
+
+    public void resetPlayerTrackers(String steamId) {
+        playingTrackerRepository.deleteAllBySteam64id(steamId);
+    }
+
+    /**
+     * Retrieves a list of all profiles that have tracking enabled.
+     *
+     * @return A list of {@link Profile} objects with tracking enabled.
+     */
+    public List<Profile> getProfilesWithTracking() {
+        return repository.findAllByTrackingIsTrue();
+    }
+
+    /**
+     * Retrieves the most recent {@link PlayingTracker} entry for a given Steam ID and application ID (game).
+     * If no entry is found, it returns a new, empty {@link PlayingTracker} object.
+     *
+     * @param steamId The Steam ID of the user.
+     * @param appId   The application ID (game) for which the playing tracker is being queried.
+     * @return A {@link PlayingTracker} object containing the most recent playing tracker information.
+     *         Returns an empty {@link PlayingTracker} object if no entry is found.
+     */
+    public PlayingTracker getLastPlayingTracker(String steamId, String appId) {
+        Optional<PlayingTracker> playingTrackerOptional = playingTrackerRepository.findFirstBySteam64idAndGameOrderByDatetimeDesc(steamId, appId);
+        return playingTrackerOptional.orElseGet(PlayingTracker::new);
+    }
+
+    /**
+     * Saves a {@link PlayingTracker} entity to the database.
+     *
+     * @param playingTracker The {@link PlayingTracker} object to be saved.
+     */
+    public void savePlayingTracker(PlayingTracker playingTracker) {
+        playingTrackerRepository.save(playingTracker);
     }
 
     /**

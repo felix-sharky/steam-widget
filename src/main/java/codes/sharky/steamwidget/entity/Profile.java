@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
 
@@ -29,4 +30,13 @@ public class Profile implements Serializable {
     @Column(name = "hits")
     private Long hits;
 
+    @ColumnDefault("false")
+    @Column(name = "tracking", nullable = false)
+    private Boolean tracking = false;
+
+    public Profile(String steam64id, String name, Long hits) {
+        this.steam64id = steam64id;
+        this.name = name;
+        this.hits = hits;
+    }
 }
