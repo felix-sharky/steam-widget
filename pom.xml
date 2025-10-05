@@ -8,11 +8,10 @@
         <version>3.5.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>de.gamergrotte</groupId>
+    <groupId>codes.sharky</groupId>
     <artifactId>steamwidget</artifactId>
-    <version>2.2.1</version>
-    <name>steamwidget</name>
-    <description>steamwidget</description>
+    <version>2.3.0</version>
+    <name>steam-widget.com</name>
     <properties>
         <java.version>21</java.version>
     </properties>
