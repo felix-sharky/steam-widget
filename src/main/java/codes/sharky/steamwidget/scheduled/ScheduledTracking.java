@@ -1,6 +1,8 @@
 package codes.sharky.steamwidget.scheduled;
 
 import codes.sharky.steamwidget.service.SteamTrackerService;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -9,15 +11,19 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class ScheduledTracking {
 
-    SteamTrackerService steamTrackerService;
+    private final SteamTrackerService steamTrackerService;
+    private final Environment env;
 
-    public ScheduledTracking(SteamTrackerService steamTrackerService) {
+    public ScheduledTracking(SteamTrackerService steamTrackerService, Environment env) {
         this.steamTrackerService = steamTrackerService;
+        this.env = env;
     }
 
     @Scheduled(cron = "0 0 * * * *")
     public void scheduledTracking() {
-        steamTrackerService.trackRegisteredUsers();
+        if (env.acceptsProfiles(Profiles.of("primary"))) {
+            steamTrackerService.trackRegisteredUsers();
+        }
     }
 
 }
