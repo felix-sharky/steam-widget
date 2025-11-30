@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Tracking Stats | Steam Widget</title>
+    <link rel="icon" type="image/svg" href="/favicon.svg" />
+    <link rel="stylesheet" type="text/css" href="/css/tracking.css" />
+    <link rel="stylesheet" type="text/css" href="/css/tracking-month.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script defer type="text/javascript" src="/js/tracking-month.js"></script>
+</head>
+<body>
+<nav class="top-nav" aria-label="Primary navigation">
+    <div class="top-nav-links">
+        <a class="nav-link" data-base="/" href="/">Generator</a>
+        <a class="nav-link" id="trackingBackNav" data-base="/tracking.html" href="/tracking.html">Tracking status</a>
+        <a class="nav-link nav-link-current" data-base="/tracking-month.html" href="/tracking-month.html" aria-current="page">Monthly stats</a>
+    </div>
+</nav>
+<div class="page">
+    <header class="hero">
+        <div>
+            <h1>Monthly Tracking Stats</h1>
+            <p>Inspect your per-month playtime totals by game.</p>
+        </div>
+    </header>
+
+    <section class="card">
+        <form id="trackingMonthForm" class="form" autocomplete="off">
+            <label for="steamId">Steam ID</label>
+            <div class="input-row">
+                <input id="steamId" name="steamId" type="text" placeholder="7656119..." required />
+                <button type="submit">Load stats</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card" id="statsCard">
+        <div class="table-header">
+            <div>
+                <h2>Playtime by month</h2>
+                <p class="muted">Data is fetched from <code>/api/tracking/profile-month</code>.</p>
+                <p class="muted small">Click any row to focus the chart on that game. Click again to clear the filter.</p>
+            </div>
+            <span id="tableStatus" class="badge badge-idle">No data loaded</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Game</th>
+                    <th>Hours</th>
+                    <th>Minutes</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody">
+                <tr>
+                    <td colspan="5" class="muted">Enter a Steam ID and load stats.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card chart-card" id="chartCard">
+        <div class="table-header">
+            <div>
+                <h2>Monthly trend</h2>
+                <p class="muted">Aggregated playtime hours per month.</p>
+            </div>
+            <span id="chartStatus" class="badge badge-idle">No data loaded</span>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="trackingChart" height="220"></canvas>
+            <p id="chartEmpty" class="muted">Enter a Steam ID to render the chart.</p>
+        </div>
+    </section>
+</div>
+</body>
+</html>

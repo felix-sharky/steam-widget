@@ -10,36 +10,70 @@
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
 </head>
 <body>
-<div class="container">
-    <h1>Steam Widget Generator</h1>
-    <!-- OpenID Login Button moved under the h1 -->
-    <a href="/steam/login" data-umami-event="link_steam_login">
-        <img src="/img/steam_login-button_openid.png" alt="Login with Steam" style="margin-top: 20px; cursor: pointer;">
-    </a>
-    <br />
-    <br />
-    <p>Alternatively, provide your Steam ID to create a widget:</p>
-    <input type="text" id="steamId" placeholder="Enter Steam ID">
-    <div class="field-container">
-        <label for="playingRightNow" class="field-label">Show Played Games Right now</label>
-        <input type="checkbox" id="playingRightNow" checked="true">
+<nav class="top-nav" aria-label="Primary navigation">
+    <div class="top-nav-links">
+        <a class="nav-link nav-link-current" data-base="/" href="/" aria-current="page">Generator</a>
+        <a class="nav-link" id="trackingNav" data-base="/tracking.html" href="/tracking.html">Tracking status</a>
+        <a class="nav-link" id="trackingMonthNav" data-base="/tracking-month.html" href="/tracking-month.html">Monthly stats</a>
     </div>
-    <div class="field-container">
-        <label for="gameList" class="field-label">Game List</label>
-        <select id="gameList">
-            <option value="NONE">Dont Show</option>
-            <option value="TOP_GAMES_TOTAL">Top Games of All Time</option>
-            <option value="TOP_GAMES_RECENT">Top Games last 2 weeks</option>
-            <option value="RECENT_GAMES">Last Played Games</option>
-        </select>
-    </div>
-    <div class="field-container">
-        <label for="gameListSize" class="field-label">Game List Limit</label>
-        <input type="number" id="gameListSize" min="0" max="10" value="5">
-    </div>
-    <br />
-    <button onclick="generateWidget()" data-umami-event="button_generate_click">Generate Widget</button>
-    <div class="widget" id="widgetContainer"></div>
+</nav>
+<div class="page">
+    <header class="hero">
+        <div>
+            <h1>Steam Widget Generator</h1>
+            <p>Authenticate with Steam or paste a Steam ID to build a shareable widget preview.</p>
+        </div>
+    </header>
+
+    <section class="card login">
+        <h2>Sign in with Steam</h2>
+        <p>Login with Steam to auto-fill your profile and start tracking activity.</p>
+        <a class="login-button" href="/steam/login" data-umami-event="link_steam_login">
+            <img src="/img/steam_login-button_openid.png" alt="Login with Steam">
+        </a>
+    </section>
+
+    <form id="widgetForm" class="generator-form" onsubmit="generateWidget(); return false;" autocomplete="off">
+        <section class="card builder">
+            <div class="form">
+                <label for="steamId">Steam ID</label>
+                <div class="input-row">
+                    <input type="text" id="steamId" name="steamId" placeholder="Enter Steam ID">
+                    <button type="submit" data-umami-event="button_generate_click">Generate widget</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="card options-card">
+            <h2>Widget options</h2>
+            <p class="muted">Fine-tune the info rendered on your widget.</p>
+            <div class="options-grid">
+                <div class="field-group checkbox-group">
+                    <label for="playingRightNow" class="field-label">Display "Now Playing" section</label>
+                    <input type="checkbox" id="playingRightNow" class="toggle-input" checked>
+                </div>
+                <div class="field-group">
+                    <label for="gameList" class="field-label">Game list type</label>
+                    <select id="gameList">
+                        <option value="NONE">Don’t show</option>
+                        <option value="TOP_GAMES_TOTAL">Top games of all time</option>
+                        <option value="TOP_GAMES_RECENT">Top games last 2 weeks</option>
+                        <option value="RECENT_GAMES">Last played games</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label for="gameListSize" class="field-label">Max games displayed</label>
+                    <input type="number" id="gameListSize" min="0" max="10" value="5">
+                </div>
+            </div>
+        </section>
+    </form>
+
+    <section class="card preview">
+        <h2>Widget preview</h2>
+        <p class="muted">Generate a widget to see the preview, direct link, and embeddable HTML.</p>
+        <div class="widget" id="widgetContainer"></div>
+    </section>
 </div>
 </body>
 </html>

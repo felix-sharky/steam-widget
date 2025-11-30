@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Status | Steam Widget</title>
+    <link rel="icon" type="image/svg" href="/favicon.svg" />
+    <link rel="stylesheet" type="text/css" href="/css/tracking.css" />
+    <script defer type="text/javascript" src="/js/tracking.js"></script>
+</head>
+<body>
+<nav class="top-nav" aria-label="Primary navigation">
+    <div class="top-nav-links">
+        <a class="nav-link" data-base="/" href="/">Generator</a>
+        <a class="nav-link nav-link-current" id="indexNav" data-base="/tracking.html" href="/tracking.html" aria-current="page">Tracking status</a>
+        <a class="nav-link" id="monthNav" data-base="/tracking-month.html" href="/tracking-month.html">Monthly stats</a>
+    </div>
+</nav>
+<div class="page">
+    <header class="hero">
+        <div>
+            <h1>Profile Tracking Status</h1>
+            <p>Check whether tracking is active for a Steam profile and enable it with a Steam login if needed.</p>
+        </div>
+    </header>
+
+    <section class="card">
+        <form id="trackingForm" class="form" autocomplete="off">
+            <label for="steamId">Steam ID</label>
+            <div class="input-row">
+                <input id="steamId" name="steamId" type="text" placeholder="7656119..." required />
+                <button type="submit">Check status</button>
+            </div>
+        </form>
+        <div class="status" id="statusPanel">
+            <span id="trackingBadge" class="badge badge-idle">No profile loaded</span>
+            <p id="statusMessage">Enter a Steam ID above to inspect its tracking state.</p>
+            <dl class="profile-meta" id="profileMeta" hidden>
+                <div>
+                    <dt>Profile</dt>
+                    <dd id="profileName">—</dd>
+                </div>
+                <div>
+                    <dt>Steam64</dt>
+                    <dd id="profileSteamId">—</dd>
+                </div>
+                <div>
+                    <dt>Hits</dt>
+                    <dd id="profileHits">—</dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+
+    <section class="card login" id="loginCard">
+        <h2>Need to enable tracking?</h2>
+        <p>Authenticate with Steam to either review your tracking status instantly or toggle tracking on/off.</p>
+        <div class="login-options">
+            <div class="login-option">
+                <h3>Check status</h3>
+                <p>Sign in and land back here with your profile auto-loaded.</p>
+                <a class="login-button" href="/steam/tracking/status" data-umami-event="tracking_login_status">
+                    <img src="/img/steam_login-button_openid.png" alt="Login with Steam to check status">
+                </a>
+            </div>
+            <div class="login-option">
+                <h3>Enable tracking</h3>
+                <p>Turn tracking on for your profile.</p>
+                <a class="login-button" href="/steam/tracking/enable" data-umami-event="tracking_login_enable">
+                    <img src="/img/steam_login-button_openid.png" alt="Login with Steam to enable tracking">
+                </a>
+            </div>
+            <div class="login-option">
+                <h3>Disable tracking</h3>
+                <p>Turn tracking off and clear trackers.</p>
+                <a class="login-button" href="/steam/tracking/disable" data-umami-event="tracking_login_disable">
+                    <img src="/img/steam_login-button_openid.png" alt="Login with Steam to disable tracking">
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
