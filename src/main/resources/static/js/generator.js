@@ -6,7 +6,52 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('steamId').value = sanitizedSteamId;
         // Optionally, automatically generate the widget
         generateWidget();
+    } else {
+        const cookieSteamId = getCookie('steamId');
+        if (cookieSteamId) {
+            const sanitizedSteamId = escapeHtml(cookieSteamId);
+            document.getElementById('steamId').value = sanitizedSteamId;
+            generateWidget();
+        }
     }
+
+    const steamIdField = document.getElementById('steamId');
+    const playingRightNowField = document.getElementById('playingRightNow');
+    const gameListField = document.getElementById('gameList');
+    const gameListSizeField = document.getElementById('gameListSize');
+    const navLinks = Array.from(document.querySelectorAll('.nav-link[data-base]'));
+
+    const autoGenerateIfReady = () => {
+        if (steamIdField && steamIdField.value.trim()) {
+            generateWidget();
+        }
+    };
+
+    [playingRightNowField, gameListField, gameListSizeField].forEach((control) => {
+        if (!control) {
+            return;
+        }
+        const eventName = control === gameListSizeField ? 'input' : 'change';
+        control.addEventListener(eventName, autoGenerateIfReady);
+    });
+
+    const appendSteamIdToLink = (anchor) => {
+        if (!anchor || !steamIdField) {
+            return;
+        }
+        const currentId = steamIdField.value.trim();
+        const base = anchor.getAttribute('data-base') || anchor.getAttribute('href');
+        const url = new URL(base, window.location.origin);
+        if (currentId) {
+            url.searchParams.set('steamId', currentId);
+        }
+        anchor.href = url.toString();
+    };
+
+    navLinks.forEach((link) => {
+        link.addEventListener('click', () => appendSteamIdToLink(link));
+        link.addEventListener('mouseenter', () => appendSteamIdToLink(link));
+    });
 });
 
 function generateWidget() {
@@ -112,4 +157,15 @@ function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize) {
     }
 
     return `${baseUrl}/widget/img?${params.toString()}`;
+}
+
+function getCookie(name) {
+    const cookies = document.cookie ? document.cookie.split('; ') : [];
+    for (const cookie of cookies) {
+        const [key, ...rest] = cookie.split('=');
+        if (key === name) {
+            return decodeURIComponent(rest.join('='));
+        }
+    }
+    return null;
 }

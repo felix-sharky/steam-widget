@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Metrics | Steam Widget</title>
+    <link rel="icon" type="image/svg" href="/favicon.svg" />
+    <link rel="stylesheet" type="text/css" href="/css/tracking.css" />
+    <link rel="stylesheet" type="text/css" href="/css/profile-metrics.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script defer type="text/javascript" src="/js/profile-metrics.js"></script>
+</head>
+<body>
+<nav class="top-nav" aria-label="Primary navigation">
+    <div class="top-nav-links">
+        <a class="nav-link" data-route="/" data-base="/" href="/">Generator</a>
+        <a class="nav-link" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Tracking status</a>
+        <a class="nav-link" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Monthly stats</a>
+        <a class="nav-link" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile metrics</a>
+    </div>
+</nav>
+<div class="page">
+    <header class="hero">
+        <div>
+            <h1>Profile Metrics</h1>
+            <p>Review monthly profile hits in both chart and table form.</p>
+        </div>
+    </header>
+
+    <section class="card">
+        <form id="profileMetricsForm" class="form" autocomplete="off">
+            <label for="steamId">Steam ID</label>
+            <div class="input-row">
+                <input id="steamId" name="steamId" type="text" placeholder="7656119..." required />
+                <button type="submit">Load metrics</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card chart-card" id="chartCard">
+        <div class="table-header">
+            <div>
+                <h2>Monthly hits trend</h2>
+                <p class="muted">Chart displays hits per month.</p>
+            </div>
+            <span id="chartStatus" class="badge badge-idle">No data loaded</span>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="profileMetricsChart" height="220"></canvas>
+            <p id="chartEmpty" class="muted">Enter a Steam ID to render the chart.</p>
+        </div>
+    </section>
+
+    <section class="card" id="tableCard">
+        <div class="table-header">
+            <div>
+                <h2>Monthly hits table</h2>
+                <p class="muted">Data from <code>/api/metrics/profile/month</code>.</p>
+            </div>
+            <span id="tableStatus" class="badge badge-idle">No data loaded</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Purpose</th>
+                    <th>Hits</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody">
+                <tr>
+                    <td colspan="4" class="muted">Enter a Steam ID and load metrics.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

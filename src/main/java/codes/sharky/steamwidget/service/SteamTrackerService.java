@@ -1,7 +1,6 @@
 package codes.sharky.steamwidget.service;
 
 import codes.sharky.steamwidget.entity.PlayingTracker;
-import codes.sharky.steamwidget.entity.Profile;
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
 import com.lukaspradel.steamapi.data.json.ownedgames.Game;
 import com.lukaspradel.steamapi.data.json.playersummaries.Player;
@@ -23,11 +22,17 @@ public class SteamTrackerService {
     }
 
     public void registerUser(@NotNull Player player) {
+        if (profileService.profileTrackingActive(player.getSteamid())) {
+            return;
+        }
         profileService.upsertProfile(player.getSteamid(), player.getPersonaname(), true);
         trackUserGames(player.getSteamid(), true);
     }
 
     public void unregisterUser(@NotNull Player player) {
+        if (!profileService.profileTrackingActive(player.getSteamid())) {
+            return;
+        }
         profileService.upsertProfile(player.getSteamid(), player.getPersonaname(), false);
         profileService.resetPlayerTrackers(player.getSteamid());
     }
@@ -40,6 +45,16 @@ public class SteamTrackerService {
         } else {
             this.registerUser(player);
         }
+    }
+
+    public void enableTracking(String steamId) {
+        Player player = steamWebAPIService.getUserBySteamId(steamId);
+        this.registerUser(player);
+    }
+
+    public void disableTracking(String steamId) {
+        Player player = steamWebAPIService.getUserBySteamId(steamId);
+        this.unregisterUser(player);
     }
 
     public void trackRegisteredUsers() {
