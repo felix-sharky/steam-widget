@@ -6,14 +6,15 @@
     <title>Tracking Status | Steam Widget</title>
     <link rel="icon" type="image/svg" href="/favicon.svg" />
     <link rel="stylesheet" type="text/css" href="/css/tracking.css" />
-    <script defer type="text/javascript" src="/js/tracking.js"></script>
+    <script defer src="/js/tracking.js"></script>
 </head>
 <body>
 <nav class="top-nav" aria-label="Primary navigation">
     <div class="top-nav-links">
-        <a class="nav-link" data-base="/" href="/">Generator</a>
-        <a class="nav-link nav-link-current" id="indexNav" data-base="/tracking.html" href="/tracking.html" aria-current="page">Tracking status</a>
-        <a class="nav-link" id="monthNav" data-base="/tracking-month.html" href="/tracking-month.html">Monthly stats</a>
+        <a class="nav-link" data-route="/" data-base="/" href="/">Generator</a>
+        <a class="nav-link nav-link-current" id="indexNav" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html" aria-current="page">Tracking status</a>
+        <a class="nav-link" id="monthNav" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Monthly stats</a>
+        <a class="nav-link" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile metrics</a>
     </div>
 </nav>
 <div class="page">
