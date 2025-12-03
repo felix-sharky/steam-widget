@@ -4,13 +4,16 @@ import codes.sharky.steamwidget.entity.PlayingTracker;
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
 import com.lukaspradel.steamapi.data.json.ownedgames.Game;
 import com.lukaspradel.steamapi.data.json.playersummaries.Player;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Slf4j
 public class SteamTrackerService {
 
     private final SteamWebAPIService steamWebAPIService;
@@ -78,16 +81,22 @@ public class SteamTrackerService {
         try {
             List<Game> games = steamWebAPIService.getRecentlyPlayedGames(steamId);
             games.forEach(game -> saveGameTracker(steamId, game, init));
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.error("Failed to track playtime for user {}", steamId, exception);
         }
     }
 
     private void saveGameTracker(String steamId, @NotNull Game game, boolean init) {
-        PlayingTracker tracker = profileService.getLastPlayingTracker(steamId, game.getAppid().toString());
-        if (tracker == null || tracker.getId() == null || tracker.getTotalPlayingTime() < game.getPlaytimeForever()) {
-            long newPlaytime = init ? 0L : tracker == null ? game.getPlaytimeForever() : game.getPlaytimeForever() - tracker.getTotalPlayingTime();
-            PlayingTracker newTracker = new PlayingTracker(steamId, game.getAppid().toString(), game.getName(), newPlaytime, game.getPlaytimeForever());
-            profileService.savePlayingTracker(newTracker);
+        try {
+            Optional<PlayingTracker> tracker = profileService.getLastPlayingTracker(steamId, game.getAppid().toString());
+            if (tracker.isEmpty() || tracker.get().getTotalPlayingTime() < game.getPlaytimeForever()) {
+                long newPlaytime = init ? 0L : tracker.map(playingTracker -> game.getPlaytimeForever() - playingTracker.getTotalPlayingTime()).orElseGet(game::getPlaytimeForever);
+                log.info("User {} played {} for {} minutes.", steamId, game.getName(), newPlaytime);
+                PlayingTracker newTracker = new PlayingTracker(steamId, game.getAppid().toString(), game.getName(), newPlaytime, game.getPlaytimeForever());
+                profileService.savePlayingTracker(newTracker);
+            }
+        } catch (Exception exception) {
+            log.error("Failed to track playtime for user {}, game {}", steamId, game.getAppid(), exception);
         }
     }
 }

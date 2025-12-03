@@ -121,9 +121,8 @@ public class ProfileService {
      * @return A {@link PlayingTracker} object containing the most recent playing tracker information.
      *         Returns an empty {@link PlayingTracker} object if no entry is found.
      */
-    public PlayingTracker getLastPlayingTracker(String steamId, String appId) {
-        Optional<PlayingTracker> playingTrackerOptional = playingTrackerRepository.findFirstBySteam64idAndGameOrderByDatetimeDesc(steamId, appId);
-        return playingTrackerOptional.orElseGet(PlayingTracker::new);
+    public Optional<PlayingTracker> getLastPlayingTracker(String steamId, String appId) {
+        return playingTrackerRepository.findFirstBySteam64idAndGameOrderByDatetimeDesc(steamId, appId);
     }
 
     /**
