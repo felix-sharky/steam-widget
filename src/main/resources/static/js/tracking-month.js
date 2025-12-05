@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const utils = window.SteamWidget || {};
+    const resolveSteamIdInput = utils.resolveSteamIdInput || (async (value) => value?.trim() || null);
+    const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
+    const syncNavLinks = utils.syncNavLinks || (() => {});
+    const bootstrapSteamId = utils.bootstrapSteamId || (() => null);
+
     const form = document.getElementById('trackingMonthForm');
     const steamIdInput = document.getElementById('steamId');
     const tableBody = document.getElementById('tableBody');
@@ -51,14 +57,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const appendSteamIdToBackLink = () => {
+        const id = steamIdInput.value.trim();
+        syncNavLinks(id);
         if (!backNav) {
             return;
         }
         const base = backNav.getAttribute('data-base') || backNav.href;
         const url = new URL(base, window.location.origin);
-        const id = steamIdInput.value.trim();
         if (id) {
             url.searchParams.set('steamId', id);
+        } else {
+            url.searchParams.delete('steamId');
         }
         backNav.href = url.toString();
     };
@@ -250,14 +259,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const steamId = steamIdInput.value.trim();
-        if (!steamId) {
+        const rawSteamId = steamIdInput.value.trim();
+        if (!rawSteamId) {
             setStatus('badge-error', 'Steam ID required');
             return;
         }
 
+        setStatus('badge-loading', 'Resolving…');
+        tableBody.innerHTML = '<tr><td colspan="5" class="muted">Resolving input…</td></tr>';
+
+        let steamId;
+        try {
+            steamId = await resolveSteamIdInput(rawSteamId);
+        } catch (error) {
+            console.error(error);
+            tableBody.innerHTML = '<tr><td colspan="5" class="muted">Failed to resolve identifier.</td></tr>';
+            setStatus('badge-error', 'Resolve failed');
+            setChartState('badge-error', 'Resolve failed');
+            return;
+        }
+
+        if (!steamId) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="muted">Input did not resolve to a Steam64 ID.</td></tr>';
+            setStatus('badge-error', 'Unknown identifier');
+            setChartState('badge-error', 'Unknown identifier');
+            return;
+        }
+
+        steamIdInput.value = steamId;
+        persistSteamIdInQuery(steamId);
+        syncNavLinks(steamId);
         appendSteamIdToBackLink();
+
         setStatus('badge-loading', 'Loading…');
+        setChartState('badge-loading', 'Loading…');
         tableBody.innerHTML = '<tr><td colspan="5" class="muted">Loading data…</td></tr>';
         try {
             const rows = await fetchStats(steamId);
@@ -277,30 +312,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const bootstrapFromQuery = () => {
-        const params = new URLSearchParams(window.location.search);
-        const steamId = params.get('steamId');
-        if (steamId) {
-            steamIdInput.value = steamId;
-            form.dispatchEvent(new Event('submit'));
-            return;
-        }
-        const cookieSteamId = getCookie('steamId');
-        if (cookieSteamId) {
-            steamIdInput.value = cookieSteamId;
-            form.dispatchEvent(new Event('submit'));
+        const detected = bootstrapSteamId({
+            input: steamIdInput,
+            onDetected: (steamId) => {
+                syncNavLinks(steamId);
+                appendSteamIdToBackLink();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+        if (!detected) {
+            syncNavLinks('');
+            appendSteamIdToBackLink();
         }
     };
 
     bootstrapFromQuery();
 });
-
-function getCookie(name) {
-    const cookies = document.cookie ? document.cookie.split('; ') : [];
-    for (const cookie of cookies) {
-        const [key, ...rest] = cookie.split('=');
-        if (key === name) {
-            return decodeURIComponent(rest.join('='));
-        }
-    }
-    return null;
-}

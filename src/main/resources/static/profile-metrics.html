@@ -7,7 +7,8 @@
     <link rel="icon" type="image/svg" href="/favicon.svg" />
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-    <script defer type="text/javascript" src="/js/profile-metrics.js"></script>
+    <script defer src="/js/steam-utils.js"></script>
+    <script defer src="/js/profile-metrics.js"></script>
 </head>
 <body>
 <nav class="top-nav" aria-label="Primary navigation">
@@ -30,7 +31,7 @@
         <form id="profileMetricsForm" class="form" autocomplete="off">
             <label for="steamId">Steam ID</label>
             <div class="input-row">
-                <input id="steamId" name="steamId" type="text" placeholder="7656119..." required />
+                <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required />
                 <button type="submit">Load metrics</button>
             </div>
         </form>

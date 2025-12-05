@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const utils = window.SteamWidget || {};
+    const resolveSteamIdInput = utils.resolveSteamIdInput || (async (value) => value?.trim() || null);
+    const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
+    const syncNavLinks = utils.syncNavLinks || (() => {});
+    const bootstrapSteamId = utils.bootstrapSteamId || (() => null);
+
     const form = document.getElementById('trackingForm');
     const steamIdInput = document.getElementById('steamId');
     const statusMessage = document.getElementById('statusMessage');
@@ -33,20 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
     };
 
-    const persistSteamIdInQuery = (steamId) => {
-        const next = new URL(window.location.href);
-        if (steamId) {
-            next.searchParams.set('steamId', steamId);
-        } else {
-            next.searchParams.delete('steamId');
-        }
-        window.history.replaceState({}, '', next);
+    const persistSteamIdInQueryLocal = (steamId) => {
+        persistSteamIdInQuery(steamId);
+        syncNavLinks(steamId);
     };
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const steamId = steamIdInput.value.trim();
-        if (!steamId) {
+        const rawSteamId = steamIdInput.value.trim();
+        if (!rawSteamId) {
             setState({
                 badgeClass: 'badge-idle',
                 badgeText: 'Missing Steam ID',
@@ -57,7 +58,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        persistSteamIdInQuery(steamId);
+        setState({
+            badgeClass: 'badge-idle',
+            badgeText: 'Resolving…',
+            message: 'Resolving the provided identifier via Steam.',
+            showMeta: false,
+            hideLogin: true
+        });
+
+        let resolvedSteamId;
+        try {
+            resolvedSteamId = await resolveSteamIdInput(rawSteamId);
+        } catch (error) {
+            console.error(error);
+            setState({
+                badgeClass: 'badge-off',
+                badgeText: 'Resolve failed',
+                message: 'Unable to resolve this Steam identifier right now.',
+                showMeta: false,
+                hideLogin: false
+            });
+            return;
+        }
+
+        if (!resolvedSteamId) {
+            setState({
+                badgeClass: 'badge-off',
+                badgeText: 'Unknown profile',
+                message: 'We could not resolve that input to a Steam64 ID.',
+                showMeta: false,
+                hideLogin: false
+            });
+            return;
+        }
+
+        steamIdInput.value = resolvedSteamId;
+        persistSteamIdInQueryLocal(resolvedSteamId);
 
         setState({
             badgeClass: 'badge-idle',
@@ -68,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         try {
-            const profile = await fetchProfile(steamId);
+            const profile = await fetchProfile(resolvedSteamId);
             const isTracked = Boolean(profile.tracking);
             setState({
                 badgeClass: isTracked ? 'badge-on' : 'badge-off',
@@ -97,46 +133,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const runFromQuery = () => {
-        const params = new URLSearchParams(window.location.search);
-        const steamId = params.get('steamId');
-        if (steamId) {
-            steamIdInput.value = steamId;
-            bootstrappedFromQuery = true;
-            form.dispatchEvent(new Event('submit'));
-            return;
-        }
-        const cookieSteamId = getCookie('steamId');
-        if (cookieSteamId) {
-            steamIdInput.value = cookieSteamId;
-            form.dispatchEvent(new Event('submit'));
-        }
-    };
-
-    const syncNavLinks = () => {
-        const steamId = steamIdInput.value.trim();
-        navLinks.forEach((link) => {
-            const base = link.getAttribute('data-base') || link.href;
-            const target = new URL(base, window.location.origin);
-            if (steamId) {
-                target.searchParams.set('steamId', steamId);
+        const detected = bootstrapSteamId({
+            input: steamIdInput,
+            onDetected: (steamId) => {
+                bootstrappedFromQuery = true;
+                syncNavLinks(steamId);
+                form.dispatchEvent(new Event('submit'));
             }
-            link.href = target.toString();
         });
+        if (!detected) {
+            syncNavLinks('');
+        }
     };
 
-    steamIdInput.addEventListener('input', syncNavLinks);
-    form.addEventListener('submit', syncNavLinks);
-    runFromQuery();
-    syncNavLinks();
-});
+    const syncNavLinksInput = () => {
+        syncNavLinks(steamIdInput.value.trim());
+    };
 
-function getCookie(name) {
-    const cookies = document.cookie ? document.cookie.split('; ') : [];
-    for (const cookie of cookies) {
-        const [key, ...rest] = cookie.split('=');
-        if (key === name) {
-            return decodeURIComponent(rest.join('='));
-        }
-    }
-    return null;
-}
+    steamIdInput.addEventListener('input', syncNavLinksInput);
+    form.addEventListener('submit', syncNavLinksInput);
+    runFromQuery();
+    syncNavLinksInput();
+});

@@ -1,25 +1,32 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const steamIdParam = urlParams.get('steamId');
-    if (steamIdParam) {
-        const sanitizedSteamId = escapeHtml(decodeURIComponent(steamIdParam));
-        document.getElementById('steamId').value = sanitizedSteamId;
-        // Optionally, automatically generate the widget
-        generateWidget();
-    } else {
-        const cookieSteamId = getCookie('steamId');
-        if (cookieSteamId) {
-            const sanitizedSteamId = escapeHtml(cookieSteamId);
-            document.getElementById('steamId').value = sanitizedSteamId;
-            generateWidget();
+    const utils = window.SteamWidget || {};
+    const syncNavLinks = utils.syncNavLinks || (() => {});
+    const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
+    const bootstrapSteamId = utils.bootstrapSteamId || ((options = {}) => {
+        const { input, onDetected, paramName = 'steamId' } = options;
+        const params = new URLSearchParams(window.location.search);
+        const trimmed = params.get(paramName)?.trim() || '';
+        if (trimmed && input) {
+            input.value = trimmed;
+            if (typeof onDetected === 'function') {
+                onDetected(trimmed, { source: 'query' });
+            }
+            return trimmed;
         }
-    }
+        return null;
+    });
+
+    const navLinks = Array.from(document.querySelectorAll('.nav-link[data-base]'));
 
     const steamIdField = document.getElementById('steamId');
     const playingRightNowField = document.getElementById('playingRightNow');
     const gameListField = document.getElementById('gameList');
     const gameListSizeField = document.getElementById('gameListSize');
-    const navLinks = Array.from(document.querySelectorAll('.nav-link[data-base]'));
+
+    bootstrapSteamId({
+        input: steamIdField,
+        onDetected: () => generateWidget()
+    });
 
     const autoGenerateIfReady = () => {
         if (steamIdField && steamIdField.value.trim()) {
@@ -44,6 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = new URL(base, window.location.origin);
         if (currentId) {
             url.searchParams.set('steamId', currentId);
+        } else {
+            url.searchParams.delete('steamId');
         }
         anchor.href = url.toString();
     };
@@ -52,12 +61,21 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', () => appendSteamIdToLink(link));
         link.addEventListener('mouseenter', () => appendSteamIdToLink(link));
     });
+
+    steamIdField?.addEventListener('input', () => syncNavLinks(steamIdField.value.trim()));
+    syncNavLinks(steamIdField?.value?.trim());
 });
 
-function generateWidget() {
-    let steamId = document.getElementById('steamId').value;
+async function generateWidget() {
+    const utils = window.SteamWidget || {};
+    const resolveSteamIdInput = utils.resolveSteamIdInput || (async (value) => value?.trim() || null);
+    const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
+    const syncNavLinks = utils.syncNavLinks || (() => {});
+
+    const steamIdInput = document.getElementById('steamId');
+    let steamId = steamIdInput.value?.trim();
     const widgetContainer = document.getElementById('widgetContainer');
-    widgetContainer.innerHTML = ''; // Clear previous content
+    widgetContainer.innerHTML = '';
 
     if (!steamId) {
         // Display error message if steamId is empty
@@ -65,14 +83,27 @@ function generateWidget() {
         errorMessage.textContent = 'Please enter a valid Steam ID.';
         widgetContainer.appendChild(errorMessage);
 
-        //Remove steamId query parameter from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const steamIdParam = urlParams.get('steamId');
-        if (steamIdParam) {
-            urlParams.delete('steamId');
-            window.history.replaceState(null, null, "?" + urlParams.toString());
-        }
+        persistSteamIdInQuery();
+        syncNavLinks();
 
+        return;
+    }
+
+    try {
+        const resolved = await resolveSteamIdInput(steamId);
+        if (!resolved) {
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Unable to resolve that Steam ID or vanity URL.';
+            widgetContainer.appendChild(errorMessage);
+            return;
+        }
+        steamId = resolved;
+        steamIdInput.value = resolved;
+    } catch (error) {
+        console.error(error);
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = 'Failed to resolve this Steam identifier. Please try again later.';
+        widgetContainer.appendChild(errorMessage);
         return;
     }
 
@@ -80,9 +111,8 @@ function generateWidget() {
     steamId = escapeHtml(steamId);
 
     // Update the window's location to include steamId as a query parameter
-    const queryParams = new URLSearchParams(window.location.search);
-    queryParams.set('steamId', steamId);
-    window.history.replaceState(null, null, "?" + queryParams.toString());
+    persistSteamIdInQuery(steamId);
+    syncNavLinks(steamId);
 
     const playingRightNow = document.getElementById('playingRightNow').checked;
     const gameList = document.getElementById('gameList').value;
@@ -157,15 +187,4 @@ function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize) {
     }
 
     return `${baseUrl}/widget/img?${params.toString()}`;
-}
-
-function getCookie(name) {
-    const cookies = document.cookie ? document.cookie.split('; ') : [];
-    for (const cookie of cookies) {
-        const [key, ...rest] = cookie.split('=');
-        if (key === name) {
-            return decodeURIComponent(rest.join('='));
-        }
-    }
-    return null;
 }

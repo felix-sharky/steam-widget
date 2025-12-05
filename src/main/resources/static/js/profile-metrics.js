@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const utils = window.SteamWidget || {};
+    const resolveSteamIdInput = utils.resolveSteamIdInput || (async (value) => value?.trim() || null);
+    const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
+    const syncNavLinks = utils.syncNavLinks || (() => {});
+    const bootstrapSteamId = utils.bootstrapSteamId || (() => null);
+
     const form = document.getElementById('profileMetricsForm');
     const steamIdInput = document.getElementById('steamId');
     const tableBody = document.getElementById('tableBody');
@@ -145,12 +151,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const steamId = steamIdInput.value.trim();
-        if (!steamId) {
+        const rawSteamId = steamIdInput.value.trim();
+        if (!rawSteamId) {
             setTableStatus('badge-error', 'Steam ID required');
             setChartStatus('badge-error', 'Steam ID required');
             return;
         }
+        setTableStatus('badge-loading', 'Resolving…');
+        setChartStatus('badge-loading', 'Resolving…');
+        tableBody.innerHTML = '<tr><td colspan="4" class="muted">Resolving input…</td></tr>';
+        let steamId;
+        try {
+            steamId = await resolveSteamIdInput(rawSteamId);
+        } catch (error) {
+            console.error(error);
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">Failed to resolve identifier.</td></tr>';
+            setTableStatus('badge-error', 'Resolve failed');
+            setChartStatus('badge-error', 'Resolve failed');
+            return;
+        }
+        if (!steamId) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">Input did not resolve to a Steam64 ID.</td></tr>';
+            setTableStatus('badge-error', 'Unknown identifier');
+            setChartStatus('badge-error', 'Unknown identifier');
+            return;
+        }
+        steamIdInput.value = steamId;
+        persistSteamIdInQuery(steamId);
+        syncNavLinks(steamId);
         setTableStatus('badge-loading', 'Loading…');
         setChartStatus('badge-loading', 'Loading…');
         tableBody.innerHTML = '<tr><td colspan="4" class="muted">Loading metrics…</td></tr>';
@@ -173,24 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const bootstrap = () => {
-        const params = new URLSearchParams(window.location.search);
-        const steamId = params.get('steamId') || getCookie('steamId');
-        if (steamId) {
-            steamIdInput.value = steamId;
-            form.dispatchEvent(new Event('submit'));
+        const detected = bootstrapSteamId({
+            input: steamIdInput,
+            onDetected: (steamId) => {
+                syncNavLinks(steamId);
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+        if (!detected) {
+            syncNavLinks('');
         }
     };
 
     bootstrap();
 });
-
-function getCookie(name) {
-    const cookies = document.cookie ? document.cookie.split('; ') : [];
-    for (const cookie of cookies) {
-        const [key, ...rest] = cookie.split('=');
-        if (key === name) {
-            return decodeURIComponent(rest.join('='));
-        }
-    }
-    return null;
-}

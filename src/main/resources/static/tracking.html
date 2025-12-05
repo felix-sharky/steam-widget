@@ -6,6 +6,7 @@
     <title>Tracking Status | Steam Widget</title>
     <link rel="icon" type="image/svg" href="/favicon.svg" />
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <script type="text/javascript" src="/js/steam-utils.js"></script>
     <script defer src="/js/tracking.js"></script>
 </head>
 <body>
@@ -29,7 +30,7 @@
         <form id="trackingForm" class="form" autocomplete="off">
             <label for="steamId">Steam ID</label>
             <div class="input-row">
-                <input id="steamId" name="steamId" type="text" placeholder="7656119..." required />
+                <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required />
                 <button type="submit">Check status</button>
             </div>
         </form>
