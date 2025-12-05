@@ -18,10 +18,12 @@ public class SteamTrackerService {
 
     private final SteamWebAPIService steamWebAPIService;
     private final ProfileService profileService;
+    private final AsyncTrackerService asyncTrackerService;
 
-    public SteamTrackerService(SteamWebAPIService steamWebAPIService, ProfileService profileService) {
+    public SteamTrackerService(SteamWebAPIService steamWebAPIService, ProfileService profileService, AsyncTrackerService asyncTrackerService) {
         this.steamWebAPIService = steamWebAPIService;
         this.profileService = profileService;
+        this.asyncTrackerService = asyncTrackerService;
     }
 
     public void registerUser(@NotNull Player player) {
@@ -80,7 +82,7 @@ public class SteamTrackerService {
     private void trackUserGames(String steamId, boolean init) {
         try {
             List<Game> games = steamWebAPIService.getRecentlyPlayedGames(steamId);
-            games.forEach(game -> saveGameTracker(steamId, game, init));
+            games.forEach(game -> asyncTrackerService.saveGameTrackerAsync(steamId, game, init));
         } catch (Exception exception) {
             log.error("Failed to track playtime for user {}", steamId, exception);
         }

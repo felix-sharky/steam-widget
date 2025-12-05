@@ -89,7 +89,12 @@ public class SteamWebAPIService {
         try {
             GetOwnedGamesRequest request = new GetOwnedGamesRequest.GetOwnedGamesRequestBuilder(steamId).includeAppInfo(true).includePlayedFreeGames(true).buildRequest();
             GetOwnedGames ownedGames = api.getClient().processRequest(request);
-            ownedGames.getResponse().getGames().sort((g1, g2) -> (Integer) g2.getAdditionalProperties().get("rtime_last_played") - (Integer) g1.getAdditionalProperties().get("rtime_last_played"));
+            ownedGames.getResponse().getGames().sort((g1, g2) ->
+                    Integer.compare(
+                            (Integer) g2.getAdditionalProperties().getOrDefault("rtime_last_played", 0),
+                            (Integer) g1.getAdditionalProperties().getOrDefault("rtime_last_played", 0)
+                    )
+            );
             return ownedGames.getResponse().getGames();
         } catch (Exception ignored) {
             log.warn(ignored.getMessage());
