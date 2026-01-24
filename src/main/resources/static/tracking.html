@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
     <script type="text/javascript" src="/js/steam-utils.js"></script>
     <script defer src="/js/tracking.js"></script>
+    <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
 </head>
 <body>
 <nav class="top-nav" aria-label="Primary navigation">
@@ -31,7 +32,7 @@
             <label for="steamId">Steam ID</label>
             <div class="input-row">
                 <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required />
-                <button type="submit">Check status</button>
+                <button type="submit" data-umami-event="button_check_status">Check status</button>
             </div>
         </form>
         <div class="status" id="statusPanel">

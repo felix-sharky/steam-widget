@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableStatus = document.getElementById('tableStatus');
     const backNav = document.getElementById('trackingBackNav');
     const chartStatus = document.getElementById('chartStatus');
-    const chartEmpty = document.getElementById('chartEmpty');
     const chartCanvas = document.getElementById('trackingChart');
     let chartInstance;
     let currentRows = [];
@@ -170,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderChart = (rows) => {
         if (!rows.length) {
-             chartEmpty.hidden = false;
              if (chartInstance) {
                  chartInstance.destroy();
                  chartInstance = null;
@@ -181,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { labels, datasets } = buildChartData(rows);
         if (!labels.length) {
-            chartEmpty.hidden = false;
             setChartState('badge-idle', 'No data for chart');
             if (chartInstance) {
                 chartInstance.destroy();
@@ -199,8 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 dataset.hidden = true;
             }
         });
-
-        chartEmpty.hidden = true;
 
         const defaultLegendClick = Chart?.defaults?.plugins?.legend?.onClick;
         const config = {
@@ -307,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tableBody.innerHTML = '<tr><td colspan="5" class="muted">Failed to load stats.</td></tr>';
             setStatus('badge-error', 'Load failed');
             setChartState('badge-error', 'Load failed');
-            chartEmpty.hidden = false;
         }
     });
 

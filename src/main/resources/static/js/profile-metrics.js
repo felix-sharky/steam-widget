@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('tableBody');
     const tableStatus = document.getElementById('tableStatus');
     const chartStatus = document.getElementById('chartStatus');
-    const chartEmpty = document.getElementById('chartEmpty');
     const chartCanvas = document.getElementById('profileMetricsChart');
     let chartInstance;
 
@@ -64,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderChart = (rows) => {
         if (!rows.length) {
-            chartEmpty.hidden = false;
             if (chartInstance) {
                 chartInstance.destroy();
                 chartInstance = null;
@@ -72,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setChartStatus('badge-idle', 'No data loaded');
             return;
         }
-        chartEmpty.hidden = true;
         const sorted = [...rows].sort((a, b) => {
             const ay = (a.year ?? 0);
             const by = (b.year ?? 0);
@@ -196,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 chartInstance.destroy();
                 chartInstance = null;
             }
-            chartEmpty.hidden = false;
         }
     });
 
