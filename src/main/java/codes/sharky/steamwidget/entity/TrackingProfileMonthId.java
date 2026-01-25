@@ -1,5 +1,7 @@
 package codes.sharky.steamwidget.entity;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
@@ -7,7 +9,6 @@ import lombok.Setter;
 import org.hibernate.Hibernate;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -28,18 +29,13 @@ public class TrackingProfileMonthId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        TrackingProfileMonthId entity = (TrackingProfileMonthId) o;
-        return Objects.equals(this.steam64id, entity.steam64id) &&
-                Objects.equals(this.game, entity.game) &&
-                Objects.equals(this.month, entity.month) &&
-                Objects.equals(this.year, entity.year);
+        if (o == null || getClass() != o.getClass()) return false;
+        TrackingProfileMonthId that = (TrackingProfileMonthId) o;
+        return Objects.equal(steam64id, that.steam64id) && Objects.equal(game, that.game) && Objects.equal(year, that.year) && Objects.equal(month, that.month);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(steam64id, game, month, year);
+        return Objects.hashCode(steam64id, game, year, month);
     }
-
 }
