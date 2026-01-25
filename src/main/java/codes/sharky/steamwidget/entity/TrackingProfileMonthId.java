@@ -4,7 +4,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
@@ -13,6 +15,8 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Embeddable
+@AllArgsConstructor
+@NoArgsConstructor
 public class TrackingProfileMonthId implements Serializable {
     private static final long serialVersionUID = 3350841574983040324L;
     @Column(name = "steam64id")
