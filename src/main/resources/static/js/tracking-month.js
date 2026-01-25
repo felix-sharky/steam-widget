@@ -12,6 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const backNav = document.getElementById('trackingBackNav');
     const chartStatus = document.getElementById('chartStatus');
     const chartCanvas = document.getElementById('trackingChart');
+    const viewModeInputs = document.querySelectorAll('input[name="viewMode"]');
+    const trendTitle = document.getElementById('trendTitle');
+    const trendDescription = document.getElementById('trendDescription');
+    const tableTitle = document.getElementById('tableTitle');
+    const tableDescription = document.getElementById('tableDescription');
+
+    const getViewMode = () => {
+        const checked = document.querySelector('input[name="viewMode"]:checked');
+        return checked?.value === 'date' ? 'date' : 'month';
+    };
+    let currentMode = getViewMode();
     let chartInstance;
     let currentRows = [];
     const selectedGames = new Set();
@@ -25,6 +36,53 @@ document.addEventListener('DOMContentLoaded', () => {
         chartStatus.className = `badge ${badge}`;
         chartStatus.textContent = text;
     };
+
+    const normalizeDateLabel = (value) => {
+        if (value === undefined || value === null) {
+            return '';
+        }
+        if (Array.isArray(value) && value.length >= 3) {
+            const [year, month, day] = value;
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        return String(value);
+    };
+
+    const normalizeRows = (rows, mode) => rows.map((row) => {
+        const hours = Number(row.playtimeHours) || 0;
+        const minutes = Number(row.playtimeMinutes) || 0;
+        const game = row.gamename ?? row.name ?? 'Unknown';
+
+        if (mode === 'date') {
+            const rawDate = normalizeDateLabel((row.id || {}).date);
+            const [year, month, day] = rawDate ? rawDate.split('-') : [];
+            return {
+                label: rawDate || '',
+                year: Number(year) || 0,
+                month: Number(month) || 0,
+                day: Number(day) || 0,
+                game,
+                hours,
+                minutes,
+                totalHours: hours + minutes / 60
+            };
+        }
+
+        const id = row.id || {};
+        const year = Number(id.year) || 0;
+        const month = Number(id.month) || 0;
+        const label = year && month ? `${year}-${String(month).padStart(2, '0')}` : '';
+        return {
+            label,
+            year,
+            month,
+            day: 0,
+            game,
+            hours,
+            minutes,
+            totalHours: hours + minutes / 60
+        };
+    });
 
     const describeVisibleGames = (visibleGames) => {
         if (!visibleGames.length) {
@@ -71,38 +129,32 @@ document.addEventListener('DOMContentLoaded', () => {
         backNav.href = url.toString();
     };
 
-    const renderRows = (rows) => {
+    const renderRows = (rows, mode = currentMode) => {
         if (!rows.length) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="muted">No tracking data found for this profile.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">No tracking data found for this profile.</td></tr>';
             return;
         }
 
         tableBody.innerHTML = rows.map((row, index) => {
-            const id = row.id || {};
-            const isActive = selectedGames.has(row.gamename || row.name);
-            return `<tr class="table-row-selectable ${isActive ? 'table-row-active' : ''}" data-index="${index}" data-game="${row.gamename ?? row.name ?? ''}">
-                <td>${id.year ?? '—'}</td>
-                <td>${id.month ?? '—'}</td>
-                <td>${row.gamename ?? row.name ?? 'Unknown'}</td>
-                <td>${row.playtimeHours ?? 0}</td>
-                <td>${row.playtimeMinutes ?? 0}</td>
+            const isActive = selectedGames.has(row.game);
+            const periodLabel = row.label || (mode === 'date' ? 'Unknown date' : 'Unknown period');
+            return `<tr class="table-row-selectable ${isActive ? 'table-row-active' : ''}" data-index="${index}" data-game="${row.game ?? ''}">
+                <td>${periodLabel}</td>
+                <td>${row.game ?? 'Unknown'}</td>
+                <td>${row.hours ?? 0}</td>
+                <td>${row.minutes ?? 0}</td>
             </tr>`;
         }).join('');
     };
 
     const sortRowsByDate = (rows) => {
-        const safeNumber = (value) => Number(value) || 0;
-        return [...rows].sort((a, b) => {
-            const yearDelta = safeNumber((b.id || {}).year) - safeNumber((a.id || {}).year);
-            if (yearDelta !== 0) {
-                return yearDelta;
-            }
-            return safeNumber((b.id || {}).month) - safeNumber((a.id || {}).month);
-        });
+        const safeLabel = (label) => label || '';
+        return [...rows].sort((a, b) => safeLabel(b.label).localeCompare(safeLabel(a.label)));
     };
 
-    const fetchStats = async (steamId) => {
-        const response = await fetch(`/api/tracking/profile-month?steamid=${encodeURIComponent(steamId)}`);
+    const fetchStats = async (steamId, mode) => {
+        const endpoint = mode === 'date' ? '/api/tracking/profile-date' : '/api/tracking/profile-month';
+        const response = await fetch(`${endpoint}?steamid=${encodeURIComponent(steamId)}`);
         if (!response.ok) {
             throw new Error(`Request failed: ${response.status}`);
         }
@@ -111,25 +163,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const buildChartData = (rows) => {
         const buckets = rows.reduce((acc, row) => {
-            const id = row.id || {};
-            const year = Number(id.year) || 0;
-            const month = Number(id.month) || 0;
-            const game = row.gamename || row.name || 'Unknown';
-            if (!year || !month) {
+            const label = row.label;
+            if (!label) {
                 return acc;
             }
-            const label = `${year}-${String(month).padStart(2, '0')}`;
             if (!acc[label]) {
                 acc[label] = { total: 0 };
             }
-            if (!acc[label][game]) {
-                acc[label][game] = 0;
+            const gameLabel = String(row.game ?? '').trim();
+            if (gameLabel) {
+                if (!acc[label][gameLabel]) {
+                    acc[label][gameLabel] = 0;
+                }
+                acc[label][gameLabel] += row.totalHours;
             }
-            const hours = Number(row.playtimeHours) || 0;
-            const minutes = Number(row.playtimeMinutes) || 0;
-            const totalHours = hours + minutes / 60;
-            acc[label][game] += totalHours;
-            acc[label].total += totalHours;
+            acc[label].total += row.totalHours;
             return acc;
         }, {});
 
@@ -141,16 +189,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 .forEach((game) => games.add(game));
         });
 
-        const datasets = Array.from(games).map((game, index) => ({
-            label: game,
-            data: labels.map((label) => buckets[label][game] ?? 0),
-            borderColor: `hsl(${(index * 57) % 360} 80% 60%)`,
-            backgroundColor: `hsl(${(index * 57) % 360} 80% 60% / 0.2)`,
-            tension: 0.3,
-            fill: false,
-            pointRadius: 2,
-            meta: { isTotal: false }
-        }));
+        const datasets = Array.from(games)
+            .map((game, index) => {
+                const data = labels.map((label) => buckets[label][game] ?? 0);
+                return {
+                    label: game,
+                    data,
+                    borderColor: `hsl(${(index * 57) % 360} 80% 60%)`,
+                    backgroundColor: `hsl(${(index * 57) % 360} 80% 60% / 0.2)`,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 2,
+                    meta: { isTotal: false }
+                };
+            })
+            .filter((dataset) => dataset.label && dataset.data.some((value) => Number(value) > 0));
 
         datasets.push({
             label: 'All games total',
@@ -246,36 +299,70 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             selectedGames.add(game);
         }
-        renderRows(currentRows);
+        renderRows(currentRows, currentMode);
         renderChart(currentRows);
     };
 
     tableBody.addEventListener('click', toggleRowSelection);
 
+    const updateViewCopy = (mode) => {
+        const isDaily = mode === 'date';
+        const viewLabel = isDaily ? 'Daily' : 'Monthly';
+        if (trendTitle) trendTitle.textContent = `${viewLabel} trend`;
+        if (trendDescription) trendDescription.textContent = isDaily ? 'Aggregated playtime hours per day.' : 'Aggregated playtime hours per month.';
+        if (tableTitle) tableTitle.textContent = isDaily ? 'Playtime by day' : 'Playtime by month';
+        if (tableDescription) {
+            const endpoint = isDaily ? '/api/tracking/profile-date' : '/api/tracking/profile-month';
+            tableDescription.innerHTML = `Data is fetched from <code>${endpoint}</code>.`;
+        }
+    };
+
+    updateViewCopy(currentMode);
+
+    const handleViewModeChange = () => {
+        currentMode = getViewMode();
+        updateViewCopy(currentMode);
+        selectedGames.clear();
+        if (steamIdInput.value.trim()) {
+            form.dispatchEvent(new Event('submit'));
+        } else {
+            currentRows = [];
+            renderRows(currentRows, currentMode);
+            renderChart(currentRows);
+            setStatus('badge-idle', 'No data loaded');
+            setChartState('badge-idle', 'No data loaded');
+        }
+    };
+
+    viewModeInputs.forEach((input) => input.addEventListener('change', handleViewModeChange));
+
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const rawSteamId = steamIdInput.value.trim();
+        const viewMode = getViewMode();
+        currentMode = viewMode;
+        updateViewCopy(viewMode);
         if (!rawSteamId) {
             setStatus('badge-error', 'Steam ID required');
             return;
         }
 
         setStatus('badge-loading', 'Resolving…');
-        tableBody.innerHTML = '<tr><td colspan="5" class="muted">Resolving input…</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" class="muted">Resolving input…</td></tr>';
 
         let steamId;
         try {
             steamId = await resolveSteamIdInput(rawSteamId);
         } catch (error) {
             console.error(error);
-            tableBody.innerHTML = '<tr><td colspan="5" class="muted">Failed to resolve identifier.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">Failed to resolve identifier.</td></tr>';
             setStatus('badge-error', 'Resolve failed');
             setChartState('badge-error', 'Resolve failed');
             return;
         }
 
         if (!steamId) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="muted">Input did not resolve to a Steam64 ID.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">Input did not resolve to a Steam64 ID.</td></tr>';
             setStatus('badge-error', 'Unknown identifier');
             setChartState('badge-error', 'Unknown identifier');
             return;
@@ -288,18 +375,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setStatus('badge-loading', 'Loading…');
         setChartState('badge-loading', 'Loading…');
-        tableBody.innerHTML = '<tr><td colspan="5" class="muted">Loading data…</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" class="muted">Loading data…</td></tr>';
         try {
-            const rows = await fetchStats(steamId);
-            const sorted = sortRowsByDate(rows);
+            const rows = await fetchStats(steamId, viewMode);
+            const normalized = normalizeRows(rows, viewMode);
+            const sorted = sortRowsByDate(normalized);
             currentRows = sorted;
             selectedGames.clear();
-            renderRows(sorted);
+            renderRows(sorted, viewMode);
             renderChart(sorted);
-            setStatus('badge-success', `Loaded ${sorted.length} rows`);
+            setStatus('badge-success', `Loaded ${sorted.length} rows (${viewMode})`);
         } catch (error) {
             console.error(error);
-            tableBody.innerHTML = '<tr><td colspan="5" class="muted">Failed to load stats.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">Failed to load stats.</td></tr>';
             setStatus('badge-error', 'Load failed');
             setChartState('badge-error', 'Load failed');
         }
