@@ -14,6 +14,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Service providing tracking data by month and by date, filling gaps with zeroed placeholders
+ * so consumers receive continuous time ranges for a profile.
+ */
 @Service
 public class TrackingProfileService {
 
@@ -21,11 +25,24 @@ public class TrackingProfileService {
 
     private final TrackingProfileDateRepository dateRepository;
 
+    /**
+     * Creates the tracking profile service with repositories for monthly and daily tracking data.
+     *
+     * @param monthRepository repository for month-level tracking aggregates
+     * @param dateRepository  repository for day-level tracking entries
+     */
     public TrackingProfileService(TrackingProfileMonthRepository monthRepository, TrackingProfileDateRepository dateRepository) {
         this.monthRepository = monthRepository;
         this.dateRepository = dateRepository;
     }
 
+    /**
+     * Retrieves month-level tracking data for a profile and backfills missing months with zeroed entries
+     * between the earliest and latest tracked months.
+     *
+     * @param steamId Steam ID whose monthly tracking data to load
+     * @return list of tracking months with gaps filled by placeholder entries
+     */
     public List<TrackingProfileMonth> getTrackingProfileMonth(String steamId) {
         List<TrackingProfileMonth> months = monthRepository.findByIdSteam64id(steamId);
         if (months.isEmpty()) {
@@ -54,6 +71,13 @@ public class TrackingProfileService {
         return months;
     }
 
+    /**
+     * Retrieves day-level tracking data for a profile and backfills missing days with zeroed entries
+     * between the earliest and latest tracked days.
+     *
+     * @param steamId Steam ID whose daily tracking data to load
+     * @return list of tracking days with gaps filled by placeholder entries
+     */
     public List<TrackingProfileDate> getTrackingProfileDate(String steamId) {
         List<TrackingProfileDate> dates = dateRepository.findByIdSteam64id(steamId);
         if (dates.isEmpty()) {
@@ -83,4 +107,3 @@ public class TrackingProfileService {
         return dates;
     }
 }
-

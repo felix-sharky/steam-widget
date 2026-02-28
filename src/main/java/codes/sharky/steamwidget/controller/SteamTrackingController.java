@@ -13,6 +13,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Map;
 
+/**
+ * Controller that drives Steam OpenID login flows for tracking status, enabling, and disabling.
+ * Redirects users to Steam, processes callbacks, and persists the Steam ID in a cookie for client use.
+ */
 @Controller
 public class SteamTrackingController {
 
@@ -20,11 +24,24 @@ public class SteamTrackingController {
 
     private final SteamTrackerService steamTrackerService;
 
+    /**
+     * Creates the tracking controller with OpenID helper and tracking service dependencies.
+     *
+     * @param steamOpenID         component handling Steam OpenID login and verification
+     * @param steamTrackerService service used to enable or disable gameplay tracking
+     */
     public SteamTrackingController(SteamOpenID steamOpenID, SteamTrackerService steamTrackerService) {
         this.steamOpenID = steamOpenID;
         this.steamTrackerService = steamTrackerService;
     }
 
+    /**
+     * Initiates a login flow to view tracking status by redirecting to Steam OpenID.
+     * On return, the callback will redirect to the tracking page with the Steam ID.
+     *
+     * @param request             incoming request used to construct the base URL
+     * @param httpServletResponse response used to issue the redirect
+     */
     @GetMapping("/steam/tracking/status")
     public void trackingStatusRedirect(HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -36,6 +53,13 @@ public class SteamTrackingController {
         httpServletResponse.setStatus(302);
     }
 
+    /**
+     * Handles the tracking status callback: verifies the OpenID response, sets the Steam ID cookie, and redirects.
+     *
+     * @param allParams           all callback parameters returned by Steam
+     * @param request             incoming request used to construct URLs and verify the response
+     * @param httpServletResponse response used to set cookies and issue the redirect
+     */
     @GetMapping("/steam/tracking/status/callback")
     public void trackingStatusCallback(@RequestParam Map<String, String> allParams, HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -57,6 +81,12 @@ public class SteamTrackingController {
         httpServletResponse.setStatus(302);
     }
 
+    /**
+     * Initiates a login flow to enable tracking by redirecting to Steam OpenID.
+     *
+     * @param request             incoming request used to construct the base URL
+     * @param httpServletResponse response used to issue the redirect
+     */
     @GetMapping("/steam/tracking/enable")
     public void trackingEnableRedirect(HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -68,6 +98,13 @@ public class SteamTrackingController {
         httpServletResponse.setStatus(302);
     }
 
+    /**
+     * Handles the enable tracking callback: verifies OpenID, enables tracking, sets cookie, and redirects.
+     *
+     * @param allParams           all callback parameters returned by Steam
+     * @param request             incoming request used to construct URLs and verify the response
+     * @param httpServletResponse response used to set cookies and issue the redirect
+     */
     @GetMapping("/steam/tracking/enable/callback")
     public void trackingEnableCallback(@RequestParam Map<String, String> allParams, HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -90,6 +127,12 @@ public class SteamTrackingController {
         httpServletResponse.setStatus(302);
     }
 
+    /**
+     * Initiates a login flow to disable tracking by redirecting to Steam OpenID.
+     *
+     * @param request             incoming request used to construct the base URL
+     * @param httpServletResponse response used to issue the redirect
+     */
     @GetMapping("/steam/tracking/disable")
     public void trackingDisableRedirect(HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -101,6 +144,13 @@ public class SteamTrackingController {
         httpServletResponse.setStatus(302);
     }
 
+    /**
+     * Handles the disable tracking callback: verifies OpenID, disables tracking, sets cookie, and redirects.
+     *
+     * @param allParams           all callback parameters returned by Steam
+     * @param request             incoming request used to construct URLs and verify the response
+     * @param httpServletResponse response used to set cookies and issue the redirect
+     */
     @GetMapping("/steam/tracking/disable/callback")
     public void trackingDisableCallback(@RequestParam Map<String, String> allParams, HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -123,6 +173,13 @@ public class SteamTrackingController {
         httpServletResponse.setStatus(302);
     }
 
+    /**
+     * Adds or updates the Steam ID cookie shared across the application.
+     *
+     * @param response HTTP response used to write the cookie
+     * @param request  current request used to inherit security attributes
+     * @param steamId64 Steam64 ID value to persist
+     */
     private void addSteamIdCookie(HttpServletResponse response, HttpServletRequest request, String steamId64) {
         Cookie steamIdCookie = new Cookie("steamId", steamId64);
         steamIdCookie.setPath("/");

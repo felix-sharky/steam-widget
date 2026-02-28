@@ -11,6 +11,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * Async executor configuration for tracker workloads with an overflow queue fallback.
+ */
 @Configuration
 public class AsyncConfig {
 
@@ -19,11 +22,23 @@ public class AsyncConfig {
     // Overflow queue capacity for short bursts. Tune as needed.
     private static final int OVERFLOW_QUEUE_CAPACITY = 5000;
 
+    /**
+     * Overflow queue used when the tracker executor rejects tasks.
+     *
+     * @return bounded blocking queue to hold overflowed tracker tasks
+     */
     @Bean(name = "trackerOverflowQueue")
     public BlockingQueue<Runnable> trackerOverflowQueue() {
         return new ArrayBlockingQueue<>(OVERFLOW_QUEUE_CAPACITY);
     }
 
+    /**
+     * Thread pool executor dedicated to tracking tasks with a custom rejection handler
+     * that enqueues overflow work into {@code trackerOverflowQueue}.
+     *
+     * @param trackerOverflowQueue queue to buffer tasks when the executor is saturated
+     * @return configured task executor for tracking workloads
+     */
     @Bean(name = "trackerExecutor")
     public ThreadPoolTaskExecutor trackerExecutor(BlockingQueue<Runnable> trackerOverflowQueue) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

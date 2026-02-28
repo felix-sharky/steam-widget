@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.BlockingQueue;
 
+/**
+ * Handles overflow tasks rejected by the tracker executor by queueing and draining them later.
+ * Periodically submits queued tasks back to the executor in bounded batches.
+ */
 @Service
 @Slf4j
 public class TrackerOverflowService {
@@ -15,6 +19,13 @@ public class TrackerOverflowService {
     private final BlockingQueue<Runnable> overflowQueue;
     private final ThreadPoolTaskExecutor trackerExecutor;
 
+    /**
+     * Creates the overflow handler with the shared overflow queue and tracker executor.
+     *
+     * @param overflowQueue    queue holding tasks that exceeded executor capacity
+     * @param trackerExecutor  executor used to re-submit overflow tasks
+     * @param drainBatchSize   maximum tasks to drain and resubmit per run
+     */
     public TrackerOverflowService(BlockingQueue<Runnable> overflowQueue, ThreadPoolTaskExecutor trackerExecutor,
                                   @Value("${tracker.overflow.drainBatchSize:100}") int drainBatchSize) {
         this.overflowQueue = overflowQueue;
@@ -24,6 +35,10 @@ public class TrackerOverflowService {
 
     private final int drainBatchSize;
 
+    /**
+     * Periodically drains the overflow queue and resubmits tasks to the tracker executor in batches.
+     * Respects the configured batch size to avoid overwhelming the executor after backpressure.
+     */
     @Scheduled(fixedDelayString = "${tracker.overflow.drainIntervalMs:5000}")
     public void drainOverflowQueue() {
         if (overflowQueue.isEmpty()) {
@@ -50,4 +65,3 @@ public class TrackerOverflowService {
         }
     }
 }
-
