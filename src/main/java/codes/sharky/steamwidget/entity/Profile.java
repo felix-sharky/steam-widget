@@ -1,9 +1,6 @@
 package codes.sharky.steamwidget.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,9 +31,26 @@ public class Profile implements Serializable {
     @Column(name = "tracking", nullable = false)
     private Boolean tracking = false;
 
+    @ColumnDefault("false")
+    @Column(name = "caching", nullable = false)
+    private Boolean caching = false;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "steam64id")
+    private ProfileCache profileCache;
+
     public Profile(String steam64id, String name, Long hits) {
         this.steam64id = steam64id;
         this.name = name;
         this.hits = hits;
     }
+
+    public Profile(String steam64id, String name, Long hits, Boolean tracking, Boolean caching) {
+        this.steam64id = steam64id;
+        this.name = name;
+        this.hits = hits;
+        this.tracking = tracking;
+        this.caching = caching;
+    }
+
 }

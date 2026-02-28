@@ -86,17 +86,56 @@ public class ProfileService {
      * @param name     The name of the user associated with the Steam ID.
      * @param tracking The tracking status indicating whether tracking is enabled for this profile.
      */
-    public void upsertProfile(String steamId, String name, boolean tracking) {
+    public void upsertProfileTracking(String steamId, String name, boolean tracking) {
         if (!repository.existsById(steamId)) {
-            Profile profile = new Profile(steamId, name, 0L, tracking);
+            Profile profile = new Profile(steamId, name, 0L, tracking, false);
             repository.save(profile);
         } else {
             repository.updateNameAndTracking(steamId, name, tracking);
         }
     }
 
+    /**
+     * Inserts a new profile or updates an existing profile with the given Steam ID, name, and caching status.
+     * If the profile does not exist, it creates a new profile with the provided details and initializes the hit count to 0.
+     * If the profile already exists, it updates the name and caching status of the existing profile.
+     *
+     * @param steamId  The Steam ID of the profile to be inserted or updated.
+     * @param name     The name of the user associated with the Steam ID.
+     * @param caching  The caching status indicating whether caching is enabled for this profile.
+     */
+    public void upsertProfileCaching(String steamId, String name, boolean caching) {
+        if (!repository.existsById(steamId)) {
+            Profile profile = new Profile(steamId, name, 0L, false, caching);
+            repository.save(profile);
+        } else {
+            repository.updateNameAndCaching(steamId, name, caching);
+        }
+    }
+
+    /**
+     * Checks if profile tracking is active for a given Steam ID by verifying if a profile with the specified Steam ID exists and has tracking enabled.
+     * If the profile exists and tracking is enabled, it returns true; otherwise, it returns false.
+     * This method is used to determine whether tracking is active for a specific profile based on the Steam ID.
+     *
+     * @param steamId The Steam ID of the profile for which to check if tracking is active.
+     * @return true if tracking is active for the profile with the specified Steam ID, false otherwise.
+     */
     public boolean profileTrackingActive(String steamId) {
         return repository.existsBySteam64idAndTrackingIsTrue(steamId);
+    }
+
+
+    public boolean profileCachingActive(String steamId) {
+        return repository.existsBySteam64idAndCachingIsTrue(steamId);
+    }
+
+    public List<Profile> getProfilesWithCachingBefore(LocalDateTime lastrequestBefore) {
+        return repository.findAllByCachingIsTrueAndProfileCache_LastrequestBefore(lastrequestBefore);
+    }
+
+    public List<Profile> getProfilesWithCaching() {
+        return repository.findAllByCachingIsTrue();
     }
 
     public void resetPlayerTrackers(String steamId) {
