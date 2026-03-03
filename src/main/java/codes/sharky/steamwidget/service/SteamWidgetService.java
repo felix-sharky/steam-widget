@@ -1,5 +1,6 @@
 package codes.sharky.steamwidget.service;
 
+import codes.sharky.steamwidget.utils.IPUtils;
 import com.google.common.base.Strings;
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
 import com.lukaspradel.steamapi.data.json.ownedgames.GetOwnedGames;
@@ -54,26 +55,6 @@ public class SteamWidgetService {
     }
 
     /**
-     * Retrieves the IP address of the client from the HTTP request.
-     * <p>
-     * This method checks the "X-Forwarded-For" header to determine if the request
-     * was forwarded by a proxy. If the header is present and not empty, it returns
-     * the first IP address in the list. Otherwise, it returns the remote address
-     * of the request.
-     * </p>
-     *
-     * @param request The HttpServletRequest object containing the client's request.
-     * @return The IP address of the client as a String.
-     */
-    public String getIPAddress(@NotNull HttpServletRequest request) {
-        if (Strings.isNullOrEmpty(request.getHeader("X-Forwarded-For")))
-            return request.getRemoteAddr();
-        else {
-            return request.getHeader("X-Forwarded-For").split(",")[0].trim();
-        }
-    }
-
-    /**
      * Retrieves a {@link Player} object by their Steam ID. If the Steam ID is not in the correct format,
      * it attempts to resolve it. This method also logs the access attempt by adding a hit to the profile
      * associated with the Steam ID.
@@ -110,7 +91,7 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, boolean showPlayingRightNow, String purpose, @NotNull HttpServletRequest request) throws SteamApiException {
-        String ip = getIPAddress(request);
+        String ip = IPUtils.getIPAddress(request);
         return generateWidgetImage(steamId, showGames, recentGamesCount, showPlayingRightNow, purpose, ip);
     }
 
