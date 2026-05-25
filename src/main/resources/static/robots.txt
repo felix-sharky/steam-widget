@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://steam-widget.com/sitemap.xml
+
