@@ -1,0 +1,194 @@
+/* Shared UI helpers for Tailwind-based pages (tracking, stats, metrics). */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass-card {
+    background: rgba(23, 31, 51, 0.6);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.glow-hover:hover {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #494454;
+    border-radius: 10px;
+}
+
+/* Badge classes set dynamically by JS. */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-idle {
+    background: rgba(73, 68, 84, 0.4);
+    color: #cbc3d7;
+    border: 1px solid rgba(73, 68, 84, 0.6);
+}
+
+.badge-on,
+.badge-success {
+    background: rgba(76, 215, 246, 0.12);
+    color: #4cd7f6;
+    border: 1px solid rgba(76, 215, 246, 0.3);
+}
+
+.badge-off,
+.badge-error {
+    background: rgba(255, 81, 106, 0.12);
+    color: #ff516a;
+    border: 1px solid rgba(255, 81, 106, 0.3);
+}
+
+.badge-loading {
+    background: rgba(208, 188, 255, 0.1);
+    color: #d0bcff;
+    border: 1px solid rgba(208, 188, 255, 0.25);
+}
+
+/* Profile meta block on tracking page. */
+.profile-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 16px;
+}
+
+.profile-meta dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #958ea0;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 4px;
+}
+
+.profile-meta dd {
+    margin: 0;
+    font-size: 1rem;
+    color: #dae2fd;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Table styles for stats/metrics pages. */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table th {
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #958ea0;
+    border-bottom: 1px solid rgba(73, 68, 84, 0.4);
+}
+
+.data-table td {
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid rgba(73, 68, 84, 0.2);
+    color: #dae2fd;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.table-row-selectable {
+    cursor: pointer;
+}
+
+.table-row-active {
+    background: rgba(76, 215, 246, 0.08) !important;
+}
+
+.muted {
+    color: #958ea0;
+}
+
+code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    color: #4cd7f6;
+    background: rgba(76, 215, 246, 0.1);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+/* View mode toggle in playing stats page. */
+.pill-toggle-group {
+    display: flex;
+    width: 100%;
+    background: rgba(6, 14, 32, 0.8);
+    border: 1px solid rgba(73, 68, 84, 0.4);
+    border-radius: 0.5rem;
+    padding: 4px;
+    gap: 4px;
+}
+
+.pill-toggle {
+    cursor: pointer;
+    flex: 1;
+}
+
+.pill-toggle input {
+    display: none;
+}
+
+.pill-toggle span {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.375rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #958ea0;
+    transition: all 0.2s;
+}
+
+.pill-toggle input:checked + span {
+    background: #8b5cf6;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 320px;
+}
+
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+

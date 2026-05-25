@@ -76,6 +76,9 @@ async function generateWidget() {
     let steamId = steamIdInput.value?.trim();
     const widgetContainer = document.getElementById('widgetContainer');
     widgetContainer.innerHTML = '';
+    // Switch from empty-state flex layout to content layout
+    widgetContainer.classList.remove('flex', 'flex-col', 'items-center', 'justify-center', 'space-y-4');
+    widgetContainer.classList.add('block', 'text-left');
 
     if (!steamId) {
         // Display error message if steamId is empty

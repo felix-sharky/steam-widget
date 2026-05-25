@@ -3,10 +3,12 @@ package codes.sharky.steamwidget.controller;
 import codes.sharky.steamwidget.entity.TrackingProfileMonth;
 import codes.sharky.steamwidget.service.TrackingProfileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -33,8 +35,12 @@ public class TrackingProfileController {
      * @return list of monthly tracking entries
      */
     @GetMapping("/api/tracking/profile-month")
-    public ResponseEntity<List<TrackingProfileMonth>> profileMonth(@RequestParam("steamid") String steamId) {
-        return ResponseEntity.ok(trackingProfileService.getTrackingProfileMonth(steamId));
+    public ResponseEntity<List<TrackingProfileMonth>> profileMonth(
+            @RequestParam("steamid") String steamId,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return ResponseEntity.ok(trackingProfileService.getTrackingProfileMonth(steamId, startDate, endDate));
     }
 
     /**
@@ -44,7 +50,11 @@ public class TrackingProfileController {
      * @return list of daily tracking entries
      */
     @GetMapping("/api/tracking/profile-date")
-    public ResponseEntity<?> profileDate(@RequestParam("steamid") String steamId) {
-        return ResponseEntity.ok(trackingProfileService.getTrackingProfileDate(steamId));
+    public ResponseEntity<?> profileDate(
+            @RequestParam("steamid") String steamId,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return ResponseEntity.ok(trackingProfileService.getTrackingProfileDate(steamId, startDate, endDate));
     }
 }

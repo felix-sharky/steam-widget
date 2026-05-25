@@ -1,81 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steam Widget Generator</title>
+    <title>steam-widget | Steam Widget Generator</title>
+    <meta name="description" content="Generate a customizable Steam widget from your Steam ID, preview it live, and embed your profile and gameplay stats anywhere.">
     <link rel="icon" type="image/svg" href="/favicon.svg"/>
-    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="/js/tailwind-theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/shared-modern-ui.css">
+    <style>
+        /* Toggle switch styling */
+        .toggle-track {
+            width: 44px; height: 24px;
+            background: #2d3449;
+            border-radius: 9999px;
+            position: relative;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .toggle-track.checked { background: #8b5cf6; }
+        .toggle-thumb {
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.2s;
+        }
+        .toggle-track.checked .toggle-thumb { transform: translateX(20px); }
+        /* Widget preview area */
+        .widget-preview-container { min-height: 200px; }
+        .widget-preview-container img { display: inline-block; max-width: 100%; }
+        /* Dynamic content classes used by generator.js */
+        #widgetContainer .label {
+            margin-top: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #cbc3d7;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        #widgetContainer .link-box,
+        #widgetContainer .code-box {
+            margin-top: 6px;
+            padding: 10px 14px;
+            background: rgba(6, 14, 32, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 8px;
+            color: #dae2fd;
+            word-wrap: break-word;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        #widgetContainer .code-box { white-space: pre-wrap; }
+        #widgetContainer p { color: #ffb4ab; font-size: 14px; }
+    </style>
     <script type="text/javascript" src="/js/steam-utils.js"></script>
     <script type="text/javascript" src="/js/generator.js"></script>
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
+    <script defer src="/js/layout-effects.js"></script>
 </head>
-<body>
-<nav class="top-nav" aria-label="Primary navigation">
-    <div class="top-nav-links">
-        <a class="nav-link" data-route="/" data-base="/" href="/">Generator</a>
-        <a class="nav-link" id="trackingNav" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
-        <a class="nav-link" id="trackingMonthNav" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Playing Stats</a>
-        <a class="nav-link" id="profileMetricsNav" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile metrics</a>
-    </div>
-</nav>
-<div class="page">
-    <header class="hero">
-        <div>
-            <h1>Steam Widget Generator</h1>
-            <p>Authenticate with Steam or paste a Steam ID to build a shareable widget preview.</p>
+<body class="bg-background text-on-background font-body-md custom-scrollbar selection:bg-primary-container selection:text-on-primary-container">
+
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 w-full bg-surface-container-low/80 backdrop-blur-md z-50 border-b border-outline-variant/30 shadow-sm">
+    <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
+        <div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary-fixed-dim">steam-widget</div>
+        <div class="hidden md:flex gap-6 items-center">
+            <a class="text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
+               data-route="/" data-base="/" href="/">Generator</a>
+            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+               id="trackingNav" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
+            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+               id="trackingMonthNav" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Playing Stats</a>
+            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+               id="profileMetricsNav" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
         </div>
-    </header>
+        <!-- Mobile menu button -->
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </nav>
+    <!-- Mobile nav -->
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
+        <a class="text-primary-container font-label-md text-label-md uppercase py-2" href="/">Generator</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/tracking.html">Play Tracking</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/tracking-month.html">Playing Stats</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
+    </div>
+</header>
 
-    <section class="card login">
-        <h2>Sign in with Steam</h2>
-        <p>Login with Steam to auto-fill your profile and start tracking activity.</p>
-        <a class="login-button" href="/steam/login" data-umami-event="link_steam_login">
-            <img src="/img/steam_login-button_openid.png" alt="Login with Steam">
-        </a>
+<main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-stack-lg">
+    <!-- Hero Section -->
+    <section class="text-center py-stack-lg space-y-stack-sm">
+        <h1 class="font-headline-xl text-headline-xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">
+            Steam Widget Generator
+        </h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+            Authenticate with Steam or paste a Steam ID to build a shareable widget preview. Personalize your gaming presence with high-performance telemetry cards.
+        </p>
     </section>
 
-    <form id="widgetForm" class="generator-form" onsubmit="generateWidget(); return false;" autocomplete="off">
-        <section class="card builder">
-            <div class="form">
-                <label for="steamId">Steam ID</label>
-                <div class="input-row">
-                    <input type="text" id="steamId" name="steamId" placeholder="Enter Steam ID or vanity URL">
-                    <button type="submit" data-umami-event="button_generate_click">Generate widget</button>
+    <!-- Main Bento Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Column 1: Auth and Config (Left) -->
+        <div class="lg:col-span-7 space-y-6">
+
+            <!-- Sign-In Card -->
+            <div class="glass-card p-stack-lg rounded-xl overflow-hidden relative group">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary-container/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                <div class="relative z-10 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary-container" style="font-variation-settings:'FILL' 1;">login</span>
+                        <h2 class="font-headline-md text-headline-md text-on-surface">Sign in with Steam</h2>
+                    </div>
+                    <p class="text-on-surface-variant font-body-md">Login with Steam to auto-fill your profile and start tracking activity across all your favorite titles.</p>
+                    <a class="inline-block transition-transform duration-200 active:scale-95" href="/steam/login" data-umami-event="link_steam_login">
+                        <img src="/img/steam_login-button_openid.png" alt="Login with Steam" class="h-10">
+                    </a>
                 </div>
             </div>
-        </section>
 
-        <section class="card options-card">
-            <h2>Widget options</h2>
-            <p class="muted">Fine-tune the info rendered on your widget.</p>
-            <div class="options-grid">
-                <div class="field-group checkbox-group">
-                    <label for="playingRightNow" class="field-label">Display "Now Playing" section</label>
-                    <input type="checkbox" id="playingRightNow" class="toggle-input" checked>
+            <!-- Manual ID Input -->
+            <form id="widgetForm" onsubmit="generateWidget(); return false;" autocomplete="off">
+                <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-300 space-y-stack-md">
+                    <label class="block font-label-md text-label-md text-primary-container tracking-widest uppercase" for="steamId">Steam ID</label>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="relative flex-grow">
+                            <input id="steamId" name="steamId"
+                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors placeholder:text-on-surface-variant/40"
+                                   placeholder="Enter Steam ID or vanity URL" type="text">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/50 pointer-events-none">search</span>
+                        </div>
+                        <button type="submit" data-umami-event="button_generate_click"
+                                class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap">
+                            Generate widget
+                        </button>
+                    </div>
                 </div>
-                <div class="field-group">
-                    <label for="gameList" class="field-label">Game list type</label>
-                    <select id="gameList">
-                        <option value="NONE">Don’t show</option>
-                        <option value="TOP_GAMES_TOTAL">Top games of all time</option>
-                        <option value="TOP_GAMES_RECENT">Top games last 2 weeks</option>
-                        <option value="RECENT_GAMES">Last played games</option>
-                    </select>
+
+                <!-- Widget Options -->
+                <div class="glass-card p-stack-lg rounded-xl space-y-stack-lg mt-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary-container">settings_suggest</span>
+                        <h2 class="font-headline-md text-headline-md text-on-surface">Widget options</h2>
+                    </div>
+                    <p class="text-on-surface-variant font-body-md">Fine-tune the info rendered on your widget to match your stream or profile aesthetics.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg pt-2">
+                        <!-- Now Playing Toggle -->
+                        <div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg border border-outline-variant/10">
+                            <div>
+                                <label class="block font-label-md text-label-md text-on-surface uppercase mb-1" for="playingRightNow">Display "Now Playing"</label>
+                                <span class="text-[11px] text-on-surface-variant/70 italic">Real-time activity status</span>
+                            </div>
+                            <div class="toggle-track checked" id="playingRightNowTrack" onclick="this.classList.toggle('checked'); document.getElementById('playingRightNow').checked = this.classList.contains('checked');">
+                                <div class="toggle-thumb"></div>
+                            </div>
+                            <input type="checkbox" id="playingRightNow" class="sr-only" checked>
+                        </div>
+                        <!-- Game List Type -->
+                        <div class="space-y-2">
+                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="gameList">Game List Type</label>
+                            <select id="gameList"
+                                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors cursor-pointer">
+                                <option value="NONE">Don't show</option>
+                                <option value="TOP_GAMES_TOTAL">Top games of all time</option>
+                                <option value="TOP_GAMES_RECENT">Top games last 2 weeks</option>
+                                <option value="RECENT_GAMES">Last played games</option>
+                            </select>
+                        </div>
+                        <!-- Max games -->
+                        <div class="space-y-2">
+                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="gameListSize">Max games displayed</label>
+                            <input id="gameListSize"
+                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors"
+                                   max="10" min="0" type="number" value="5">
+                        </div>
+                    </div>
                 </div>
-                <div class="field-group">
-                    <label for="gameListSize" class="field-label">Max games displayed</label>
-                    <input type="number" id="gameListSize" min="0" max="10" value="5">
+            </form>
+        </div>
+
+        <!-- Column 2: Preview (Right) -->
+        <div class="lg:col-span-5 flex flex-col">
+            <div class="glass-card p-stack-lg rounded-xl flex-grow flex flex-col lg:sticky lg:top-24">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="material-symbols-outlined text-primary-container">visibility</span>
+                    <h2 class="font-headline-md text-headline-md text-on-surface">Widget preview</h2>
+                </div>
+                <!-- Widget container used by generator.js -->
+                <div id="widgetContainer" class="widget-preview-container flex-grow flex flex-col items-center justify-center border-2 border-dashed border-primary-container/20 rounded-lg bg-surface-container-lowest/30 p-8 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center animate-pulse">
+                        <span class="material-symbols-outlined text-primary-container text-4xl">pending</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-body-md text-on-surface">No data available yet</p>
+                        <p class="text-on-surface-variant text-sm max-w-[200px] mx-auto">Generate a widget to see the preview, direct link, and embeddable HTML code.</p>
+                    </div>
+                </div>
+                <!-- Placeholder actions (shown by generator.js) -->
+                <div id="widgetActions" class="mt-6 pt-6 border-t border-outline-variant/20 space-y-4 opacity-30 grayscale pointer-events-none hidden">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">link</span>
+                        <div class="h-2 bg-primary-container/30 rounded flex-grow"></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="h-8 bg-surface-variant rounded w-1/2"></div>
+                        <div class="h-8 bg-surface-variant rounded w-1/2"></div>
+                    </div>
                 </div>
             </div>
-        </section>
-    </form>
+        </div>
+    </div>
+</main>
 
-    <section class="card preview">
-        <h2>Widget preview</h2>
-        <p class="muted">Generate a widget to see the preview, direct link, and embeddable HTML.</p>
-        <div class="widget" id="widgetContainer"></div>
-    </section>
-</div>
+<!-- Footer -->
+<footer class="bg-surface-dim border-t border-outline-variant/20 py-stack-lg mt-stack-lg">
+    <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
+        <div class="flex flex-col items-center md:items-start gap-2">
+            <div class="font-headline-lg text-headline-lg font-extrabold text-primary-fixed-dim">steam-widget</div>
+            <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6">
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking-month.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
+        </div>
+        <div class="flex items-center gap-4 text-on-surface-variant">
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary-container cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">code</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
 </body>
 </html>

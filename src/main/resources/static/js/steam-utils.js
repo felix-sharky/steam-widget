@@ -39,6 +39,81 @@
         });
     };
 
+    namespace.getSelectedViewMode = function getSelectedViewMode(options = {}) {
+        const {
+            inputName = 'viewMode',
+            dailyValue = 'date',
+            defaultMode = 'month'
+        } = options;
+        const checked = document.querySelector(`input[name="${inputName}"]:checked`);
+        return checked?.value === dailyValue ? dailyValue : defaultMode;
+    };
+
+    namespace.normalizeDateLabel = function normalizeDateLabel(value) {
+        if (value === undefined || value === null) {
+            return '';
+        }
+        if (Array.isArray(value) && value.length >= 3) {
+            const [year, month, day] = value;
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        return String(value);
+    };
+
+    namespace.toIsoDate = function toIsoDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    namespace.getDefaultDateRangeForMode = function getDefaultDateRangeForMode(mode, now = new Date()) {
+        const year = now.getFullYear();
+        if (mode === 'date') {
+            const monthStart = new Date(year, now.getMonth(), 1);
+            const monthEnd = new Date(year, now.getMonth() + 1, 0);
+            return {
+                startDate: namespace.toIsoDate(monthStart),
+                endDate: namespace.toIsoDate(monthEnd)
+            };
+        }
+        const yearStart = new Date(year, 0, 1);
+        const yearEnd = new Date(year, 11, 31);
+        return {
+            startDate: namespace.toIsoDate(yearStart),
+            endDate: namespace.toIsoDate(yearEnd)
+        };
+    };
+
+    namespace.getDateFilters = function getDateFilters(startInput, endInput) {
+        const startDate = startInput?.value?.trim() || '';
+        const endDate = endInput?.value?.trim() || '';
+        return { startDate, endDate };
+    };
+
+    namespace.syncDateBounds = function syncDateBounds(startInput, endInput) {
+        if (!startInput || !endInput) {
+            return;
+        }
+        startInput.max = endInput.value || '';
+        endInput.min = startInput.value || '';
+    };
+
+    namespace.persistDateFiltersInQuery = function persistDateFiltersInQuery(startDate, endDate) {
+        const next = new URL(window.location.href);
+        if (startDate) {
+            next.searchParams.set('startDate', startDate);
+        } else {
+            next.searchParams.delete('startDate');
+        }
+        if (endDate) {
+            next.searchParams.set('endDate', endDate);
+        } else {
+            next.searchParams.delete('endDate');
+        }
+        window.history.replaceState({}, '', next.toString());
+    };
+
     namespace.getCookie = function getCookie(name) {
         if (!name) {
             return null;

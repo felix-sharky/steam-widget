@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Service providing tracking data by month and by date, filling gaps with zeroed placeholders
@@ -44,6 +42,19 @@ public class TrackingProfileService {
      * @return list of tracking months with gaps filled by placeholder entries
      */
     public List<TrackingProfileMonth> getTrackingProfileMonth(String steamId) {
+        return getTrackingProfileMonth(steamId, null, null);
+    }
+
+    /**
+     * Retrieves month-level tracking data for a profile with optional date filtering.
+     * Date filters are interpreted at month granularity (inclusive).
+     *
+     * @param steamId   Steam ID whose monthly tracking data to load
+     * @param startDate optional start date (inclusive)
+     * @param endDate   optional end date (inclusive)
+     * @return list of tracking months with gaps filled by placeholder entries and filtered by range
+     */
+    public List<TrackingProfileMonth> getTrackingProfileMonth(String steamId, LocalDate startDate, LocalDate endDate) {
         List<TrackingProfileMonth> months = monthRepository.findByIdSteam64id(steamId);
         if (months.isEmpty()) {
             return months;
@@ -68,7 +79,17 @@ public class TrackingProfileService {
             }
         }
 
-        return months;
+        YearMonth startMonth = startDate != null ? YearMonth.from(startDate) : null;
+        YearMonth endMonth = endDate != null ? YearMonth.from(endDate) : null;
+        return months.stream()
+                .filter(month -> {
+                    YearMonth current = YearMonth.of(month.getId().getYear().intValue(), month.getId().getMonth().intValue());
+                    if (startMonth != null && current.isBefore(startMonth)) {
+                        return false;
+                    }
+                    return endMonth == null || !current.isAfter(endMonth);
+                })
+                .toList();
     }
 
     /**
@@ -79,6 +100,18 @@ public class TrackingProfileService {
      * @return list of tracking days with gaps filled by placeholder entries
      */
     public List<TrackingProfileDate> getTrackingProfileDate(String steamId) {
+        return getTrackingProfileDate(steamId, null, null);
+    }
+
+    /**
+     * Retrieves day-level tracking data for a profile with optional date filtering.
+     *
+     * @param steamId   Steam ID whose daily tracking data to load
+     * @param startDate optional start date (inclusive)
+     * @param endDate   optional end date (inclusive)
+     * @return list of tracking days with gaps filled by placeholder entries and filtered by range
+     */
+    public List<TrackingProfileDate> getTrackingProfileDate(String steamId, LocalDate startDate, LocalDate endDate) {
         List<TrackingProfileDate> dates = dateRepository.findByIdSteam64id(steamId);
         if (dates.isEmpty()) {
             return dates;
@@ -103,7 +136,14 @@ public class TrackingProfileService {
             }
 
         }
-
-        return dates;
+        return dates.stream()
+                .filter(date -> {
+                    LocalDate current = date.getId().getDate();
+                    if (startDate != null && current.isBefore(startDate)) {
+                        return false;
+                    }
+                    return endDate == null || !current.isAfter(endDate);
+                })
+                .toList();
     }
 }

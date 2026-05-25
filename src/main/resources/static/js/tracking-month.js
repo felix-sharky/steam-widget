@@ -4,9 +4,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
     const syncNavLinks = utils.syncNavLinks || (() => {});
     const bootstrapSteamId = utils.bootstrapSteamId || (() => null);
+    const getSelectedViewMode = utils.getSelectedViewMode
+        || (() => (document.querySelector('input[name="viewMode"]:checked')?.value === 'date' ? 'date' : 'month'));
+    const normalizeDateLabel = utils.normalizeDateLabel || ((value) => {
+        if (value === undefined || value === null) return '';
+        if (Array.isArray(value) && value.length >= 3) {
+            const [year, month, day] = value;
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        return String(value);
+    });
+    const getDateFiltersFromInputs = utils.getDateFilters
+        || ((startInput, endInput) => ({
+            startDate: startInput?.value?.trim() || '',
+            endDate: endInput?.value?.trim() || ''
+        }));
+    const toIsoDate = utils.toIsoDate || ((date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    });
+    const getDefaultRange = utils.getDefaultDateRangeForMode || ((mode, now = new Date()) => {
+        const year = now.getFullYear();
+        if (mode === 'date') {
+            const monthStart = new Date(year, now.getMonth(), 1);
+            const monthEnd = new Date(year, now.getMonth() + 1, 0);
+            return { startDate: toIsoDate(monthStart), endDate: toIsoDate(monthEnd) };
+        }
+        return {
+            startDate: toIsoDate(new Date(year, 0, 1)),
+            endDate: toIsoDate(new Date(year, 11, 31))
+        };
+    });
+    const syncDateBoundsForInputs = utils.syncDateBounds
+        || ((startInput, endInput) => {
+            if (!startInput || !endInput) return;
+            startInput.max = endInput.value || '';
+            endInput.min = startInput.value || '';
+        });
+    const persistDateFilters = utils.persistDateFiltersInQuery
+        || ((startDate, endDate) => {
+            const url = new URL(window.location.href);
+            if (startDate) url.searchParams.set('startDate', startDate);
+            else url.searchParams.delete('startDate');
+            if (endDate) url.searchParams.set('endDate', endDate);
+            else url.searchParams.delete('endDate');
+            window.history.replaceState({}, '', url.toString());
+        });
 
     const form = document.getElementById('trackingMonthForm');
     const steamIdInput = document.getElementById('steamId');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
     const tableBody = document.getElementById('tableBody');
     const tableStatus = document.getElementById('tableStatus');
     const backNav = document.getElementById('trackingBackNav');
@@ -19,8 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableDescription = document.getElementById('tableDescription');
 
     const getViewMode = () => {
-        const checked = document.querySelector('input[name="viewMode"]:checked');
-        return checked?.value === 'date' ? 'date' : 'month';
+        return getSelectedViewMode({ inputName: 'viewMode', dailyValue: 'date', defaultMode: 'month' });
     };
     let currentMode = getViewMode();
     let chartInstance;
@@ -35,17 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const setChartState = (badge, text) => {
         chartStatus.className = `badge ${badge}`;
         chartStatus.textContent = text;
-    };
-
-    const normalizeDateLabel = (value) => {
-        if (value === undefined || value === null) {
-            return '';
-        }
-        if (Array.isArray(value) && value.length >= 3) {
-            const [year, month, day] = value;
-            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        }
-        return String(value);
     };
 
     const normalizeRows = (rows, mode) => rows.map((row) => {
@@ -152,9 +190,47 @@ document.addEventListener('DOMContentLoaded', () => {
         return [...rows].sort((a, b) => safeLabel(b.label).localeCompare(safeLabel(a.label)));
     };
 
-    const fetchStats = async (steamId, mode) => {
+    const getDateFilters = () => {
+        return getDateFiltersFromInputs(startDateInput, endDateInput);
+    };
+
+    const getDefaultDateRangeForMode = (mode) => {
+        return getDefaultRange(mode);
+    };
+
+    const applyDefaultDateRangeForMode = (mode, options = {}) => {
+        const { force = false } = options;
+        if (!startDateInput || !endDateInput) {
+            return;
+        }
+        if (!force && startDateInput.value && endDateInput.value) {
+            return;
+        }
+        const defaults = getDefaultDateRangeForMode(mode);
+        startDateInput.value = defaults.startDate;
+        endDateInput.value = defaults.endDate;
+        syncDateBounds();
+    };
+
+    const syncDateBounds = () => {
+        syncDateBoundsForInputs(startDateInput, endDateInput);
+    };
+
+    const persistDateFiltersInQuery = () => {
+        const { startDate, endDate } = getDateFilters();
+        persistDateFilters(startDate, endDate);
+    };
+
+    const fetchStats = async (steamId, mode, startDate, endDate) => {
         const endpoint = mode === 'date' ? '/api/tracking/profile-date' : '/api/tracking/profile-month';
-        const response = await fetch(`${endpoint}?steamid=${encodeURIComponent(steamId)}`);
+        const params = new URLSearchParams({ steamid: steamId });
+        if (startDate) {
+            params.set('startDate', startDate);
+        }
+        if (endDate) {
+            params.set('endDate', endDate);
+        }
+        const response = await fetch(`${endpoint}?${params.toString()}`);
         if (!response.ok) {
             throw new Error(`Request failed: ${response.status}`);
         }
@@ -322,6 +398,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleViewModeChange = () => {
         currentMode = getViewMode();
         updateViewCopy(currentMode);
+        applyDefaultDateRangeForMode(currentMode, { force: true });
+        persistDateFiltersInQuery();
         selectedGames.clear();
         if (steamIdInput.value.trim()) {
             form.dispatchEvent(new Event('submit'));
@@ -340,10 +418,18 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const rawSteamId = steamIdInput.value.trim();
         const viewMode = getViewMode();
+        const { startDate, endDate } = getDateFilters();
         currentMode = viewMode;
         updateViewCopy(viewMode);
         if (!rawSteamId) {
             setStatus('badge-error', 'Steam ID required');
+            return;
+        }
+
+        if (startDate && endDate && startDate > endDate) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="muted">Start date must be before or equal to end date.</td></tr>';
+            setStatus('badge-error', 'Invalid date range');
+            setChartState('badge-error', 'Invalid date range');
             return;
         }
 
@@ -370,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         steamIdInput.value = steamId;
         persistSteamIdInQuery(steamId);
+        persistDateFiltersInQuery();
         syncNavLinks(steamId);
         appendSteamIdToBackLink();
 
@@ -377,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setChartState('badge-loading', 'Loading…');
         tableBody.innerHTML = '<tr><td colspan="4" class="muted">Loading data…</td></tr>';
         try {
-            const rows = await fetchStats(steamId, viewMode);
+            const rows = await fetchStats(steamId, viewMode, startDate, endDate);
             const normalized = normalizeRows(rows, viewMode);
             const sorted = sortRowsByDate(normalized);
             currentRows = sorted;
@@ -394,6 +481,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const bootstrapFromQuery = () => {
+        const query = new URLSearchParams(window.location.search);
+        const hasQueryDateRange = Boolean(query.get('startDate') || query.get('endDate'));
+        if (startDateInput) {
+            startDateInput.value = query.get('startDate') || '';
+        }
+        if (endDateInput) {
+            endDateInput.value = query.get('endDate') || '';
+        }
+        if (hasQueryDateRange) {
+            syncDateBounds();
+        } else {
+            applyDefaultDateRangeForMode(currentMode, { force: true });
+            persistDateFiltersInQuery();
+        }
+
         const detected = bootstrapSteamId({
             input: steamIdInput,
             onDetected: (steamId) => {
@@ -407,6 +509,20 @@ document.addEventListener('DOMContentLoaded', () => {
             appendSteamIdToBackLink();
         }
     };
+
+    if (startDateInput) {
+        startDateInput.addEventListener('input', () => {
+            syncDateBounds();
+            persistDateFiltersInQuery();
+        });
+    }
+
+    if (endDateInput) {
+        endDateInput.addEventListener('input', () => {
+            syncDateBounds();
+            persistDateFiltersInQuery();
+        });
+    }
 
     bootstrapFromQuery();
 });

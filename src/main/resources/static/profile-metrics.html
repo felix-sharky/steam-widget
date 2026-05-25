@@ -1,82 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Metrics | Steam Widget</title>
-    <link rel="icon" type="image/svg" href="/favicon.svg" />
-    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <title>steam-widget | Steam Profile Metrics</title>
+    <meta name="description" content="Analyze Steam profile visits and engagement with daily or monthly metrics, trends, and filterable date ranges.">
+    <link rel="icon" type="image/svg" href="/favicon.svg"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="/js/tailwind-theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/shared-modern-ui.css">
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script defer src="/js/layout-effects.js"></script>
     <script defer src="/js/steam-utils.js"></script>
     <script defer src="/js/profile-metrics.js"></script>
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
 </head>
-<body>
-<nav class="top-nav" aria-label="Primary navigation">
-    <div class="top-nav-links">
-        <a class="nav-link" data-route="/" data-base="/" href="/">Generator</a>
-        <a class="nav-link" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
-        <a class="nav-link" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Playing Stats</a>
-        <a class="nav-link" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile metrics</a>
-    </div>
-</nav>
-<div class="page">
-    <header class="hero">
-        <div>
-            <h1>Profile Metrics</h1>
-            <p>Review monthly profile hits in both chart and table form.</p>
-        </div>
-    </header>
+<body class="bg-background text-on-background font-body-md custom-scrollbar">
 
-    <section class="card">
-        <form id="profileMetricsForm" class="form" autocomplete="off">
-            <label for="steamId">Steam ID</label>
-            <div class="input-row">
-                <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required />
-                <button type="submit" data-umami-event="button_load_stats_profile">Load metrics</button>
-            </div>
-        </form>
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 w-full bg-surface-container-low/80 backdrop-blur-md z-50 border-b border-outline-variant/30 shadow-sm">
+    <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
+        <div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary-fixed-dim">steam-widget</div>
+        <div class="hidden md:flex gap-6 items-center">
+            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+               data-route="/" data-base="/" href="/">Generator</a>
+            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+               data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
+            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+               data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Playing Stats</a>
+            <a class="nav-link text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
+               aria-current="page" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
+        </div>
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </nav>
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking.html">Play Tracking</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking-month.html">Playing Stats</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
+    </div>
+</header>
+
+<main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-6">
+    <!-- Hero -->
+    <section class="text-center py-stack-lg space-y-stack-sm">
+        <h1 class="font-headline-xl text-headline-xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">
+            Profile Metrics
+        </h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+            Review monthly profile hits in both chart and table form.
+        </p>
     </section>
 
-    <section class="card chart-card" id="chartCard">
-        <div class="table-header">
-            <div>
-                <h2>Monthly hits trend</h2>
-                <p class="muted">Chart displays hits per month.</p>
+    <!-- Search Card -->
+    <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-300">
+        <form id="profileMetricsForm" class="space-y-stack-md" autocomplete="off">
+            <label class="block font-label-md text-label-md text-primary-container tracking-widest uppercase" for="steamId">Steam ID</label>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="relative flex-grow">
+                    <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required
+                           class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors placeholder:text-on-surface-variant/40">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/50 pointer-events-none">search</span>
+                </div>
+                <button type="submit" data-umami-event="button_load_stats_profile"
+                        class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap">
+                    Load metrics
+                </button>
             </div>
-            <span id="chartStatus" class="badge badge-idle">No data loaded</span>
+        </form>
+    </div>
+
+    <!-- View Mode Toggle -->
+    <div class="glass-card px-stack-lg py-4 rounded-xl flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div class="w-full lg:w-[222px]">
+            <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2 pl-1">View</label>
+            <div class="pill-toggle-group" role="group" aria-label="View mode">
+                <label class="pill-toggle">
+                    <input type="radio" name="viewMode" value="month" checked>
+                    <span>Monthly</span>
+                </label>
+                <label class="pill-toggle">
+                    <input type="radio" name="viewMode" value="date">
+                    <span>Daily</span>
+                </label>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-auto lg:min-w-[460px]">
+            <div>
+                <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="startDate">Start date</label>
+                <input id="startDate" name="startDate" type="date"
+                       class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+            </div>
+            <div>
+                <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="endDate">End date</label>
+                <input id="endDate" name="endDate" type="date"
+                       class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Card -->
+    <div class="glass-card p-stack-lg rounded-xl" id="chartCard">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+            <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface" id="trendTitle">Monthly hits trend</h2>
+                <p class="text-on-surface-variant text-sm mt-1" id="trendDescription">Chart displays hits per month.</p>
+            </div>
+            <span id="chartStatus" class="badge badge-idle self-start">No data loaded</span>
         </div>
         <div class="chart-wrapper">
             <canvas id="profileMetricsChart" height="220"></canvas>
         </div>
-    </section>
+    </div>
 
-    <section class="card" id="tableCard">
-        <div class="table-header">
+    <!-- Table Card -->
+    <div class="glass-card p-stack-lg rounded-xl" id="tableCard">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
             <div>
-                <h2>Monthly hits table</h2>
-                <p class="muted">Data from <code>/api/metrics/profile/month</code>.</p>
+                <h2 class="font-headline-md text-headline-md text-on-surface" id="tableTitle">Monthly hits table</h2>
+                <p class="text-on-surface-variant text-sm mt-1" id="tableDescription">Data from <code>/api/metrics/profile/month</code>.</p>
             </div>
-            <span id="tableStatus" class="badge badge-idle">No data loaded</span>
+            <span id="tableStatus" class="badge badge-idle self-start">No data loaded</span>
         </div>
-        <div class="table-container">
-            <table>
+        <div class="overflow-x-auto">
+            <table class="data-table">
                 <thead>
-                <tr>
-                    <th>Year</th>
-                    <th>Month</th>
-                    <th>Purpose</th>
-                    <th>Hits</th>
-                </tr>
+                    <tr>
+                        <th id="periodHeader">Period</th>
+                        <th>Purpose</th>
+                        <th>Hits</th>
+                    </tr>
                 </thead>
                 <tbody id="tableBody">
-                <tr>
-                    <td colspan="4" class="muted">Enter a Steam ID and load metrics.</td>
-                </tr>
+                    <tr>
+                        <td colspan="3" class="muted">Enter a Steam ID and load metrics.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
-    </section>
-</div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-surface-dim border-t border-outline-variant/20 py-stack-lg mt-stack-lg">
+    <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
+        <div class="flex flex-col items-center md:items-start gap-2">
+            <div class="font-headline-lg text-headline-lg font-extrabold text-primary-fixed-dim">steam-widget</div>
+            <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6">
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking-month.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
+        </div>
+        <div class="flex items-center gap-4 text-on-surface-variant">
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary-container cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">code</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
 </body>
 </html>
