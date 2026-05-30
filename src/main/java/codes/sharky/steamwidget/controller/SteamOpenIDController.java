@@ -72,8 +72,9 @@ public class SteamOpenIDController {
 
         Cookie steamIdCookie = new Cookie("steamId", steamId64);
         steamIdCookie.setPath("/");
-        steamIdCookie.setMaxAge(60 * 60 * 24 * 30);
+        steamIdCookie.setMaxAge(60 * 60 * 24 * 7); // 7 days — convenience pre-fill, GDPR-minimal
         steamIdCookie.setSecure(request.isSecure());
+        steamIdCookie.setAttribute("SameSite", "Lax");
         httpServletResponse.addCookie(steamIdCookie);
 
         httpServletResponse.setHeader("Location", baseUrl + "/?steamId=" + steamId64);

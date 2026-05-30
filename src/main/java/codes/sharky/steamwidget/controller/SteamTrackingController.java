@@ -183,8 +183,9 @@ public class SteamTrackingController {
     private void addSteamIdCookie(HttpServletResponse response, HttpServletRequest request, String steamId64) {
         Cookie steamIdCookie = new Cookie("steamId", steamId64);
         steamIdCookie.setPath("/");
-        steamIdCookie.setMaxAge(60 * 60 * 24 * 30);
+        steamIdCookie.setMaxAge(60 * 60 * 24 * 7); // 7 days — convenience pre-fill, GDPR-minimal
         steamIdCookie.setSecure(request.isSecure());
+        steamIdCookie.setAttribute("SameSite", "Lax");
         response.addCookie(steamIdCookie);
     }
 
