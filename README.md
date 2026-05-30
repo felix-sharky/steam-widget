@@ -1,152 +1,87 @@
 # Steam Widget
 
-Generate embeddable Steam profile widgets (PNG badges) and query profile/tracking metrics for public Steam accounts.
+> Embeddable Steam profile badges and playtime analytics for public Steam accounts.
+
+[![Live](https://img.shields.io/website?url=https%3A%2F%2Fsteam-widget.com&label=steam-widget.com&style=flat-square&color=7c3aed)](https://steam-widget.com)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE)
+
+---
+
+## Table of Contents
+
+- [Live Service](#live-service)
+- [Live Preview](#live-preview)
+- [Features](#features)
+- [API Documentation](#api-documentation)
+- [Credits](#credits)
+- [License](#license)
+
+---
 
 ## Live Service
 
-- Generator page: `https://steam-widget.com`
-- Widget image endpoint: `https://steam-widget.com/widget/img`
+| Tool | URL |
+|---|---|
+| Widget Generator | [steam-widget.com](https://steam-widget.com) |
+| Play Tracking | [steam-widget.com/tracking.html](https://steam-widget.com/tracking.html) |
+| Playing Stats | [steam-widget.com/playing-stats.html](https://steam-widget.com/playing-stats.html) |
+| Profile Metrics | [steam-widget.com/profile-metrics.html](https://steam-widget.com/profile-metrics.html) |
 
-## What You Can Do
+---
 
-### Widget
+## Live Preview
 
-Generate embeddable Steam profile badges as PNG images for websites, READMEs, forums, or dashboards.
-
-- Supports `SteamID64`, vanity/custom URL segments, and community IDs.
-- Offers display controls such as game list mode, list size, current-game visibility, and width scaling.
-- Primary endpoint: `GET /widget/img`
-
-### Play Tracking
-
-Track and read gameplay history for a Steam profile with daily and monthly aggregates.
-
-- Useful for building personal playtime timelines, summaries, or activity charts.
-- Supports date-range filtering using `startDate` and `endDate`.
-- Primary endpoints: `GET /api/tracking/profile-date`, `GET /api/tracking/profile-month`
-
-### Metrics
-
-Inspect widget usage and profile-level traffic with legacy counters and aggregated analytics views.
-
-- Query profile hits by profile and by purpose tag.
-- Access day/month/year/full rollups for both profile-specific and global metrics.
-- Primary endpoints: `GET /metric`, `GET /metric/hits`, `GET /api/metrics/profile/*`, `GET /api/metrics/global/*`
-
-## Widget API
-
-Use this endpoint to render a PNG badge:
-
-```text
-https://steam-widget.com/widget/img?id=<SteamId>&gameList=<GameList>&gameListSize=<GameListSize>&playingRightNow=<playingRightNow>&purpose=<Purpose>&width=<Width>
-```
-
-### Query Parameters
-
-| Parameter | Required | Default | Description |
-|---|---|---|---|
-| `id` | Yes | - | Steam account identifier (`SteamID64`, vanity/custom URL segment, or community ID). |
-| `gameList` | No | `NONE` | Game list mode: `NONE`, `TOP_GAMES_TOTAL`, `TOP_GAMES_RECENT`, `RECENT_GAMES`. |
-| `gameListSize` | No | `5` | Number of games shown. Values above `10` are capped to `10`. |
-| `playingRightNow` | No | `true` | Include currently played game status. |
-| `purpose` | No | `General` | Free-text tag used for analytics/hit segmentation. |
-| `width` | No | `0` | Output width in pixels. `0` keeps original size. |
-
-### Example
-
-```text
-https://steam-widget.com/widget/img?id=lizard_darksoul&purpose=github_repo&width=350
-```
-
-<img src="https://steam-widget.com/widget/img?id=lizard_darksoul&purpose=github_repo&width=350" alt="Steam widget example" />
-
-### Embed Snippets
-
-```html
-<img src="https://steam-widget.com/widget/img?id=lizard_darksoul&purpose=github_repo&width=350" alt="Steam profile" />
-```
+Embed your Steam profile in any README, forum, or website with a single image URL:
 
 ```markdown
-![Steam Profile](https://steam-widget.com/widget/img?id=lizard_darksoul&purpose=github_repo&width=350)
+![Steam Widget](https://steam-widget.com/widget/img?id=YOUR_STEAM_ID&width=350)
 ```
 
-```bbcode
-[img]https://steam-widget.com/widget/img?id=lizard_darksoul&purpose=github_repo&width=350[/img]
-```
+[![Steam Widget Example](https://steam-widget.com/widget/img?id=lizard_darksoul&width=350)](https://steam-widget.com)
 
-## Metrics APIs
+---
 
-### Legacy Profile Metrics
+## Features
 
-Endpoint: `GET /metric?id=<SteamId>`
+### 🎮 Widget Generator
 
-- `Accept: application/json` -> returns profile metric payload.
-- `Accept: */*` (or default) -> returns hit count as plain numeric output.
+Create embeddable Steam profile badges as PNG images — perfect for websites, READMEs, forums, or dashboards.
 
-Endpoint: `GET /metric/hits?id=<SteamId>&purpose=<Purpose>`
+- Supports `SteamID64`, vanity/custom URL segments, and community IDs
+- Configurable game list mode, list size, current-game visibility, and width scaling
 
-- Returns hit count for the given profile and purpose.
-- `purpose` defaults to `General` when omitted.
+### 📅 Play Tracking
 
-### Profile Metrics (Aggregated JSON)
+Enable tracking for a Steam profile via Steam OpenID login, then browse daily and monthly playtime history with interactive charts and filterable data tables.
 
-Base path: `GET /api/metrics/profile/*`
+### 📊 Playing Stats & Profile Insights
 
-| Endpoint | Description | Required Params | Optional Params |
-|---|---|---|---|
-| `/api/metrics/profile/day` | Daily profile hit aggregates | `steam64id` | `startDate`, `endDate` (`YYYY-MM-DD`) |
-| `/api/metrics/profile/month` | Monthly profile hit aggregates | `steam64id` | `startDate`, `endDate` (`YYYY-MM-DD`) |
-| `/api/metrics/profile/year` | Yearly profile hit aggregates | `steam64id` | - |
-| `/api/metrics/profile/full` | Full profile hit history view | `steam64id` | - |
+Explore long-term playtime trends with monthly and daily breakdowns, plus three insight panels loaded automatically for every profile:
 
-### Global Metrics (Aggregated JSON)
+- 🔥 **Streaks & Activity** — current streak, longest streaks (year & all-time), most active day of the week, most active month
+- ⏱️ **Playtime Stats** — all-time & yearly totals, average daily playtime, best single day, unique game counts
+- 🎮 **Game Insights** — most played game (year & all-time), last played game, longest game streak (year & all-time)
 
-Base path: `GET /api/metrics/global/*`
+### 📈 Profile Metrics
 
-- `/api/metrics/global/day`
-- `/api/metrics/global/month`
-- `/api/metrics/global/year`
-- `/api/metrics/global/full`
+Inspect widget usage and profile-level traffic with hit counters and aggregated daily/monthly analytics.
 
-### Playing Stats (Tracking Aggregates)
+---
 
-Use these endpoints to retrieve tracked gameplay time history for a profile.
+## API Documentation
 
-| Endpoint | Description | Required Params | Optional Params |
-|---|---|---|---|
-| `/api/tracking/profile-month` | Monthly playtime tracking aggregates | `steamid` | `startDate`, `endDate` (`YYYY-MM-DD`) |
-| `/api/tracking/profile-date` | Daily playtime tracking aggregates | `steamid` | `startDate`, `endDate` (`YYYY-MM-DD`) |
+Full API reference is available in [API.md](API.md).
 
-Examples:
-
-```text
-/api/tracking/profile-month?steamid=76561198000000000&startDate=2026-01-01&endDate=2026-12-31
-/api/tracking/profile-date?steamid=76561198000000000&startDate=2026-05-01&endDate=2026-05-25
-```
-
-## Useful Notes
-
-- Widget responses are PNG images with cache header `Cache-Control: max-age=60, must-revalidate`.
-- Steam profiles must be public for reliable data output.
-- ID resolution is handled server-side for endpoints that accept non-64-bit IDs.
-- Some metric endpoints return `404` when no data exists for the requested profile/purpose.
+---
 
 ## Credits
 
-- [sharky.codes](https://sharky.codes)
+Built by [sharky.codes](https://sharky.codes).
+
+---
 
 ## License
 
 Copyright 2024-2026 sharky.codes
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-`http://www.apache.org/licenses/LICENSE-2.0`
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Licensed under the Apache License, Version 2.0. See [`LICENSE`](LICENSE) or [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).

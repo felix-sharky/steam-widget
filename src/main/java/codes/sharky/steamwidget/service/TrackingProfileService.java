@@ -2,10 +2,17 @@ package codes.sharky.steamwidget.service;
 
 import codes.sharky.steamwidget.entity.TrackingProfileDate;
 import codes.sharky.steamwidget.entity.TrackingProfileDateId;
+import codes.sharky.steamwidget.entity.TrackingProfileInsightsActivity;
+import codes.sharky.steamwidget.entity.TrackingProfileInsightsGame;
+import codes.sharky.steamwidget.entity.TrackingProfileInsightsPlaytime;
 import codes.sharky.steamwidget.entity.TrackingProfileMonth;
 import codes.sharky.steamwidget.entity.TrackingProfileMonthId;
 import codes.sharky.steamwidget.repository.TrackingProfileDateRepository;
+import codes.sharky.steamwidget.repository.TrackingProfileInsightsActivityRepository;
+import codes.sharky.steamwidget.repository.TrackingProfileInsightsGameRepository;
+import codes.sharky.steamwidget.repository.TrackingProfileInsightsPlaytimeRepository;
 import codes.sharky.steamwidget.repository.TrackingProfileMonthRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,18 +27,24 @@ import java.util.*;
 public class TrackingProfileService {
 
     private final TrackingProfileMonthRepository monthRepository;
-
     private final TrackingProfileDateRepository dateRepository;
+    private final TrackingProfileInsightsActivityRepository activityRepository;
+    private final TrackingProfileInsightsGameRepository gameRepository;
+    private final TrackingProfileInsightsPlaytimeRepository playtimeRepository;
 
     /**
-     * Creates the tracking profile service with repositories for monthly and daily tracking data.
-     *
-     * @param monthRepository repository for month-level tracking aggregates
-     * @param dateRepository  repository for day-level tracking entries
+     * Creates the tracking profile service with repositories for monthly, daily and insights tracking data.
      */
-    public TrackingProfileService(TrackingProfileMonthRepository monthRepository, TrackingProfileDateRepository dateRepository) {
+    public TrackingProfileService(TrackingProfileMonthRepository monthRepository,
+                                  TrackingProfileDateRepository dateRepository,
+                                  TrackingProfileInsightsActivityRepository activityRepository,
+                                  TrackingProfileInsightsGameRepository gameRepository,
+                                  TrackingProfileInsightsPlaytimeRepository playtimeRepository) {
         this.monthRepository = monthRepository;
         this.dateRepository = dateRepository;
+        this.activityRepository = activityRepository;
+        this.gameRepository = gameRepository;
+        this.playtimeRepository = playtimeRepository;
     }
 
     /**
@@ -145,5 +158,32 @@ public class TrackingProfileService {
                     return endDate == null || !current.isAfter(endDate);
                 })
                 .toList();
+    }
+
+    /**
+     * Returns streaks-and-activity insights for a single profile.
+     */
+    public ResponseEntity<TrackingProfileInsightsActivity> getInsightsActivity(String steamId) {
+        return activityRepository.findBySteam64id(steamId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Returns game insights for a single profile.
+     */
+    public ResponseEntity<TrackingProfileInsightsGame> getInsightsGame(String steamId) {
+        return gameRepository.findBySteam64id(steamId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Returns playtime stats insights for a single profile.
+     */
+    public ResponseEntity<TrackingProfileInsightsPlaytime> getInsightsPlaytime(String steamId) {
+        return playtimeRepository.findBySteam64id(steamId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

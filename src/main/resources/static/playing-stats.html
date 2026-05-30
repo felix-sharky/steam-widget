@@ -5,16 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>steam-widget | Steam Playing Stats</title>
     <meta name="description" content="Explore monthly Steam playing stats with charts and totals to understand long-term playtime trends across your library.">
-    <link rel="canonical" href="https://steam-widget.com/tracking-month.html">
+    <meta name="keywords" content="Steam playing stats, Steam playtime trends, Steam monthly stats, Steam game hours, Steam playtime chart, Steam library analytics">
+    <meta name="theme-color" content="#7c3aed">
+    <link rel="canonical" href="https://steam-widget.com/playing-stats.html">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="steam-widget">
     <meta property="og:title" content="steam-widget | Steam Playing Stats">
     <meta property="og:description" content="Explore monthly Steam playing stats with charts and totals to understand long-term playtime trends across your library.">
-    <meta property="og:url" content="https://steam-widget.com/tracking-month.html">
+    <meta property="og:url" content="https://steam-widget.com/playing-stats.html">
     <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="steam-widget | Steam Playing Stats">
     <meta name="twitter:description" content="Explore monthly Steam playing stats with charts and totals to understand long-term playtime trends across your library.">
     <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://steam-widget.com/playing-stats.html",
+      "url": "https://steam-widget.com/playing-stats.html",
+      "name": "Steam Playing Stats — steam-widget",
+      "description": "Explore long-term playtime trends with monthly and daily breakdowns, streaks, top games, and detailed insights for any tracked Steam profile.",
+      "isPartOf": { "@id": "https://steam-widget.com/#website" },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://steam-widget.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Playing Stats", "item": "https://steam-widget.com/playing-stats.html" }
+        ]
+      }
+    }
+    </script>
     <link rel="icon" type="image/png" href="/img/logo.png"/>
     <link rel="apple-touch-icon" href="/img/logo.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -24,7 +47,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
     <script defer src="/js/layout-effects.js"></script>
     <script defer src="/js/steam-utils.js"></script>
-    <script defer src="/js/tracking-month.js"></script>
+    <script defer src="/js/playing-stats.js"></script>
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
 </head>
 <body class="bg-background text-on-background font-body-md custom-scrollbar">
@@ -39,7 +62,7 @@
             <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
                id="trackingBackNav" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
             <a class="nav-link text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
-               aria-current="page" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Playing Stats</a>
+               aria-current="page" data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
             <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
                data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
         </div>
@@ -50,7 +73,7 @@
     <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking.html">Play Tracking</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-primary-container" href="/tracking-month.html">Playing Stats</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-primary-container" href="/playing-stats.html">Playing Stats</a>
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
     </div>
 </header>
@@ -62,7 +85,7 @@
             Playing Stats
         </h1>
         <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            Inspect your per-month playtime totals by game.
+            Dive into your Steam library's long-term playtime trends — monthly and daily breakdowns, activity streaks, top games, and key insights all in one place.
         </p>
     </section>
 
@@ -83,6 +106,48 @@
             </div>
         </form>
     </div>
+
+    <!-- ── Insights ─────────────────────────────────────────────────────── -->
+    <div id="insightsSection" class="hidden space-y-6">
+
+        <!-- Streaks & Activity -->
+        <div class="glass-card p-stack-lg rounded-xl">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="material-symbols-outlined text-primary-container text-2xl" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Streaks &amp; Activity</h2>
+                <span id="activityStatus" class="badge badge-loading ml-auto">Loading…</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4" id="activityCards">
+                <!-- populated by JS -->
+            </div>
+        </div>
+
+        <!-- Playtime Stats -->
+        <div class="glass-card p-stack-lg rounded-xl">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings:'FILL' 1;">timer</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Playtime Stats</h2>
+                <span id="playtimeStatus" class="badge badge-loading ml-auto">Loading…</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="playtimeCards">
+                <!-- populated by JS -->
+            </div>
+        </div>
+
+        <!-- Game Insights -->
+        <div class="glass-card p-stack-lg rounded-xl">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="material-symbols-outlined text-tertiary-container text-2xl" style="font-variation-settings:'FILL' 1;">sports_esports</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Game Insights</h2>
+                <span id="gameStatus" class="badge badge-loading ml-auto">Loading…</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4" id="gameCards">
+                <!-- populated by JS -->
+            </div>
+        </div>
+
+    </div>
+
 
     <!-- View Mode Toggle -->
     <div class="glass-card px-stack-lg py-4 rounded-xl flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
@@ -167,7 +232,7 @@
         <div class="flex flex-wrap justify-center gap-6">
             <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
             <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking-month.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
             <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
         </div>
         <div class="flex items-center gap-4 text-on-surface-variant">
@@ -178,5 +243,26 @@
     </div>
 </footer>
 
+<button class="share-btn" onclick="sharePage()" title="Share this page" aria-label="Share">
+    <span class="material-symbols-outlined">share</span>
+    Share
+</button>
+
+<div id="shareToast">Link copied!</div>
+<script>
+function sharePage() {
+    const data = { title: document.title, url: location.href };
+    if (navigator.share) {
+        navigator.share(data).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(location.href).then(() => {
+            const t = document.getElementById('shareToast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        });
+    }
+}
+</script>
 </body>
 </html>
+

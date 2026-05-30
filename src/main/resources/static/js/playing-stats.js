@@ -379,6 +379,143 @@ document.addEventListener('DOMContentLoaded', () => {
         renderChart(currentRows);
     };
 
+    // ── Insights helpers ────────────────────────────────────────────────────
+
+    const insightsSection = document.getElementById('insightsSection');
+    const activityCards   = document.getElementById('activityCards');
+    const playtimeCards   = document.getElementById('playtimeCards');
+    const gameCards       = document.getElementById('gameCards');
+    const activityStatus  = document.getElementById('activityStatus');
+    const playtimeStatus  = document.getElementById('playtimeStatus');
+    const gameStatus      = document.getElementById('gameStatus');
+
+    const insightCard = (icon, label, value, sub = '') => `
+        <div class="flex flex-col gap-1 p-4 bg-surface-container-lowest rounded-lg border border-outline-variant/10">
+            <span class="material-symbols-outlined text-primary-container text-xl mb-1" style="font-variation-settings:'FILL' 1;">${icon}</span>
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-xs">${label}</span>
+            <span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight">${value}</span>
+            ${sub ? `<span class="text-on-surface-variant text-xs mt-0.5">${sub}</span>` : ''}
+        </div>`;
+
+    const fmtDuration = (hours, minutes) => {
+        const h = Number(hours) || 0;
+        const m = Number(minutes) || 0;
+        if (h === 0 && m === 0) return '—';
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    };
+
+    const fmtDate = (val) => {
+        if (!val) return '—';
+        // val may be [year, month, day] array or ISO string
+        if (Array.isArray(val) && val.length >= 3) {
+            const [y, mo, d] = val;
+            return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        }
+        return String(val).substring(0, 10);
+    };
+
+    const fmtDateRange = (start, end) => {
+        const s = fmtDate(start);
+        const e = fmtDate(end);
+        if (s === '—' && e === '—') return '—';
+        return `${s} → ${e}`;
+    };
+
+    const setInsightStatus = (el, ok, msg) => {
+        el.className = `badge ${ok ? 'badge-success' : 'badge-error'} ml-auto`;
+        el.textContent = msg;
+    };
+
+    const renderActivityCards = (d) => {
+        activityCards.innerHTML = [
+            insightCard('whatshot', 'Current streak',
+                d.currentStreakDays ? `${d.currentStreakDays} day${d.currentStreakDays !== 1 ? 's' : ''}` : '—',
+                fmtDateRange(d.currentStreakStart, d.currentStreakEnd)),
+            insightCard('emoji_events', 'Longest streak (year)',
+                d.longestStreakYearDays ? `${d.longestStreakYearDays} days` : '—',
+                fmtDateRange(d.longestStreakYearStart, d.longestStreakYearEnd)),
+            insightCard('military_tech', 'Longest streak (all-time)',
+                d.longestStreakAlltimeDays ? `${d.longestStreakAlltimeDays} days` : '—',
+                fmtDateRange(d.longestStreakAlltimeStart, d.longestStreakAlltimeEnd)),
+            insightCard('calendar_today', 'Most active day',
+                d.mostActiveDow || '—',
+                d.mostActiveDowCount ? `${d.mostActiveDowCount} sessions this year` : ''),
+            insightCard('date_range', 'Most active month',
+                d.mostActiveMonth || '—',
+                d.mostActiveMonthDays ? `${d.mostActiveMonthDays} days played` : ''),
+        ].join('');
+    };
+
+    const renderPlaytimeCards = (d) => {
+        playtimeCards.innerHTML = [
+            insightCard('all_inclusive', 'All-time playtime',
+                fmtDuration(d.alltimeHours, d.alltimeMinutes)),
+            insightCard('calendar_month', 'This year',
+                fmtDuration(d.yearHours, d.yearMinutes)),
+            insightCard('avg_pace', 'Avg daily (year)',
+                fmtDuration(d.avgDailyHours, d.avgDailyMinutes)),
+            insightCard('star', 'Best single day',
+                fmtDuration(d.bestDayHours, d.bestDayMinutes),
+                fmtDate(d.bestDayDate)),
+            insightCard('sports_esports', 'Games this year',
+                d.uniqueGamesThisYear ?? '—'),
+            insightCard('videogame_asset', 'Games all-time',
+                d.uniqueGamesAlltime ?? '—'),
+        ].join('');
+    };
+
+    const renderGameCards = (d) => {
+        gameCards.innerHTML = [
+            insightCard('military_tech', 'Most played (all-time)',
+                d.mostPlayedAlltimeGame || '—',
+                fmtDuration(d.mostPlayedAlltimeHours, d.mostPlayedAlltimeMinutes)),
+            insightCard('emoji_events', 'Most played (year)',
+                d.mostPlayedYearGame || '—',
+                fmtDuration(d.mostPlayedYearHours, d.mostPlayedYearMinutes)),
+            insightCard('history', 'Last played',
+                d.lastPlayedGame || '—',
+                fmtDate(d.lastPlayedDate)),
+            insightCard('local_fire_department', 'Game streak (all-time)',
+                d.longestStreakAlltimeGame || '—',
+                d.longestStreakAlltimeDays ? `${d.longestStreakAlltimeDays} days · ${fmtDateRange(d.longestStreakAlltimeStart, d.longestStreakAlltimeEnd)}` : ''),
+            insightCard('whatshot', 'Game streak (year)',
+                d.longestStreakYearGame || '—',
+                d.longestStreakYearDays ? `${d.longestStreakYearDays} days · ${fmtDateRange(d.longestStreakYearStart, d.longestStreakYearEnd)}` : ''),
+        ].join('');
+    };
+
+    const loadInsights = async (steamId) => {
+        if (!insightsSection) return;
+        insightsSection.classList.remove('hidden');
+
+        // Reset statuses
+        [activityStatus, playtimeStatus, gameStatus].forEach(el => {
+            if (el) { el.className = 'badge badge-loading ml-auto'; el.textContent = 'Loading…'; }
+        });
+
+        const params = new URLSearchParams({ steamid: steamId });
+        const endpoints = [
+            { url: `/api/tracking/insights/activity?${params}`, render: renderActivityCards, status: activityStatus, name: 'activity' },
+            { url: `/api/tracking/insights/playtime?${params}`, render: renderPlaytimeCards, status: playtimeStatus, name: 'playtime' },
+            { url: `/api/tracking/insights/games?${params}`,    render: renderGameCards,     status: gameStatus,    name: 'games' },
+        ];
+
+        await Promise.all(endpoints.map(async ({ url, render, status, name }) => {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`${res.status}`);
+                const data = await res.json();
+                render(data);
+                setInsightStatus(status, true, 'Loaded');
+            } catch (e) {
+                console.error(`Insights (${name}) failed:`, e);
+                setInsightStatus(status, false, 'Failed to load');
+            }
+        }));
+    };
+
+    // ── End insights helpers ─────────────────────────────────────────────────
+
     tableBody.addEventListener('click', toggleRowSelection);
 
     const updateViewCopy = (mode) => {
@@ -472,6 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderRows(sorted, viewMode);
             renderChart(sorted);
             setStatus('badge-success', `Loaded ${sorted.length} rows (${viewMode})`);
+            loadInsights(steamId);
         } catch (error) {
             console.error(error);
             tableBody.innerHTML = '<tr><td colspan="4" class="muted">Failed to load stats.</td></tr>';
@@ -526,3 +664,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bootstrapFromQuery();
 });
+

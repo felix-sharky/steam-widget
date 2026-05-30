@@ -5,16 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>steam-widget | Steam Play Tracking</title>
     <meta name="description" content="Track Steam play activity by date range and game, with quick insights into sessions, playtime trends, and performance.">
+    <meta name="keywords" content="Steam play tracking, Steam playtime history, Steam session tracker, Steam activity log, Steam game tracker">
+    <meta name="theme-color" content="#7c3aed">
     <link rel="canonical" href="https://steam-widget.com/tracking.html">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="steam-widget">
     <meta property="og:title" content="steam-widget | Steam Play Tracking">
     <meta property="og:description" content="Track Steam play activity by date range and game, with quick insights into sessions, playtime trends, and performance.">
     <meta property="og:url" content="https://steam-widget.com/tracking.html">
     <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="steam-widget | Steam Play Tracking">
     <meta name="twitter:description" content="Track Steam play activity by date range and game, with quick insights into sessions, playtime trends, and performance.">
     <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://steam-widget.com/tracking.html",
+      "url": "https://steam-widget.com/tracking.html",
+      "name": "Steam Play Tracking — steam-widget",
+      "description": "Enable and manage daily Steam playtime tracking for any public Steam profile. View daily and monthly play history with charts and filterable data tables.",
+      "isPartOf": { "@id": "https://steam-widget.com/#website" },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://steam-widget.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Play Tracking", "item": "https://steam-widget.com/tracking.html" }
+        ]
+      }
+    }
+    </script>
     <link rel="icon" type="image/png" href="/img/logo.png"/>
     <link rel="apple-touch-icon" href="/img/logo.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -38,7 +61,7 @@
             <a class="nav-link text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
                id="indexNav" aria-current="page" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
             <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               id="monthNav" data-route="/tracking-month.html" data-base="/tracking-month.html" href="/tracking-month.html">Playing Stats</a>
+               id="monthNav" data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
             <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
                data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
         </div>
@@ -49,7 +72,7 @@
     <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
         <a class="font-label-md text-label-md uppercase py-2 text-primary-container" href="/tracking.html">Play Tracking</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking-month.html">Playing Stats</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/playing-stats.html">Playing Stats</a>
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
     </div>
 </header>
@@ -61,7 +84,7 @@
             Play Tracking
         </h1>
         <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            Check whether tracking is active for a Steam profile and enable it with a Steam login if needed.
+            Enable daily playtime tracking for any public Steam profile and browse your full play history with interactive charts and filterable tables.
         </p>
     </section>
 
@@ -160,7 +183,7 @@
         <div class="flex flex-wrap justify-center gap-6">
             <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
             <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking-month.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
             <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
         </div>
         <div class="flex items-center gap-4 text-on-surface-variant">
@@ -171,5 +194,25 @@
     </div>
 </footer>
 
+<button class="share-btn" onclick="sharePage()" title="Share this page" aria-label="Share">
+    <span class="material-symbols-outlined">share</span>
+    Share
+</button>
+
+<div id="shareToast">Link copied!</div>
+<script>
+function sharePage() {
+    const data = { title: document.title, url: location.href };
+    if (navigator.share) {
+        navigator.share(data).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(location.href).then(() => {
+            const t = document.getElementById('shareToast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        });
+    }
+}
+</script>
 </body>
 </html>
