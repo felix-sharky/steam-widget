@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Controller for handling requests related to Steam widgets.
@@ -53,6 +54,7 @@ public class WidgetController {
             @RequestParam(name = "gameList", required = false, defaultValue = "NONE") ShowedGames gameList,
             @RequestParam(name = "gameListSize", required = false, defaultValue = "6") int gameListSize,
             @RequestParam(name = "insightCategory", required = false, defaultValue = "NONE") InsightCategory insightCategory,
+            @RequestParam(name = "customCard", required = false) List<String> customCards,
             @RequestParam(name = "style", required = false, defaultValue = "STEAM") WidgetStyle style,
             @RequestParam(name = "playingRightNow", required = false, defaultValue = "true") boolean playingRightNow,
             @RequestParam(name = "purpose", required = false, defaultValue = "General") String purpose,
@@ -61,10 +63,10 @@ public class WidgetController {
             HttpServletResponse response
     ) throws SteamApiException, IOException {
         /* Always check that the gamesCount is not too high */
-        gameListSize = gameListSize > 10 ? 10 : gameListSize;
+        gameListSize = Math.max(0, Math.min(10, gameListSize));
 
         /* Generate Image */
-        BufferedImage image = steamWidgetService.generateWidgetImage(id, gameList, gameListSize, insightCategory, style, playingRightNow, purpose, request);
+        BufferedImage image = steamWidgetService.generateWidgetImage(id, gameList, gameListSize, insightCategory, customCards, style, playingRightNow, purpose, request);
         if (width > 0) {
             image = steamWidgetService.scaleImage(image, width);
         }

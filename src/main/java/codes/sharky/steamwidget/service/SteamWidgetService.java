@@ -37,7 +37,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -113,6 +115,11 @@ public class SteamWidgetService {
         return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, style, showPlayingRightNow, purpose, ip);
     }
 
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, List<String> customCards, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, @NotNull HttpServletRequest request) throws SteamApiException {
+        String ip = IPUtils.getIPAddress(request);
+        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, customCards, style, showPlayingRightNow, purpose, ip);
+    }
+
     /**
      * Generates a widget image for a given Steam ID, purpose, and IP address.
      * This method first retrieves the player's information using their Steam ID,
@@ -137,13 +144,18 @@ public class SteamWidgetService {
     }
 
     public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
+        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, List.of(), style, showPlayingRightNow, purpose, ip);
+    }
+
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, List<String> customCards, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
         Player player = getUserBySteamId(steamId, purpose, ip);
         SharePalette palette = getSharePalette(style);
 
         boolean showInsights = insightCategory != InsightCategory.NONE;
-        List<InsightCard> insightCards = showInsights && player.getSteamid() != null ? getInsightCards(player.getSteamid(), insightCategory) : List.of();
+        List<InsightCard> insightCards = showInsights && player.getSteamid() != null ? getInsightCards(player.getSteamid(), insightCategory, customCards) : List.of();
         if (showInsights) {
-            return generateInsightWidgetImage(player, insightCards, showPlayingRightNow, palette);
+            String emptyMessage = insightCategory == InsightCategory.CUSTOM ? "No custom cards configured for this widget." : "No tracked insights found for this profile.";
+            return generateInsightWidgetImage(player, insightCards, showPlayingRightNow, palette, emptyMessage);
         }
 
         List<Object> games = switch (showGames) {
@@ -169,13 +181,64 @@ public class SteamWidgetService {
         return generateGameWidgetImage(player, games, showPlayingRightNow, palette);
     }
 
-    private List<InsightCard> getInsightCards(String steamId, InsightCategory insightCategory) {
+    private List<InsightCard> getInsightCards(String steamId, InsightCategory insightCategory, List<String> customCards) {
         return switch (insightCategory) {
             case ACTIVITY -> getActivityInsightCards(steamId);
             case PLAYTIME -> getPlaytimeInsightCards(steamId);
             case GAMES -> getGameInsightCards(steamId);
+            case CUSTOM -> getCustomInsightCards(steamId, customCards);
             case NONE -> List.of();
         };
+    }
+
+    private List<InsightCard> getCustomInsightCards(String steamId, List<String> customCards) {
+        if (customCards == null || customCards.isEmpty()) {
+            return List.of();
+        }
+        Map<String, InsightCard> availableCards = getAvailableInsightCards(steamId);
+        return customCards.stream()
+                .limit(6)
+                .map(this::normalizeCustomInsightKey)
+                .map(availableCards::get)
+                .filter((card) -> card != null)
+                .toList();
+    }
+
+    private Map<String, InsightCard> getAvailableInsightCards(String steamId) {
+        Map<String, InsightCard> cards = new LinkedHashMap<>();
+        putInsightCards(cards, List.of(
+                "ACTIVITY_CURRENT_STREAK",
+                "ACTIVITY_LONGEST_STREAK_YEAR",
+                "ACTIVITY_LONGEST_STREAK_ALLTIME",
+                "ACTIVITY_MOST_ACTIVE_DAY",
+                "ACTIVITY_MOST_ACTIVE_MONTH"
+        ), getActivityInsightCards(steamId));
+        putInsightCards(cards, List.of(
+                "PLAYTIME_ALLTIME",
+                "PLAYTIME_YEAR",
+                "PLAYTIME_AVG_DAILY",
+                "PLAYTIME_BEST_DAY",
+                "PLAYTIME_GAMES_YEAR",
+                "PLAYTIME_GAMES_ALLTIME"
+        ), getPlaytimeInsightCards(steamId));
+        putInsightCards(cards, List.of(
+                "GAMES_MOST_PLAYED_ALLTIME",
+                "GAMES_MOST_PLAYED_YEAR",
+                "GAMES_LAST_PLAYED",
+                "GAMES_STREAK_ALLTIME",
+                "GAMES_STREAK_YEAR"
+        ), getGameInsightCards(steamId));
+        return cards;
+    }
+
+    private void putInsightCards(Map<String, InsightCard> target, List<String> keys, List<InsightCard> cards) {
+        for (int i = 0; i < keys.size() && i < cards.size(); i++) {
+            target.put(keys.get(i), cards.get(i));
+        }
+    }
+
+    private String normalizeCustomInsightKey(String rawKey) {
+        return rawKey == null ? "" : rawKey.trim().toUpperCase();
     }
 
     private List<InsightCard> getActivityInsightCards(String steamId) {
@@ -221,14 +284,14 @@ public class SteamWidgetService {
         );
     }
 
-    private BufferedImage generateInsightWidgetImage(Player player, List<InsightCard> cards, boolean showPlayingRightNow, SharePalette palette) {
+    private BufferedImage generateInsightWidgetImage(Player player, List<InsightCard> cards, boolean showPlayingRightNow, SharePalette palette, String emptyMessage) {
         BufferedImage image = new BufferedImage(1800, 1200, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = drawShareHeader(image, player, showPlayingRightNow, palette);
 
         if (cards.isEmpty()) {
             g.setFont(new Font("ARIAL", Font.PLAIN, 42));
             g.setColor(palette.muted());
-            g.drawString("No tracked insights found for this profile.", 80, 420);
+            g.drawString(emptyMessage, 80, 420);
             drawShareFooter(g, image, palette);
             g.dispose();
             return image;

@@ -248,14 +248,174 @@
                                 <option value="INSIGHT_ACTIVITY">Streaks &amp; Activity insights</option>
                                 <option value="INSIGHT_PLAYTIME">Playtime Stats insights</option>
                                 <option value="INSIGHT_GAMES">Game Insights</option>
+                                <option value="INSIGHT_CUSTOM">Custom cards</option>
                             </select>
                         </div>
                         <!-- Max games -->
-                        <div class="space-y-2">
+                        <div id="gameListSizeSection" class="space-y-2">
                             <label class="block font-label-md text-label-md text-on-surface uppercase" for="gameListSize">Max games displayed</label>
                             <input id="gameListSize"
                                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors"
                                    max="10" min="0" type="number" value="6">
+                        </div>
+                        <!-- Custom Cards -->
+                        <div id="customCardsSection" class="hidden md:col-span-2 space-y-4 border border-outline-variant/20 rounded-xl p-4 bg-surface-container-lowest/50">
+                            <div>
+                                <h3 class="font-label-md text-label-md text-on-surface uppercase">Custom cards</h3>
+                                <p class="text-[11px] text-on-surface-variant/70 mt-1">Configure up to six cards. Empty cards are skipped.</p>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="1">
+                                    <option value="">Card 1: No card</option>
+                                    <optgroup label="Activity">
+                                        <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_YEAR">Longest streak (year)</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_ALLTIME">Longest streak (all-time)</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_DAY">Most active day</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_MONTH">Most active month</option>
+                                    </optgroup>
+                                    <optgroup label="Playtime">
+                                        <option value="PLAYTIME_ALLTIME">All-time playtime</option>
+                                        <option value="PLAYTIME_YEAR">This year</option>
+                                        <option value="PLAYTIME_AVG_DAILY">Average daily (year)</option>
+                                        <option value="PLAYTIME_BEST_DAY">Best single day</option>
+                                        <option value="PLAYTIME_GAMES_YEAR">Games this year</option>
+                                        <option value="PLAYTIME_GAMES_ALLTIME">Games all-time</option>
+                                    </optgroup>
+                                    <optgroup label="Games">
+                                        <option value="GAMES_MOST_PLAYED_ALLTIME">Most played (all-time)</option>
+                                        <option value="GAMES_MOST_PLAYED_YEAR">Most played (year)</option>
+                                        <option value="GAMES_LAST_PLAYED">Last played</option>
+                                        <option value="GAMES_STREAK_ALLTIME">Game streak (all-time)</option>
+                                        <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
+                                    </optgroup>
+                                </select>
+                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="2">
+                                    <option value="">Card 2: No card</option>
+                                    <optgroup label="Activity">
+                                        <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_YEAR">Longest streak (year)</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_ALLTIME">Longest streak (all-time)</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_DAY">Most active day</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_MONTH">Most active month</option>
+                                    </optgroup>
+                                    <optgroup label="Playtime">
+                                        <option value="PLAYTIME_ALLTIME">All-time playtime</option>
+                                        <option value="PLAYTIME_YEAR">This year</option>
+                                        <option value="PLAYTIME_AVG_DAILY">Average daily (year)</option>
+                                        <option value="PLAYTIME_BEST_DAY">Best single day</option>
+                                        <option value="PLAYTIME_GAMES_YEAR">Games this year</option>
+                                        <option value="PLAYTIME_GAMES_ALLTIME">Games all-time</option>
+                                    </optgroup>
+                                    <optgroup label="Games">
+                                        <option value="GAMES_MOST_PLAYED_ALLTIME">Most played (all-time)</option>
+                                        <option value="GAMES_MOST_PLAYED_YEAR">Most played (year)</option>
+                                        <option value="GAMES_LAST_PLAYED">Last played</option>
+                                        <option value="GAMES_STREAK_ALLTIME">Game streak (all-time)</option>
+                                        <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
+                                    </optgroup>
+                                </select>
+                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="3">
+                                    <option value="">Card 3: No card</option>
+                                    <optgroup label="Activity">
+                                        <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_YEAR">Longest streak (year)</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_ALLTIME">Longest streak (all-time)</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_DAY">Most active day</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_MONTH">Most active month</option>
+                                    </optgroup>
+                                    <optgroup label="Playtime">
+                                        <option value="PLAYTIME_ALLTIME">All-time playtime</option>
+                                        <option value="PLAYTIME_YEAR">This year</option>
+                                        <option value="PLAYTIME_AVG_DAILY">Average daily (year)</option>
+                                        <option value="PLAYTIME_BEST_DAY">Best single day</option>
+                                        <option value="PLAYTIME_GAMES_YEAR">Games this year</option>
+                                        <option value="PLAYTIME_GAMES_ALLTIME">Games all-time</option>
+                                    </optgroup>
+                                    <optgroup label="Games">
+                                        <option value="GAMES_MOST_PLAYED_ALLTIME">Most played (all-time)</option>
+                                        <option value="GAMES_MOST_PLAYED_YEAR">Most played (year)</option>
+                                        <option value="GAMES_LAST_PLAYED">Last played</option>
+                                        <option value="GAMES_STREAK_ALLTIME">Game streak (all-time)</option>
+                                        <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
+                                    </optgroup>
+                                </select>
+                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="4">
+                                    <option value="">Card 4: No card</option>
+                                    <optgroup label="Activity">
+                                        <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_YEAR">Longest streak (year)</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_ALLTIME">Longest streak (all-time)</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_DAY">Most active day</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_MONTH">Most active month</option>
+                                    </optgroup>
+                                    <optgroup label="Playtime">
+                                        <option value="PLAYTIME_ALLTIME">All-time playtime</option>
+                                        <option value="PLAYTIME_YEAR">This year</option>
+                                        <option value="PLAYTIME_AVG_DAILY">Average daily (year)</option>
+                                        <option value="PLAYTIME_BEST_DAY">Best single day</option>
+                                        <option value="PLAYTIME_GAMES_YEAR">Games this year</option>
+                                        <option value="PLAYTIME_GAMES_ALLTIME">Games all-time</option>
+                                    </optgroup>
+                                    <optgroup label="Games">
+                                        <option value="GAMES_MOST_PLAYED_ALLTIME">Most played (all-time)</option>
+                                        <option value="GAMES_MOST_PLAYED_YEAR">Most played (year)</option>
+                                        <option value="GAMES_LAST_PLAYED">Last played</option>
+                                        <option value="GAMES_STREAK_ALLTIME">Game streak (all-time)</option>
+                                        <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
+                                    </optgroup>
+                                </select>
+                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="5">
+                                    <option value="">Card 5: No card</option>
+                                    <optgroup label="Activity">
+                                        <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_YEAR">Longest streak (year)</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_ALLTIME">Longest streak (all-time)</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_DAY">Most active day</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_MONTH">Most active month</option>
+                                    </optgroup>
+                                    <optgroup label="Playtime">
+                                        <option value="PLAYTIME_ALLTIME">All-time playtime</option>
+                                        <option value="PLAYTIME_YEAR">This year</option>
+                                        <option value="PLAYTIME_AVG_DAILY">Average daily (year)</option>
+                                        <option value="PLAYTIME_BEST_DAY">Best single day</option>
+                                        <option value="PLAYTIME_GAMES_YEAR">Games this year</option>
+                                        <option value="PLAYTIME_GAMES_ALLTIME">Games all-time</option>
+                                    </optgroup>
+                                    <optgroup label="Games">
+                                        <option value="GAMES_MOST_PLAYED_ALLTIME">Most played (all-time)</option>
+                                        <option value="GAMES_MOST_PLAYED_YEAR">Most played (year)</option>
+                                        <option value="GAMES_LAST_PLAYED">Last played</option>
+                                        <option value="GAMES_STREAK_ALLTIME">Game streak (all-time)</option>
+                                        <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
+                                    </optgroup>
+                                </select>
+                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="6">
+                                    <option value="">Card 6: No card</option>
+                                    <optgroup label="Activity">
+                                        <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_YEAR">Longest streak (year)</option>
+                                        <option value="ACTIVITY_LONGEST_STREAK_ALLTIME">Longest streak (all-time)</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_DAY">Most active day</option>
+                                        <option value="ACTIVITY_MOST_ACTIVE_MONTH">Most active month</option>
+                                    </optgroup>
+                                    <optgroup label="Playtime">
+                                        <option value="PLAYTIME_ALLTIME">All-time playtime</option>
+                                        <option value="PLAYTIME_YEAR">This year</option>
+                                        <option value="PLAYTIME_AVG_DAILY">Average daily (year)</option>
+                                        <option value="PLAYTIME_BEST_DAY">Best single day</option>
+                                        <option value="PLAYTIME_GAMES_YEAR">Games this year</option>
+                                        <option value="PLAYTIME_GAMES_ALLTIME">Games all-time</option>
+                                    </optgroup>
+                                    <optgroup label="Games">
+                                        <option value="GAMES_MOST_PLAYED_ALLTIME">Most played (all-time)</option>
+                                        <option value="GAMES_MOST_PLAYED_YEAR">Most played (year)</option>
+                                        <option value="GAMES_LAST_PLAYED">Last played</option>
+                                        <option value="GAMES_STREAK_ALLTIME">Game streak (all-time)</option>
+                                        <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -22,7 +22,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const playingRightNowField = document.getElementById('playingRightNow');
     const widgetContentField = document.getElementById('widgetContent');
     const gameListSizeField = document.getElementById('gameListSize');
+    const gameListSizeSection = document.getElementById('gameListSizeSection');
     const widgetStyleField = document.getElementById('widgetStyle');
+    const customCardsSection = document.getElementById('customCardsSection');
+    const customCardFields = Array.from(document.querySelectorAll('.custom-card-field'));
+
+    const syncContentControls = () => {
+        if (!widgetContentField) {
+            return;
+        }
+        const isCustomContent = widgetContentField.value === 'INSIGHT_CUSTOM';
+        const isGameListContent = widgetContentField.value.startsWith('GAME_') && widgetContentField.value !== 'GAME_NONE';
+        customCardsSection?.classList.toggle('hidden', !isCustomContent);
+        gameListSizeSection?.classList.toggle('hidden', !isGameListContent);
+    };
 
     bootstrapSteamId({
         input: steamIdField,
@@ -40,8 +53,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         const eventName = control === gameListSizeField ? 'input' : 'change';
-        control.addEventListener(eventName, autoGenerateIfReady);
+        control.addEventListener(eventName, () => {
+            if (control === widgetContentField) {
+                syncContentControls();
+            }
+            autoGenerateIfReady();
+        });
     });
+
+    customCardFields.forEach((control) => control.addEventListener('change', autoGenerateIfReady));
+    syncContentControls();
 
     const appendSteamIdToLink = (anchor) => {
         if (!anchor || !steamIdField) {
@@ -131,9 +152,10 @@ async function generateWidget() {
     const { gameList, insightCategory } = resolveWidgetContent(widgetContent);
     const gameListSize = document.getElementById('gameListSize').value;
     const widgetStyle = document.getElementById('widgetStyle').value;
+    const customCards = getCustomCards();
     const displayWidth = 900;
 
-    const imageUrl = constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insightCategory, widgetStyle, displayWidth);
+    const imageUrl = constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insightCategory, widgetStyle, displayWidth, customCards);
 
     // Preview
     const previewLabel = document.createElement('div');
@@ -290,6 +312,13 @@ function resolveWidgetContent(widgetContent) {
     };
 }
 
+function getCustomCards() {
+    return Array.from(document.querySelectorAll('.custom-card-field'))
+        .map((field) => field.value.trim())
+        .filter((value) => value)
+        .slice(0, 6);
+}
+
 // Function to escape special HTML characters to prevent XSS
 function escapeHtml(input) {
     return input.replace(/&/g, "&amp;")
@@ -299,33 +328,38 @@ function escapeHtml(input) {
         .replace(/'/g, "&#039;");
 }
 
-// Use encodeURIComponent for URL parameters
-function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insightCategory, widgetStyle, displayWidth) {
+function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insightCategory, widgetStyle, displayWidth, customCards = []) {
     const baseUrl = window.location.origin;
     const params = new URLSearchParams();
 
-    params.append('id', encodeURIComponent(steamId));
+    params.append('id', steamId);
 
     if (playingRightNow !== true) {
-        params.append('playingRightNow', encodeURIComponent(playingRightNow));
+        params.append('playingRightNow', playingRightNow);
     }
 
     if (insightCategory && insightCategory !== 'NONE') {
-        params.append('insightCategory', encodeURIComponent(insightCategory));
+        params.append('insightCategory', insightCategory);
     } else if (gameList !== 'NONE') {
-        params.append('gameList', encodeURIComponent(gameList));
+        params.append('gameList', gameList);
     }
 
     if ((!insightCategory || insightCategory === 'NONE') && gameListSize !== '6') {
-        params.append('gameListSize', encodeURIComponent(gameListSize));
+        params.append('gameListSize', gameListSize);
     }
 
     if (displayWidth !== 350) {
-        params.append('width', encodeURIComponent(displayWidth));
+        params.append('width', displayWidth);
     }
 
     if (widgetStyle && widgetStyle !== 'STEAM') {
-        params.append('style', encodeURIComponent(widgetStyle));
+        params.append('style', widgetStyle);
+    }
+
+    if (insightCategory === 'CUSTOM') {
+        customCards.slice(0, 6).forEach((cardKey) => {
+            params.append('customCard', cardKey);
+        });
     }
 
     return `${baseUrl}/widget/img?${params.toString()}`;
