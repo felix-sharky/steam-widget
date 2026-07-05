@@ -221,6 +221,14 @@ document.addEventListener('DOMContentLoaded', () => {
         persistDateFilters(startDate, endDate);
     };
 
+    const handleDateFilterChange = () => {
+        syncDateBounds();
+        persistDateFiltersInQuery();
+        if (steamIdInput.value.trim()) {
+            form.dispatchEvent(new Event('submit'));
+        }
+    };
+
     const fetchStats = async (steamId, mode, startDate, endDate) => {
         const endpoint = mode === 'date' ? '/api/tracking/profile-date' : '/api/tracking/profile-month';
         const params = new URLSearchParams({ steamid: steamId });
@@ -649,19 +657,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (startDateInput) {
-        startDateInput.addEventListener('input', () => {
-            syncDateBounds();
-            persistDateFiltersInQuery();
-        });
+        startDateInput.addEventListener('input', handleDateFilterChange);
     }
 
     if (endDateInput) {
-        endDateInput.addEventListener('input', () => {
-            syncDateBounds();
-            persistDateFiltersInQuery();
-        });
+        endDateInput.addEventListener('input', handleDateFilterChange);
     }
 
     bootstrapFromQuery();
 });
-
