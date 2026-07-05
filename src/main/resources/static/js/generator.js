@@ -20,8 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const steamIdField = document.getElementById('steamId');
     const playingRightNowField = document.getElementById('playingRightNow');
-    const gameListField = document.getElementById('gameList');
+    const widgetContentField = document.getElementById('widgetContent');
     const gameListSizeField = document.getElementById('gameListSize');
+    const widgetStyleField = document.getElementById('widgetStyle');
 
     bootstrapSteamId({
         input: steamIdField,
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    [playingRightNowField, gameListField, gameListSizeField].forEach((control) => {
+    [playingRightNowField, widgetContentField, gameListSizeField, widgetStyleField].forEach((control) => {
         if (!control) {
             return;
         }
@@ -62,9 +63,14 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('mouseenter', () => appendSteamIdToLink(link));
     });
 
-    steamIdField?.addEventListener('input', () => syncNavLinks(steamIdField.value.trim()));
+    steamIdField?.addEventListener('input', () => {
+        currentWidgetShare = null;
+        syncNavLinks(steamIdField.value.trim());
+    });
     syncNavLinks(steamIdField?.value?.trim());
 });
+
+let currentWidgetShare = null;
 
 async function generateWidget() {
     const utils = window.SteamWidget || {};
@@ -89,7 +95,8 @@ async function generateWidget() {
         persistSteamIdInQuery();
         syncNavLinks();
 
-        return;
+        currentWidgetShare = null;
+        return null;
     }
 
     try {
@@ -98,7 +105,8 @@ async function generateWidget() {
             const errorMessage = document.createElement('p');
             errorMessage.textContent = 'Unable to resolve that Steam ID or vanity URL.';
             widgetContainer.appendChild(errorMessage);
-            return;
+            currentWidgetShare = null;
+            return null;
         }
         steamId = resolved;
         steamIdInput.value = resolved;
@@ -107,7 +115,8 @@ async function generateWidget() {
         const errorMessage = document.createElement('p');
         errorMessage.textContent = 'Failed to resolve this Steam identifier. Please try again later.';
         widgetContainer.appendChild(errorMessage);
-        return;
+        currentWidgetShare = null;
+        return null;
     }
 
     // Sanitize the steamId to remove any HTML tags or JavaScript code
@@ -118,10 +127,13 @@ async function generateWidget() {
     syncNavLinks(steamId);
 
     const playingRightNow = document.getElementById('playingRightNow').checked;
-    const gameList = document.getElementById('gameList').value;
+    const widgetContent = document.getElementById('widgetContent').value;
+    const { gameList, insightCategory } = resolveWidgetContent(widgetContent);
     const gameListSize = document.getElementById('gameListSize').value;
+    const widgetStyle = document.getElementById('widgetStyle').value;
+    const displayWidth = 900;
 
-    const imageUrl = constructSafeUrl(steamId, playingRightNow, gameList, gameListSize);
+    const imageUrl = constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insightCategory, widgetStyle, displayWidth);
 
     // Preview
     const previewLabel = document.createElement('div');
@@ -135,7 +147,7 @@ async function generateWidget() {
 
     const previewImage = document.createElement('img');
     previewImage.src = `${imageUrl}&purpose=generator`;
-    previewImage.width = 350;
+    previewImage.width = displayWidth;
     previewImageBox.appendChild(previewImage);
 
     // Link
@@ -157,8 +169,125 @@ async function generateWidget() {
 
     const htmlCodeBox = document.createElement('div');
     htmlCodeBox.className = 'code-box';
-    htmlCodeBox.textContent = `<img src="${imageUrl}" width="350">`;
+    htmlCodeBox.textContent = `<img src="${imageUrl}" width="${displayWidth}">`;
     widgetContainer.appendChild(htmlCodeBox);
+
+    currentWidgetShare = { imageUrl, displayWidth };
+    return currentWidgetShare;
+}
+
+async function ensureCurrentWidgetShare() {
+    if (currentWidgetShare?.imageUrl) {
+        return currentWidgetShare;
+    }
+    return generateWidget();
+}
+
+async function openWidgetShareModal() {
+    const share = await ensureCurrentWidgetShare();
+    if (!share?.imageUrl) {
+        showShareToast('Generate a widget first.');
+        return;
+    }
+    const modal = document.getElementById('widgetShareModal');
+    const preview = document.getElementById('widgetSharePreview');
+    if (!modal || !preview) {
+        return;
+    }
+    preview.src = `${share.imageUrl}&purpose=share-preview`;
+    preview.width = share.displayWidth;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeWidgetShareModal() {
+    const modal = document.getElementById('widgetShareModal');
+    if (!modal) {
+        return;
+    }
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+async function shareCurrentWidgetImage() {
+    const share = await ensureCurrentWidgetShare();
+    if (!share?.imageUrl) {
+        showShareToast('Generate a widget first.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${share.imageUrl}&purpose=share-image`);
+        if (!response.ok) {
+            throw new Error(`Image request failed: ${response.status}`);
+        }
+        const blob = await response.blob();
+        const file = new File([blob], 'steam-widget.png', { type: blob.type || 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({
+                title: 'My Steam widget',
+                text: 'Generated with steam-widget.com',
+                files: [file]
+            });
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    await copyToClipboard(share.imageUrl, 'Image link copied!');
+}
+
+async function shareCurrentSite() {
+    const data = {
+        title: document.title,
+        text: 'Generate a Steam widget with steam-widget.com',
+        url: location.href
+    };
+    if (navigator.share) {
+        try {
+            await navigator.share(data);
+            return;
+        } catch (error) {
+            if (error?.name === 'AbortError') {
+                return;
+            }
+        }
+    }
+    await copyToClipboard(location.href, 'Site link copied!');
+}
+
+async function copyToClipboard(value, message) {
+    try {
+        await navigator.clipboard.writeText(value);
+        showShareToast(message);
+    } catch (error) {
+        console.error(error);
+        showShareToast('Copy failed.');
+    }
+}
+
+function showShareToast(message) {
+    const toast = document.getElementById('shareToast');
+    if (!toast) {
+        return;
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+function resolveWidgetContent(widgetContent) {
+    if (widgetContent.startsWith('INSIGHT_')) {
+        return {
+            gameList: 'NONE',
+            insightCategory: widgetContent.replace('INSIGHT_', '')
+        };
+    }
+    return {
+        gameList: widgetContent.replace('GAME_', ''),
+        insightCategory: 'NONE'
+    };
 }
 
 // Function to escape special HTML characters to prevent XSS
@@ -171,7 +300,7 @@ function escapeHtml(input) {
 }
 
 // Use encodeURIComponent for URL parameters
-function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize) {
+function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insightCategory, widgetStyle, displayWidth) {
     const baseUrl = window.location.origin;
     const params = new URLSearchParams();
 
@@ -181,12 +310,22 @@ function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize) {
         params.append('playingRightNow', encodeURIComponent(playingRightNow));
     }
 
-    if (gameList !== 'NONE') {
+    if (insightCategory && insightCategory !== 'NONE') {
+        params.append('insightCategory', encodeURIComponent(insightCategory));
+    } else if (gameList !== 'NONE') {
         params.append('gameList', encodeURIComponent(gameList));
     }
 
-    if (gameListSize !== '5') {
+    if ((!insightCategory || insightCategory === 'NONE') && gameListSize !== '6') {
         params.append('gameListSize', encodeURIComponent(gameListSize));
+    }
+
+    if (displayWidth !== 350) {
+        params.append('width', encodeURIComponent(displayWidth));
+    }
+
+    if (widgetStyle && widgetStyle !== 'STEAM') {
+        params.append('style', encodeURIComponent(widgetStyle));
     }
 
     return `${baseUrl}/widget/img?${params.toString()}`;

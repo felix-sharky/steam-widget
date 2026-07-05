@@ -59,7 +59,7 @@
           ],
           "creator": {
             "@type": "Person",
-            "name": "Sharky",
+            "name": "SharkyFelix",
             "url": "https://sharky.codes"
           }
         }
@@ -219,20 +219,35 @@
                                 <label class="block font-label-md text-label-md text-on-surface uppercase mb-1" for="playingRightNow">Display "Now Playing"</label>
                                 <span class="text-[11px] text-on-surface-variant/70 italic">Real-time activity status</span>
                             </div>
-                            <div class="toggle-track checked" id="playingRightNowTrack" onclick="this.classList.toggle('checked'); document.getElementById('playingRightNow').checked = this.classList.contains('checked');">
+                            <div class="toggle-track checked" id="playingRightNowTrack" onclick="this.classList.toggle('checked'); document.getElementById('playingRightNow').checked = this.classList.contains('checked'); document.getElementById('playingRightNow').dispatchEvent(new Event('change'))">
                                 <div class="toggle-thumb"></div>
                             </div>
                             <input type="checkbox" id="playingRightNow" class="sr-only" checked>
                         </div>
-                        <!-- Game List Type -->
+                        <!-- Widget Style -->
                         <div class="space-y-2">
-                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="gameList">Game List Type</label>
-                            <select id="gameList"
+                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="widgetStyle">Widget Style</label>
+                            <select id="widgetStyle"
                                     class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors cursor-pointer">
-                                <option value="NONE">Don't show</option>
-                                <option value="TOP_GAMES_TOTAL">Top games of all time</option>
-                                <option value="TOP_GAMES_RECENT">Top games last 2 weeks</option>
-                                <option value="RECENT_GAMES">Last played games</option>
+                                <option value="STEAM">Steam Blue</option>
+                                <option value="MIDNIGHT">Midnight</option>
+                                <option value="NEON">Neon</option>
+                                <option value="SUNSET">Sunset</option>
+                                <option value="FOREST">Forest</option>
+                            </select>
+                        </div>
+                        <!-- Widget Content -->
+                        <div class="space-y-2">
+                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="widgetContent">Widget Content</label>
+                            <select id="widgetContent"
+                                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors cursor-pointer">
+                                <option value="GAME_NONE">Profile only</option>
+                                <option value="GAME_TOP_GAMES_TOTAL">Top games of all time</option>
+                                <option value="GAME_TOP_GAMES_RECENT">Top games last 2 weeks</option>
+                                <option value="GAME_RECENT_GAMES">Last played games</option>
+                                <option value="INSIGHT_ACTIVITY">Streaks &amp; Activity insights</option>
+                                <option value="INSIGHT_PLAYTIME">Playtime Stats insights</option>
+                                <option value="INSIGHT_GAMES">Game Insights</option>
                             </select>
                         </div>
                         <!-- Max games -->
@@ -240,7 +255,7 @@
                             <label class="block font-label-md text-label-md text-on-surface uppercase" for="gameListSize">Max games displayed</label>
                             <input id="gameListSize"
                                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors"
-                                   max="10" min="0" type="number" value="5">
+                                   max="10" min="0" type="number" value="6">
                         </div>
                     </div>
                 </div>
@@ -302,25 +317,36 @@
     </div>
 </footer>
 
-<button class="share-btn" onclick="sharePage()" title="Share this page" aria-label="Share">
+<button class="share-btn" onclick="openWidgetShareModal()" title="Share this widget" aria-label="Share">
     <span class="material-symbols-outlined">share</span>
     Share
 </button>
 
+<div id="widgetShareModal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/70 backdrop-blur-sm px-4" role="dialog" aria-modal="true" aria-labelledby="widgetShareTitle">
+    <div class="glass-card w-full max-w-4xl rounded-2xl p-stack-lg shadow-2xl border border-outline-variant/20">
+        <div class="flex items-start justify-between gap-4 mb-5">
+            <div>
+                <h2 id="widgetShareTitle" class="font-headline-md text-headline-md text-on-surface">Share your widget</h2>
+                <p class="text-on-surface-variant text-sm mt-1">Preview the current widget, then share the image directly or share this generator page.</p>
+            </div>
+            <button type="button" onclick="closeWidgetShareModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors" aria-label="Close share dialog">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="bg-surface-container-lowest/60 border border-outline-variant/20 rounded-xl p-4 overflow-auto text-center">
+            <img id="widgetSharePreview" class="inline-block max-w-full rounded-lg" alt="Current Steam widget preview">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+            <button type="button" onclick="shareCurrentWidgetImage()" class="bg-primary-container text-on-primary-container px-5 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110">
+                Share image
+            </button>
+            <button type="button" onclick="shareCurrentSite()" class="bg-surface-container-highest text-on-surface px-5 py-3 rounded-lg font-bold text-sm border border-outline-variant/20 transition-all duration-200 active:scale-95 hover:border-primary-container/60">
+                Share site
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="shareToast">Link copied!</div>
-<script>
-function sharePage() {
-    const data = { title: document.title, url: location.href };
-    if (navigator.share) {
-        navigator.share(data).catch(() => {});
-    } else {
-        navigator.clipboard.writeText(location.href).then(() => {
-            const t = document.getElementById('shareToast');
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2200);
-        });
-    }
-}
-</script>
 </body>
 </html>

@@ -15,7 +15,12 @@ import com.lukaspradel.steamapi.webapi.request.ResolveVanityUrlRequest;
 import codes.sharky.steamwidget.component.SteamWebAPI;
 import codes.sharky.steamwidget.entity.Hit;
 import codes.sharky.steamwidget.entity.Profile;
+import codes.sharky.steamwidget.entity.TrackingProfileInsightsActivity;
+import codes.sharky.steamwidget.entity.TrackingProfileInsightsGame;
+import codes.sharky.steamwidget.entity.TrackingProfileInsightsPlaytime;
+import codes.sharky.steamwidget.model.InsightCategory;
 import codes.sharky.steamwidget.model.ShowedGames;
+import codes.sharky.steamwidget.model.WidgetStyle;
 import codes.sharky.steamwidget.repository.HitRepository;
 import codes.sharky.steamwidget.repository.ProfileRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +34,7 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,10 +54,12 @@ public class SteamWidgetService {
     private final SteamWebAPIService steamWebAPIService;
 
     private final ProfileService profileService;
+    private final TrackingProfileService trackingProfileService;
 
-    public SteamWidgetService(SteamWebAPIService steamWebAPIService, ProfileService profileService) {
+    public SteamWidgetService(SteamWebAPIService steamWebAPIService, ProfileService profileService, TrackingProfileService trackingProfileService) {
         this.steamWebAPIService = steamWebAPIService;
         this.profileService = profileService;
+        this.trackingProfileService = trackingProfileService;
     }
 
     /**
@@ -95,6 +103,16 @@ public class SteamWidgetService {
         return generateWidgetImage(steamId, showGames, recentGamesCount, showPlayingRightNow, purpose, ip);
     }
 
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, boolean showPlayingRightNow, String purpose, @NotNull HttpServletRequest request) throws SteamApiException {
+        String ip = IPUtils.getIPAddress(request);
+        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, showPlayingRightNow, purpose, ip);
+    }
+
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, @NotNull HttpServletRequest request) throws SteamApiException {
+        String ip = IPUtils.getIPAddress(request);
+        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, style, showPlayingRightNow, purpose, ip);
+    }
+
     /**
      * Generates a widget image for a given Steam ID, purpose, and IP address.
      * This method first retrieves the player's information using their Steam ID,
@@ -111,7 +129,22 @@ public class SteamWidgetService {
      * @throws SteamApiException If there is an issue with accessing the Steam Web API.
      */
     public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
+        return generateWidgetImage(steamId, showGames, recentGamesCount, InsightCategory.NONE, showPlayingRightNow, purpose, ip);
+    }
+
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
+        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, WidgetStyle.STEAM, showPlayingRightNow, purpose, ip);
+    }
+
+    public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
         Player player = getUserBySteamId(steamId, purpose, ip);
+        SharePalette palette = getSharePalette(style);
+
+        boolean showInsights = insightCategory != InsightCategory.NONE;
+        List<InsightCard> insightCards = showInsights && player.getSteamid() != null ? getInsightCards(player.getSteamid(), insightCategory) : List.of();
+        if (showInsights) {
+            return generateInsightWidgetImage(player, insightCards, showPlayingRightNow, palette);
+        }
 
         List<Object> games = switch (showGames) {
             case TOP_GAMES_RECENT -> {
@@ -129,17 +162,429 @@ public class SteamWidgetService {
             default -> new ArrayList<>();
         };
 
-        BufferedImage bufferedImage = new BufferedImage(3500, 750 + (games.size() * 500), BufferedImage.TYPE_INT_ARGB);
-        this.drawBaseWidget(bufferedImage);
-        if (player.getSteamid() != null) {
-            drawRoundImage(bufferedImage, player.getAvatarfull(), 125, 125, 500, 500);
-            drawUserInformation(bufferedImage, player, showPlayingRightNow);
-
-            drawGameSection(bufferedImage, games);
+        if (showGames == ShowedGames.NONE) {
+            return generateProfileWidgetImage(player, showPlayingRightNow, palette);
         }
 
-        return bufferedImage;
+        return generateGameWidgetImage(player, games, showPlayingRightNow, palette);
     }
+
+    private List<InsightCard> getInsightCards(String steamId, InsightCategory insightCategory) {
+        return switch (insightCategory) {
+            case ACTIVITY -> getActivityInsightCards(steamId);
+            case PLAYTIME -> getPlaytimeInsightCards(steamId);
+            case GAMES -> getGameInsightCards(steamId);
+            case NONE -> List.of();
+        };
+    }
+
+    private List<InsightCard> getActivityInsightCards(String steamId) {
+        TrackingProfileInsightsActivity insights = trackingProfileService.getInsightsActivity(steamId).getBody();
+        if (insights == null) {
+            return List.of();
+        }
+        return List.of(
+                new InsightCard("Current streak", formatDays(insights.getCurrentStreakDays()), formatDateRange(insights.getCurrentStreakStart(), insights.getCurrentStreakEnd())),
+                new InsightCard("Longest streak (year)", formatDays(insights.getLongestStreakYearDays()), formatDateRange(insights.getLongestStreakYearStart(), insights.getLongestStreakYearEnd())),
+                new InsightCard("Longest streak (all-time)", formatDays(insights.getLongestStreakAlltimeDays()), formatDateRange(insights.getLongestStreakAlltimeStart(), insights.getLongestStreakAlltimeEnd())),
+                new InsightCard("Most active day", formatText(insights.getMostActiveDow()), formatCount(insights.getMostActiveDowCount(), "session this year", "sessions this year")),
+                new InsightCard("Most active month", formatText(insights.getMostActiveMonth()), formatCount(insights.getMostActiveMonthDays(), "day played", "days played"))
+        );
+    }
+
+    private List<InsightCard> getPlaytimeInsightCards(String steamId) {
+        TrackingProfileInsightsPlaytime insights = trackingProfileService.getInsightsPlaytime(steamId).getBody();
+        if (insights == null) {
+            return List.of();
+        }
+        return List.of(
+                new InsightCard("All-time playtime", formatDuration(insights.getAlltimeHours(), insights.getAlltimeMinutes()), ""),
+                new InsightCard("This year", formatDuration(insights.getYearHours(), insights.getYearMinutes()), ""),
+                new InsightCard("Avg daily (year)", formatDuration(insights.getAvgDailyHours(), insights.getAvgDailyMinutes()), ""),
+                new InsightCard("Best single day", formatDuration(insights.getBestDayHours(), insights.getBestDayMinutes()), formatDate(insights.getBestDayDate())),
+                new InsightCard("Games this year", formatNumber(insights.getUniqueGamesThisYear()), ""),
+                new InsightCard("Games all-time", formatNumber(insights.getUniqueGamesAlltime()), "")
+        );
+    }
+
+    private List<InsightCard> getGameInsightCards(String steamId) {
+        TrackingProfileInsightsGame insights = trackingProfileService.getInsightsGame(steamId).getBody();
+        if (insights == null) {
+            return List.of();
+        }
+        return List.of(
+                new InsightCard("Most played (all-time)", formatText(insights.getMostPlayedAlltimeGame()), formatDuration(insights.getMostPlayedAlltimeHours(), insights.getMostPlayedAlltimeMinutes())),
+                new InsightCard("Most played (year)", formatText(insights.getMostPlayedYearGame()), formatDuration(insights.getMostPlayedYearHours(), insights.getMostPlayedYearMinutes())),
+                new InsightCard("Last played", formatText(insights.getLastPlayedGame()), formatDate(insights.getLastPlayedDate())),
+                new InsightCard("Game streak (all-time)", formatText(insights.getLongestStreakAlltimeGame()), formatDaysWithRange(insights.getLongestStreakAlltimeDays(), insights.getLongestStreakAlltimeStart(), insights.getLongestStreakAlltimeEnd())),
+                new InsightCard("Game streak (year)", formatText(insights.getLongestStreakYearGame()), formatDaysWithRange(insights.getLongestStreakYearDays(), insights.getLongestStreakYearStart(), insights.getLongestStreakYearEnd()))
+        );
+    }
+
+    private BufferedImage generateInsightWidgetImage(Player player, List<InsightCard> cards, boolean showPlayingRightNow, SharePalette palette) {
+        BufferedImage image = new BufferedImage(1800, 1200, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = drawShareHeader(image, player, showPlayingRightNow, palette);
+
+        if (cards.isEmpty()) {
+            g.setFont(new Font("ARIAL", Font.PLAIN, 42));
+            g.setColor(palette.muted());
+            g.drawString("No tracked insights found for this profile.", 80, 420);
+            drawShareFooter(g, image, palette);
+            g.dispose();
+            return image;
+        }
+
+        int cardWidth = 790;
+        int cardHeight = 240;
+        int gapX = 60;
+        int gapY = 36;
+        int startX = 80;
+        int startY = 355;
+        for (int i = 0; i < cards.size(); i++) {
+            InsightCard card = cards.get(i);
+            int col = i % 2;
+            int row = i / 2;
+            int x = startX + col * (cardWidth + gapX);
+            int y = startY + row * (cardHeight + gapY);
+            drawShareInsightCard(g, card, x, y, cardWidth, cardHeight, palette);
+        }
+
+        drawShareFooter(g, image, palette);
+
+        g.dispose();
+        return image;
+    }
+
+    private BufferedImage generateGameWidgetImage(Player player, List<Object> games, boolean showPlayingRightNow, SharePalette palette) {
+        List<GameCard> cards = getGameCards(games);
+        int rows = cards.isEmpty() ? 1 : (int) Math.ceil(cards.size() / 2.0);
+        int height = Math.max(1200, 355 + (rows * 240) + ((rows - 1) * 36) + 90);
+        BufferedImage image = new BufferedImage(1800, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = drawShareHeader(image, player, showPlayingRightNow, palette);
+
+        if (cards.isEmpty()) {
+            g.setFont(new Font("ARIAL", Font.PLAIN, 42));
+            g.setColor(palette.muted());
+            g.drawString("No games selected for this widget.", 80, 420);
+            drawShareFooter(g, image, palette);
+            g.dispose();
+            return image;
+        }
+
+        int cardWidth = 790;
+        int cardHeight = 240;
+        int gapX = 60;
+        int gapY = 36;
+        int startX = 80;
+        int startY = 355;
+        for (int i = 0; i < cards.size(); i++) {
+            GameCard card = cards.get(i);
+            int col = i % 2;
+            int row = i / 2;
+            int x = startX + col * (cardWidth + gapX);
+            int y = startY + row * (cardHeight + gapY);
+            drawShareGameCard(image, g, card, x, y, cardWidth, cardHeight, palette);
+        }
+
+        drawShareFooter(g, image, palette);
+        g.dispose();
+        return image;
+    }
+
+    private BufferedImage generateProfileWidgetImage(Player player, boolean showPlayingRightNow, SharePalette palette) {
+        BufferedImage image = new BufferedImage(1800, 340, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = drawShareHeader(image, player, showPlayingRightNow, palette);
+        g.dispose();
+        return image;
+    }
+
+    private Graphics2D drawShareHeader(BufferedImage image, Player player, boolean showPlayingRightNow, SharePalette palette) {
+        Graphics2D g = image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        GradientPaint background = new GradientPaint(0, 0, palette.backgroundStart(), image.getWidth(), image.getHeight(), palette.backgroundEnd());
+        g.setPaint(background);
+        g.fillRoundRect(0, 0, image.getWidth(), image.getHeight(), 44, 44);
+
+        g.setColor(palette.primaryGlow());
+        g.fillOval(1180, -360, 780, 780);
+        g.setColor(palette.secondaryGlow());
+        g.fillOval(-260, image.getHeight() - 440, 620, 620);
+
+        if (player.getSteamid() != null) {
+            drawRoundImage(image, player.getAvatarfull(), 80, 78, 200, 200);
+        }
+
+        String name = player.getPersonaname() == null || player.getPersonaname().isBlank() ? "Steam profile" : player.getPersonaname();
+        g.setFont(new Font("ARIAL", Font.BOLD, 68));
+        g.setColor(palette.text());
+        drawFittedString(g, name, 320, 155, 930);
+
+        String status = getPlayerStatusText(player, showPlayingRightNow);
+        g.setFont(new Font("ARIAL", Font.PLAIN, 36));
+        g.setColor(palette.muted());
+        drawFittedString(g, status, 322, 220, 930);
+
+        g.setColor(palette.divider());
+        g.fillRoundRect(80, 315, image.getWidth() - 160, 2, 1, 1);
+        return g;
+    }
+
+    private List<GameCard> getGameCards(List<Object> games) {
+        return games.stream().map((gameObject) -> {
+            if (gameObject instanceof com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game game) {
+                String iconUrl = getGameIconUrl(game.getAppid(), game.getImgIconUrl(), game.getImgLogoUrl());
+                return new GameCard(game.getName(), formatMinutes(game.getPlaytimeForever(), "Total"), formatMinutes(game.getPlaytime2weeks(), "Recent"), iconUrl);
+            }
+            if (gameObject instanceof com.lukaspradel.steamapi.data.json.ownedgames.Game game) {
+                String iconUrl = getGameIconUrl(game.getAppid(), game.getImgIconUrl(), game.getImgLogoUrl());
+                String recent = "";
+                if (game.getAdditionalProperties() != null && game.getAdditionalProperties().containsKey("playtime_2weeks")) {
+                    recent = formatMinutes((Integer) game.getAdditionalProperties().get("playtime_2weeks"), "Recent");
+                }
+                return new GameCard(game.getName(), formatMinutes(game.getPlaytimeForever(), "Total"), recent, iconUrl);
+            }
+            return null;
+        }).filter((card) -> card != null).toList();
+    }
+
+    private void drawShareGameCard(BufferedImage image, Graphics2D g, GameCard card, int x, int y, int width, int height, SharePalette palette) {
+        g.setColor(palette.cardBackground());
+        g.fillRoundRect(x, y, width, height, 32, 32);
+        g.setColor(palette.cardBorder());
+        g.setStroke(new BasicStroke(2));
+        g.drawRoundRect(x, y, width, height, 32, 32);
+
+        drawRoundImage(image, card.iconUrl(), x + 42, y + 58, 124, 124);
+
+        g.setFont(new Font("ARIAL", Font.BOLD, 42));
+        g.setColor(palette.text());
+        drawFittedString(g, card.name(), x + 200, y + 78, width - 242);
+
+        g.setFont(new Font("ARIAL", Font.PLAIN, 34));
+        g.setColor(palette.muted());
+        drawFittedString(g, card.totalPlaytime(), x + 200, y + 138, width - 242);
+
+        if (!card.recentPlaytime().isEmpty()) {
+            g.setColor(palette.accent());
+            drawFittedString(g, card.recentPlaytime(), x + 200, y + 192, width - 242);
+        }
+    }
+
+    private void drawShareFooter(Graphics2D g, BufferedImage image, SharePalette palette) {
+        g.setFont(new Font("ARIAL", Font.PLAIN, 28));
+        g.setColor(palette.footer());
+        g.drawString("generated by steam-widget.com", image.getWidth() - 450, image.getHeight() - 20);
+    }
+
+    private String getGameIconUrl(Object appId, String iconUrl, String logoUrl) {
+        String imageHash = iconUrl == null || iconUrl.isBlank() ? logoUrl : iconUrl;
+        return "https://media.steampowered.com/steamcommunity/public/images/apps/" + appId + "/" + imageHash + ".jpg";
+    }
+
+    private String formatMinutes(long minutes, String label) {
+        long hours = minutes / 60;
+        long remainingMinutes = minutes % 60;
+        return label + ": " + hours + "h " + remainingMinutes + "m";
+    }
+
+    private void drawShareInsightCard(Graphics2D g, InsightCard card, int x, int y, int width, int height, SharePalette palette) {
+        g.setColor(palette.cardBackground());
+        g.fillRoundRect(x, y, width, height, 32, 32);
+        g.setColor(palette.cardBorder());
+        g.setStroke(new BasicStroke(2));
+        g.drawRoundRect(x, y, width, height, 32, 32);
+
+        g.setFont(new Font("ARIAL", Font.BOLD, 30));
+        g.setColor(palette.accent());
+        drawFittedString(g, card.label().toUpperCase(), x + 42, y + 54, width - 84);
+
+        g.setFont(new Font("ARIAL", Font.BOLD, 62));
+        g.setColor(palette.text());
+        drawFittedString(g, card.value(), x + 42, y + 135, width - 84);
+
+        if (!card.detail().isEmpty()) {
+            g.setFont(new Font("ARIAL", Font.PLAIN, 34));
+            g.setColor(palette.muted());
+            drawFittedString(g, card.detail(), x + 42, y + 194, width - 84);
+        }
+    }
+
+    private String getPlayerStatusText(Player player, boolean showPlayingRightNow) {
+        String game = player.getAdditionalProperties() == null ? "" : player.getAdditionalProperties().getOrDefault("gameextrainfo", "").toString();
+        if (showPlayingRightNow && !game.isBlank()) {
+            return "Now playing " + game;
+        }
+        int state = player.getPersonastate() == null ? -1 : player.getPersonastate().intValue();
+        return switch (state) {
+            case 0 -> "Offline";
+            case 1 -> "Online";
+            case 2 -> "Busy";
+            case 3 -> "Away";
+            case 4 -> "Snooze";
+            case 5 -> "Looking to trade";
+            case 6 -> "Looking to play";
+            default -> "Unknown";
+        };
+    }
+
+    private void drawFittedString(Graphics2D g, String text, int x, int y, int maxWidth) {
+        String fitted = text == null || text.isBlank() ? "-" : text;
+        FontMetrics metrics = g.getFontMetrics();
+        if (metrics.stringWidth(fitted) <= maxWidth) {
+            g.drawString(fitted, x, y);
+            return;
+        }
+        while (fitted.length() > 1 && metrics.stringWidth(fitted + "...") > maxWidth) {
+            fitted = fitted.substring(0, fitted.length() - 1);
+        }
+        g.drawString(fitted + "...", x, y);
+    }
+
+    private String formatDuration(Long hours, Long minutes) {
+        long safeHours = hours == null ? 0 : hours;
+        long safeMinutes = minutes == null ? 0 : minutes;
+        if (safeHours == 0 && safeMinutes == 0) {
+            return "-";
+        }
+        return safeHours > 0 ? safeHours + "h " + safeMinutes + "m" : safeMinutes + "m";
+    }
+
+    private String formatDays(Long days) {
+        if (days == null || days == 0) {
+            return "-";
+        }
+        return days + (days == 1 ? " day" : " days");
+    }
+
+    private String formatDaysWithRange(Long days, LocalDate start, LocalDate end) {
+        String formattedDays = formatDays(days);
+        String range = formatDateRange(start, end);
+        if (formattedDays.equals("-")) {
+            return range;
+        }
+        if (range.equals("-")) {
+            return formattedDays;
+        }
+        return formattedDays + " | " + range;
+    }
+
+    private String formatCount(Long count, String singular, String plural) {
+        if (count == null || count == 0) {
+            return "";
+        }
+        return count + " " + (count == 1 ? singular : plural);
+    }
+
+    private String formatNumber(Long number) {
+        return number == null ? "-" : String.valueOf(number);
+    }
+
+    private String formatText(String text) {
+        return text == null || text.isBlank() ? "-" : text;
+    }
+
+    private String formatDate(LocalDate date) {
+        return date == null ? "-" : date.toString();
+    }
+
+    private String formatDateRange(LocalDate start, LocalDate end) {
+        String formattedStart = formatDate(start);
+        String formattedEnd = formatDate(end);
+        if (formattedStart.equals("-") && formattedEnd.equals("-")) {
+            return "-";
+        }
+        return formattedStart + " to " + formattedEnd;
+    }
+
+    private SharePalette getSharePalette(WidgetStyle style) {
+        return switch (style) {
+            case MIDNIGHT -> new SharePalette(
+                    Color.decode("#050816"),
+                    Color.decode("#18213b"),
+                    new Color(129, 140, 248, 44),
+                    new Color(255, 255, 255, 16),
+                    new Color(9, 14, 30, 232),
+                    new Color(165, 180, 252, 54),
+                    Color.decode("#a5b4fc"),
+                    Color.decode("#f8fafc"),
+                    Color.decode("#cbd5e1"),
+                    new Color(255, 255, 255, 34),
+                    Color.decode("#94a3b8")
+            );
+            case NEON -> new SharePalette(
+                    Color.decode("#09090b"),
+                    Color.decode("#20102f"),
+                    new Color(34, 211, 238, 52),
+                    new Color(236, 72, 153, 34),
+                    new Color(15, 23, 42, 230),
+                    new Color(34, 211, 238, 70),
+                    Color.decode("#22d3ee"),
+                    Color.decode("#ffffff"),
+                    Color.decode("#d8b4fe"),
+                    new Color(34, 211, 238, 46),
+                    Color.decode("#a78bfa")
+            );
+            case SUNSET -> new SharePalette(
+                    Color.decode("#2d1608"),
+                    Color.decode("#6f2c18"),
+                    new Color(251, 146, 60, 54),
+                    new Color(253, 186, 116, 28),
+                    new Color(55, 25, 15, 224),
+                    new Color(253, 186, 116, 58),
+                    Color.decode("#fdba74"),
+                    Color.decode("#fff7ed"),
+                    Color.decode("#fed7aa"),
+                    new Color(253, 186, 116, 42),
+                    Color.decode("#fb923c")
+            );
+            case FOREST -> new SharePalette(
+                    Color.decode("#06130f"),
+                    Color.decode("#17382d"),
+                    new Color(52, 211, 153, 42),
+                    new Color(187, 247, 208, 18),
+                    new Color(8, 32, 26, 228),
+                    new Color(110, 231, 183, 48),
+                    Color.decode("#6ee7b7"),
+                    Color.decode("#ecfdf5"),
+                    Color.decode("#bbf7d0"),
+                    new Color(110, 231, 183, 38),
+                    Color.decode("#86efac")
+            );
+            case STEAM -> new SharePalette(
+                    Color.decode("#101823"),
+                    Color.decode("#20364a"),
+                    new Color(102, 192, 244, 30),
+                    new Color(255, 255, 255, 18),
+                    new Color(17, 28, 40, 225),
+                    new Color(255, 255, 255, 28),
+                    Color.decode("#66c0f4"),
+                    Color.WHITE,
+                    Color.decode("#c7d5e0"),
+                    new Color(255, 255, 255, 34),
+                    Color.decode("#8f98a0")
+            );
+        };
+    }
+
+    private record InsightCard(String label, String value, String detail) {}
+
+    private record GameCard(String name, String totalPlaytime, String recentPlaytime, String iconUrl) {}
+
+    private record SharePalette(
+            Color backgroundStart,
+            Color backgroundEnd,
+            Color primaryGlow,
+            Color secondaryGlow,
+            Color cardBackground,
+            Color cardBorder,
+            Color accent,
+            Color text,
+            Color muted,
+            Color divider,
+            Color footer
+    ) {}
 
     /**
      * Draws the game section on the widget image. This method iterates through the list of games and draws
@@ -299,13 +744,8 @@ public class SteamWidgetService {
         BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 
         Graphics2D g2 = output.createGraphics();
-
-        g2.setComposite(AlphaComposite.Src);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(Color.WHITE);
-        g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
-
-        g2.setComposite(AlphaComposite.SrcAtop);
+        g2.setClip(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
         g2.drawImage(image, 0, 0, null);
 
         g2.dispose();
@@ -348,13 +788,16 @@ public class SteamWidgetService {
     private BufferedImage loadImageFromResources(String path) {
         if (path != null && path.length() > 5) {
             try {
-                return ImageIO.read(getClass().getResource(path));
+                BufferedImage image = ImageIO.read(getClass().getResource(path));
+                if (image != null) {
+                    return image;
+                }
             } catch (Exception ignored) {
 
             }
         }
 
-        return new BufferedImage(0, 0, BufferedImage.TYPE_INT_ARGB);
+        return createTransparentPlaceholder();
     }
 
     /**
@@ -366,13 +809,20 @@ public class SteamWidgetService {
     private BufferedImage loadImageFromURL(String url) {
         if (url != null && url.length() > 5) {
             try {
-                return ImageIO.read(new URI(url).toURL());
+                BufferedImage image = ImageIO.read(new URI(url).toURL());
+                if (image != null) {
+                    return image;
+                }
             } catch (Exception ignored) {
 
             }
         }
 
-        return new BufferedImage(0, 0, BufferedImage.TYPE_INT_ARGB);
+        return createTransparentPlaceholder();
+    }
+
+    private BufferedImage createTransparentPlaceholder() {
+        return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
     }
 
     public BufferedImage scaleImage(BufferedImage image, int width) {

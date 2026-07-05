@@ -1,7 +1,9 @@
 package codes.sharky.steamwidget.controller;
 
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
+import codes.sharky.steamwidget.model.InsightCategory;
 import codes.sharky.steamwidget.model.ShowedGames;
+import codes.sharky.steamwidget.model.WidgetStyle;
 import codes.sharky.steamwidget.service.SteamWidgetService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -49,7 +51,9 @@ public class WidgetController {
     public @ResponseBody byte[] getWidgetImage(
             @RequestParam(name = "id") String id,
             @RequestParam(name = "gameList", required = false, defaultValue = "NONE") ShowedGames gameList,
-            @RequestParam(name = "gameListSize", required = false, defaultValue = "5") int gameListSize,
+            @RequestParam(name = "gameListSize", required = false, defaultValue = "6") int gameListSize,
+            @RequestParam(name = "insightCategory", required = false, defaultValue = "NONE") InsightCategory insightCategory,
+            @RequestParam(name = "style", required = false, defaultValue = "STEAM") WidgetStyle style,
             @RequestParam(name = "playingRightNow", required = false, defaultValue = "true") boolean playingRightNow,
             @RequestParam(name = "purpose", required = false, defaultValue = "General") String purpose,
             @RequestParam(name = "width", required = false, defaultValue = "0") int width,
@@ -60,7 +64,7 @@ public class WidgetController {
         gameListSize = gameListSize > 10 ? 10 : gameListSize;
 
         /* Generate Image */
-        BufferedImage image = steamWidgetService.generateWidgetImage(id, gameList, gameListSize, playingRightNow, purpose, request);
+        BufferedImage image = steamWidgetService.generateWidgetImage(id, gameList, gameListSize, insightCategory, style, playingRightNow, purpose, request);
         if (width > 0) {
             image = steamWidgetService.scaleImage(image, width);
         }
