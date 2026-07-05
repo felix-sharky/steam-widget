@@ -8,13 +8,16 @@ All endpoints are served from `https://steam-widget.com`.
 
 ### `GET /widget/img`
 
-Renders a Steam profile badge as a PNG image.
+Renders a Steam profile badge, game list, insight card set, or custom insight-card set as a PNG image.
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
 | `id` | Yes | — | Steam account identifier (`SteamID64`, vanity/custom URL segment, or community ID). |
 | `gameList` | No | `NONE` | Game list mode: `NONE`, `TOP_GAMES_TOTAL`, `TOP_GAMES_RECENT`, `RECENT_GAMES`. |
-| `gameListSize` | No | `5` | Number of games shown. Values above `10` are capped to `10`. |
+| `gameListSize` | No | `6` | Number of games shown. Values are clamped to `0..10`. |
+| `insightCategory` | No | `NONE` | Insight mode: `NONE`, `ACTIVITY`, `PLAYTIME`, `GAMES`, `CUSTOM`. When set, insight cards are rendered instead of `gameList`. |
+| `customCard` | No | — | Repeatable card key used when `insightCategory=CUSTOM`. Up to six selected cards are rendered in request order. |
+| `style` | No | `STEAM` | Widget color style: `STEAM`, `MIDNIGHT`, `NEON`, `SUNSET`, `FOREST`. |
 | `playingRightNow` | No | `true` | Include currently played game status. |
 | `purpose` | No | `General` | Free-text tag used for analytics/hit segmentation. |
 | `width` | No | `0` | Output width in pixels. `0` keeps original size. |
@@ -24,8 +27,32 @@ Response: PNG image · `Cache-Control: max-age=60, must-revalidate`
 Example:
 
 ```text
-/widget/img?id=lizard_darksoul&purpose=github_repo&width=350
+/widget/img?id=lizard_darksoul&purpose=github_repo&width=900
+/widget/img?id=lizard_darksoul&gameList=TOP_GAMES_TOTAL&gameListSize=6&style=MIDNIGHT&width=900
+/widget/img?id=lizard_darksoul&insightCategory=PLAYTIME&style=FOREST&width=900
+/widget/img?id=lizard_darksoul&insightCategory=CUSTOM&customCard=ACTIVITY_CURRENT_STREAK&customCard=PLAYTIME_ALLTIME&customCard=GAMES_MOST_PLAYED_YEAR&width=900
 ```
+
+Custom insight card keys:
+
+| Key | Card |
+|---|---|
+| `ACTIVITY_CURRENT_STREAK` | Current streak |
+| `ACTIVITY_LONGEST_STREAK_YEAR` | Longest streak this year |
+| `ACTIVITY_LONGEST_STREAK_ALLTIME` | Longest streak all-time |
+| `ACTIVITY_MOST_ACTIVE_DAY` | Most active day |
+| `ACTIVITY_MOST_ACTIVE_MONTH` | Most active month |
+| `PLAYTIME_ALLTIME` | All-time playtime |
+| `PLAYTIME_YEAR` | This year |
+| `PLAYTIME_AVG_DAILY` | Average daily playtime this year |
+| `PLAYTIME_BEST_DAY` | Best single day |
+| `PLAYTIME_GAMES_YEAR` | Games this year |
+| `PLAYTIME_GAMES_ALLTIME` | Games all-time |
+| `GAMES_MOST_PLAYED_ALLTIME` | Most played game all-time |
+| `GAMES_MOST_PLAYED_YEAR` | Most played game this year |
+| `GAMES_LAST_PLAYED` | Last played game |
+| `GAMES_STREAK_ALLTIME` | Longest game streak all-time |
+| `GAMES_STREAK_YEAR` | Longest game streak this year |
 
 ---
 
@@ -159,4 +186,3 @@ Examples:
 - Steam profiles must be public for reliable data.
 - ID resolution is handled server-side for endpoints that accept non-64-bit IDs.
 - Endpoints return `404` when no data exists for the requested profile/purpose.
-

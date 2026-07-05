@@ -34,10 +34,10 @@
 Embed your Steam profile in any README, forum, or website with a single image URL:
 
 ```markdown
-![Steam Widget](https://steam-widget.com/widget/img?id=YOUR_STEAM_ID&width=350)
+![Steam Widget](https://steam-widget.com/widget/img?id=YOUR_STEAM_ID&width=900)
 ```
 
-[![Steam Widget Example](https://steam-widget.com/widget/img?id=lizard_darksoul&width=350)](https://steam-widget.com)
+[![Steam Widget Example](https://steam-widget.com/widget/img?id=lizard_darksoul&width=900)](https://steam-widget.com)
 
 ---
 
@@ -48,7 +48,10 @@ Embed your Steam profile in any README, forum, or website with a single image UR
 Create embeddable Steam profile badges as PNG images — perfect for websites, READMEs, forums, or dashboards.
 
 - Supports `SteamID64`, vanity/custom URL segments, and community IDs
-- Configurable game list mode, list size, current-game visibility, and width scaling
+- Profile-only, game-list, insight, and custom insight-card widget content
+- Configurable game list mode, list size, current-game visibility, color style, and width scaling
+- Share-ready 900px image output with Steam Blue, Midnight, Neon, Sunset, and Forest styles
+- Custom widgets can combine up to six cards from the available activity, playtime, and game insight cards
 
 ### 📅 Play Tracking
 
