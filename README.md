@@ -37,7 +37,7 @@ Embed your Steam profile in any README, forum, or website with a single image UR
 ![Steam Widget](https://steam-widget.com/widget/img?id=YOUR_STEAM_ID&width=900)
 ```
 
-[![Steam Widget Example](https://steam-widget.com/widget/img?id=lizard_darksoul&width=900)](https://steam-widget.com)
+[![Steam Widget Example](https://steam-widget.com/widget/img?id=sharky-felix&width=900)](https://steam-widget.com)
 
 ---
 
