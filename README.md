@@ -13,6 +13,8 @@
 - [Live Preview](#live-preview)
 - [Features](#features)
 - [API Documentation](#api-documentation)
+- [Development](#development)
+- [Contributing](#contributing)
 - [Credits](#credits)
 - [License](#license)
 
@@ -74,6 +76,20 @@ Inspect widget usage and profile-level traffic with hit counters and aggregated 
 ## API Documentation
 
 Full API reference is available in [API.md](API.md).
+
+---
+
+## Development
+
+Steam Widget is a Java 21 / Spring Boot application backed by PostgreSQL.
+
+Full setup instructions — prerequisites, configuration, running locally, tests, and project layout — are in [DEVELOPMENT.md](DEVELOPMENT.md).
+
+---
+
+## Contributing
+
+Bug reports, feature requests, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the process, and please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
