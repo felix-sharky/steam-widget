@@ -78,7 +78,7 @@ public class SteamWidgetService {
      */
     public Player getUserBySteamId(String steamId, String purpose, String ip) throws SteamApiException {
         Player player = steamWebAPIService.getUserBySteamId(steamId);
-        if (!player.getSteamid().isEmpty()) {
+        if (!Strings.isNullOrEmpty(player.getSteamid())) {
             profileService.addHitToProfile(player.getSteamid(), player.getPersonaname(), purpose, ip, LocalDateTime.now());
         }
 
@@ -429,7 +429,7 @@ public class SteamWidgetService {
         g.setColor(palette.muted());
         drawFittedString(g, card.totalPlaytime(), x + 200, y + 138, width - 242);
 
-        if (!card.recentPlaytime().isEmpty()) {
+        if (!Strings.isNullOrEmpty(card.recentPlaytime())) {
             g.setColor(palette.accent());
             drawFittedString(g, card.recentPlaytime(), x + 200, y + 192, width - 242);
         }
@@ -467,7 +467,7 @@ public class SteamWidgetService {
         g.setColor(palette.text());
         drawFittedString(g, card.value(), x + 42, y + 135, width - 84);
 
-        if (!card.detail().isEmpty()) {
+        if (!Strings.isNullOrEmpty(card.detail())) {
             g.setFont(new Font("ARIAL", Font.PLAIN, 34));
             g.setColor(palette.muted());
             drawFittedString(g, card.detail(), x + 42, y + 194, width - 84);
@@ -682,7 +682,7 @@ public class SteamWidgetService {
 
         for (Object gameObject : games) {
             if (gameObject instanceof com.lukaspradel.steamapi.data.json.recentlyplayedgames.Game game) {
-                String iconUrl = "https://media.steampowered.com/steamcommunity/public/images/apps/" + game.getAppid() + "/" + (game.getImgIconUrl().isEmpty() ? game.getImgLogoUrl() : game.getImgIconUrl()) + ".jpg";
+                String iconUrl = "https://media.steampowered.com/steamcommunity/public/images/apps/" + game.getAppid() + "/" + (Strings.isNullOrEmpty(game.getImgIconUrl()) ? game.getImgLogoUrl() : game.getImgIconUrl()) + ".jpg";
                 drawRoundImage(image, iconUrl, 225, 750 + (games.indexOf(game) * 500) + 100, 300, 300);
 
                 long totalHour = game.getPlaytimeForever() / 60;
@@ -698,7 +698,7 @@ public class SteamWidgetService {
                 drawString(image, totalPlaytime, "ARIAL", Font.PLAIN, "#c7d5e0", 75, 725, 750 + (games.indexOf(game) * 500) + 350);
             }
             else if (gameObject instanceof com.lukaspradel.steamapi.data.json.ownedgames.Game game) {
-                String iconUrl = "https://media.steampowered.com/steamcommunity/public/images/apps/" + game.getAppid() + "/" + (game.getImgIconUrl().isEmpty() ? game.getImgLogoUrl() : game.getImgIconUrl()) + ".jpg";
+                String iconUrl = "https://media.steampowered.com/steamcommunity/public/images/apps/" + game.getAppid() + "/" + (Strings.isNullOrEmpty(game.getImgIconUrl()) ? game.getImgLogoUrl() : game.getImgIconUrl()) + ".jpg";
                 drawRoundImage(image, iconUrl, 225, 750 + (games.indexOf(game) * 500) + 100, 300, 300);
 
                 long totalHour = game.getPlaytimeForever() / 60;
