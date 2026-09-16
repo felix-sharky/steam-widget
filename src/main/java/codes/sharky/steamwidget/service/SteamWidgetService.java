@@ -628,6 +628,19 @@ public class SteamWidgetService {
                     new Color(255, 255, 255, 34),
                     Color.decode("#8f98a0")
             );
+            case PASTEL -> new SharePalette(
+                    Color.decode("#2B2638"),
+                    Color.decode("#51445F"),
+                    new Color(216, 167, 255, 45),
+                    new Color(255, 220, 245, 30),
+                    new Color(43, 38, 56, 225),
+                    new Color(255, 255, 255, 35),
+                    Color.decode("#D8A7FF"),
+                    Color.WHITE,
+                    Color.decode("#F3EAFB"),
+                    new Color(255, 255, 255, 45),
+                    Color.decode("#C7B8D9")
+            );
         };
     }
 

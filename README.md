@@ -50,7 +50,7 @@ Create embeddable Steam profile badges as PNG images — perfect for websites, R
 - Supports `SteamID64`, vanity/custom URL segments, and community IDs
 - Profile-only, game-list, insight, and custom insight-card widget content
 - Configurable game list mode, list size, current-game visibility, color style, and width scaling
-- Share-ready 900px image output with Steam Blue, Midnight, Neon, Sunset, and Forest styles
+- Share-ready 900px image output with Steam Blue, Midnight, Neon, Sunset, Forest and Pastel styles
 - Custom widgets can combine up to six cards from the available activity, playtime, and game insight cards
 
 ### 📅 Play Tracking

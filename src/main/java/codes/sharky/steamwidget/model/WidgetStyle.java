@@ -5,5 +5,6 @@ public enum WidgetStyle {
     MIDNIGHT,
     NEON,
     SUNSET,
-    FOREST
+    FOREST,
+    PASTEL
 }
