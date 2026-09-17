@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const utils = window.SteamWidget || {};
     const syncNavLinks = utils.syncNavLinks || (() => {});
     const persistSteamIdInQuery = utils.persistSteamIdInQuery || (() => {});
@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return null;
     });
+
+    await loadWidgetStyles();
 
     const navLinks = Array.from(document.querySelectorAll('.nav-link[data-base]'));
 
@@ -92,6 +94,39 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 let currentWidgetShare = null;
+
+// Populates the widget style picker from the backend instead of a hardcoded option list, so
+// themes.json is the single source of truth for which styles exist.
+async function loadWidgetStyles() {
+    const widgetStyleField = document.getElementById('widgetStyle');
+    if (!widgetStyleField) {
+        return;
+    }
+    try {
+        const response = await fetch('/api/widget/styles');
+        if (!response.ok) {
+            throw new Error(`Failed to load widget styles: ${response.status}`);
+        }
+        const styles = await response.json();
+        if (!Array.isArray(styles) || styles.length === 0) {
+            return;
+        }
+        const previousValue = widgetStyleField.value;
+        widgetStyleField.innerHTML = '';
+        styles.forEach(({ id, label }) => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = label || id;
+            widgetStyleField.appendChild(option);
+        });
+        if (styles.some((style) => style.id === previousValue)) {
+            widgetStyleField.value = previousValue;
+        }
+    } catch (error) {
+        console.error(error);
+        // Keep whatever options are already in the markup as a fallback.
+    }
+}
 
 async function generateWidget() {
     const utils = window.SteamWidget || {};

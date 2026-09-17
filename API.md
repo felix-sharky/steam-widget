@@ -17,7 +17,7 @@ Renders a Steam profile badge, game list, insight card set, or custom insight-ca
 | `gameListSize` | No | `6` | Number of games shown. Values are clamped to `0..10`. |
 | `insightCategory` | No | `NONE` | Insight mode: `NONE`, `ACTIVITY`, `PLAYTIME`, `GAMES`, `CUSTOM`. When set, insight cards are rendered instead of `gameList`. |
 | `customCard` | No | — | Repeatable card key used when `insightCategory=CUSTOM`. Up to six selected cards are rendered in request order. |
-| `style` | No | `STEAM` | Widget color style: `STEAM`, `MIDNIGHT`, `NEON`, `SUNSET`, `FOREST`, `PASTEL`. |
+| `style` | No | `STEAM` | Widget color style. See `GET /api/widget/styles` for the current list (currently `STEAM`, `MIDNIGHT`, `NEON`, `SUNSET`, `FOREST`, `PASTEL`). |
 | `playingRightNow` | No | `true` | Include currently played game status. |
 | `purpose` | No | `General` | Free-text tag used for analytics/hit segmentation. |
 | `width` | No | `0` | Output width in pixels. `0` keeps original size. |
@@ -31,6 +31,19 @@ Example:
 /widget/img?id=lizard_darksoul&gameList=TOP_GAMES_TOTAL&gameListSize=6&style=MIDNIGHT&width=900
 /widget/img?id=lizard_darksoul&insightCategory=PLAYTIME&style=FOREST&width=900
 /widget/img?id=lizard_darksoul&insightCategory=CUSTOM&customCard=ACTIVITY_CURRENT_STREAK&customCard=PLAYTIME_ALLTIME&customCard=GAMES_MOST_PLAYED_YEAR&width=900
+```
+
+### `GET /api/widget/styles`
+
+Lists the available `style` values for `GET /widget/img`, in display order.
+
+Response:
+
+```json
+[
+  { "id": "STEAM", "label": "Steam Blue" },
+  { "id": "MIDNIGHT", "label": "Midnight" }
+]
 ```
 
 Custom insight card keys:

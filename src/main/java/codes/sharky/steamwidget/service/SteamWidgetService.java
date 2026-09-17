@@ -20,6 +20,7 @@ import codes.sharky.steamwidget.entity.TrackingProfileInsightsGame;
 import codes.sharky.steamwidget.entity.TrackingProfileInsightsPlaytime;
 import codes.sharky.steamwidget.model.InsightCategory;
 import codes.sharky.steamwidget.model.ShowedGames;
+import codes.sharky.steamwidget.model.ThemePalette;
 import codes.sharky.steamwidget.model.WidgetStyle;
 import codes.sharky.steamwidget.repository.HitRepository;
 import codes.sharky.steamwidget.repository.ProfileRepository;
@@ -57,11 +58,13 @@ public class SteamWidgetService {
 
     private final ProfileService profileService;
     private final TrackingProfileService trackingProfileService;
+    private final ThemeService themeService;
 
-    public SteamWidgetService(SteamWebAPIService steamWebAPIService, ProfileService profileService, TrackingProfileService trackingProfileService) {
+    public SteamWidgetService(SteamWebAPIService steamWebAPIService, ProfileService profileService, TrackingProfileService trackingProfileService, ThemeService themeService) {
         this.steamWebAPIService = steamWebAPIService;
         this.profileService = profileService;
         this.trackingProfileService = trackingProfileService;
+        this.themeService = themeService;
     }
 
     /**
@@ -149,7 +152,7 @@ public class SteamWidgetService {
 
     public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, List<String> customCards, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
         Player player = getUserBySteamId(steamId, purpose, ip);
-        SharePalette palette = getSharePalette(style);
+        ThemePalette palette = themeService.getPalette(style);
 
         boolean showInsights = insightCategory != InsightCategory.NONE;
         List<InsightCard> insightCards = showInsights && player.getSteamid() != null ? getInsightCards(player.getSteamid(), insightCategory, customCards) : List.of();
@@ -284,7 +287,7 @@ public class SteamWidgetService {
         );
     }
 
-    private BufferedImage generateInsightWidgetImage(Player player, List<InsightCard> cards, boolean showPlayingRightNow, SharePalette palette, String emptyMessage) {
+    private BufferedImage generateInsightWidgetImage(Player player, List<InsightCard> cards, boolean showPlayingRightNow, ThemePalette palette, String emptyMessage) {
         BufferedImage image = new BufferedImage(1800, 1200, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = drawShareHeader(image, player, showPlayingRightNow, palette);
 
@@ -318,7 +321,7 @@ public class SteamWidgetService {
         return image;
     }
 
-    private BufferedImage generateGameWidgetImage(Player player, List<Object> games, boolean showPlayingRightNow, SharePalette palette) {
+    private BufferedImage generateGameWidgetImage(Player player, List<Object> games, boolean showPlayingRightNow, ThemePalette palette) {
         List<GameCard> cards = getGameCards(games);
         int rows = cards.isEmpty() ? 1 : (int) Math.ceil(cards.size() / 2.0);
         int height = Math.max(1200, 355 + (rows * 240) + ((rows - 1) * 36) + 90);
@@ -354,14 +357,14 @@ public class SteamWidgetService {
         return image;
     }
 
-    private BufferedImage generateProfileWidgetImage(Player player, boolean showPlayingRightNow, SharePalette palette) {
+    private BufferedImage generateProfileWidgetImage(Player player, boolean showPlayingRightNow, ThemePalette palette) {
         BufferedImage image = new BufferedImage(1800, 340, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = drawShareHeader(image, player, showPlayingRightNow, palette);
         g.dispose();
         return image;
     }
 
-    private Graphics2D drawShareHeader(BufferedImage image, Player player, boolean showPlayingRightNow, SharePalette palette) {
+    private Graphics2D drawShareHeader(BufferedImage image, Player player, boolean showPlayingRightNow, ThemePalette palette) {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -412,7 +415,7 @@ public class SteamWidgetService {
         }).filter((card) -> card != null).toList();
     }
 
-    private void drawShareGameCard(BufferedImage image, Graphics2D g, GameCard card, int x, int y, int width, int height, SharePalette palette) {
+    private void drawShareGameCard(BufferedImage image, Graphics2D g, GameCard card, int x, int y, int width, int height, ThemePalette palette) {
         g.setColor(palette.cardBackground());
         g.fillRoundRect(x, y, width, height, 32, 32);
         g.setColor(palette.cardBorder());
@@ -435,7 +438,7 @@ public class SteamWidgetService {
         }
     }
 
-    private void drawShareFooter(Graphics2D g, BufferedImage image, SharePalette palette) {
+    private void drawShareFooter(Graphics2D g, BufferedImage image, ThemePalette palette) {
         g.setFont(new Font("ARIAL", Font.PLAIN, 28));
         g.setColor(palette.footer());
         g.drawString("generated by steam-widget.com", image.getWidth() - 450, image.getHeight() - 20);
@@ -452,7 +455,7 @@ public class SteamWidgetService {
         return label + ": " + hours + "h " + remainingMinutes + "m";
     }
 
-    private void drawShareInsightCard(Graphics2D g, InsightCard card, int x, int y, int width, int height, SharePalette palette) {
+    private void drawShareInsightCard(Graphics2D g, InsightCard card, int x, int y, int width, int height, ThemePalette palette) {
         g.setColor(palette.cardBackground());
         g.fillRoundRect(x, y, width, height, 32, 32);
         g.setColor(palette.cardBorder());
@@ -561,106 +564,9 @@ public class SteamWidgetService {
         return formattedStart + " to " + formattedEnd;
     }
 
-    private SharePalette getSharePalette(WidgetStyle style) {
-        return switch (style) {
-            case MIDNIGHT -> new SharePalette(
-                    Color.decode("#050816"),
-                    Color.decode("#18213b"),
-                    new Color(129, 140, 248, 44),
-                    new Color(255, 255, 255, 16),
-                    new Color(9, 14, 30, 232),
-                    new Color(165, 180, 252, 54),
-                    Color.decode("#a5b4fc"),
-                    Color.decode("#f8fafc"),
-                    Color.decode("#cbd5e1"),
-                    new Color(255, 255, 255, 34),
-                    Color.decode("#94a3b8")
-            );
-            case NEON -> new SharePalette(
-                    Color.decode("#09090b"),
-                    Color.decode("#20102f"),
-                    new Color(34, 211, 238, 52),
-                    new Color(236, 72, 153, 34),
-                    new Color(15, 23, 42, 230),
-                    new Color(34, 211, 238, 70),
-                    Color.decode("#22d3ee"),
-                    Color.decode("#ffffff"),
-                    Color.decode("#d8b4fe"),
-                    new Color(34, 211, 238, 46),
-                    Color.decode("#a78bfa")
-            );
-            case SUNSET -> new SharePalette(
-                    Color.decode("#2d1608"),
-                    Color.decode("#6f2c18"),
-                    new Color(251, 146, 60, 54),
-                    new Color(253, 186, 116, 28),
-                    new Color(55, 25, 15, 224),
-                    new Color(253, 186, 116, 58),
-                    Color.decode("#fdba74"),
-                    Color.decode("#fff7ed"),
-                    Color.decode("#fed7aa"),
-                    new Color(253, 186, 116, 42),
-                    Color.decode("#fb923c")
-            );
-            case FOREST -> new SharePalette(
-                    Color.decode("#06130f"),
-                    Color.decode("#17382d"),
-                    new Color(52, 211, 153, 42),
-                    new Color(187, 247, 208, 18),
-                    new Color(8, 32, 26, 228),
-                    new Color(110, 231, 183, 48),
-                    Color.decode("#6ee7b7"),
-                    Color.decode("#ecfdf5"),
-                    Color.decode("#bbf7d0"),
-                    new Color(110, 231, 183, 38),
-                    Color.decode("#86efac")
-            );
-            case STEAM -> new SharePalette(
-                    Color.decode("#101823"),
-                    Color.decode("#20364a"),
-                    new Color(102, 192, 244, 30),
-                    new Color(255, 255, 255, 18),
-                    new Color(17, 28, 40, 225),
-                    new Color(255, 255, 255, 28),
-                    Color.decode("#66c0f4"),
-                    Color.WHITE,
-                    Color.decode("#c7d5e0"),
-                    new Color(255, 255, 255, 34),
-                    Color.decode("#8f98a0")
-            );
-            case PASTEL -> new SharePalette(
-                    Color.decode("#2B2638"),
-                    Color.decode("#51445F"),
-                    new Color(216, 167, 255, 45),
-                    new Color(255, 220, 245, 30),
-                    new Color(43, 38, 56, 225),
-                    new Color(255, 255, 255, 35),
-                    Color.decode("#D8A7FF"),
-                    Color.WHITE,
-                    Color.decode("#F3EAFB"),
-                    new Color(255, 255, 255, 45),
-                    Color.decode("#C7B8D9")
-            );
-        };
-    }
-
     private record InsightCard(String label, String value, String detail) {}
 
     private record GameCard(String name, String totalPlaytime, String recentPlaytime, String iconUrl) {}
-
-    private record SharePalette(
-            Color backgroundStart,
-            Color backgroundEnd,
-            Color primaryGlow,
-            Color secondaryGlow,
-            Color cardBackground,
-            Color cardBorder,
-            Color accent,
-            Color text,
-            Color muted,
-            Color divider,
-            Color footer
-    ) {}
 
     /**
      * Draws the game section on the widget image. This method iterates through the list of games and draws
