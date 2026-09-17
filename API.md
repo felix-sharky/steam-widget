@@ -17,7 +17,7 @@ Renders a Steam profile badge, game list, insight card set, or custom insight-ca
 | `gameListSize` | No | `6` | Number of games shown. Values are clamped to `0..10`. |
 | `insightCategory` | No | `NONE` | Insight mode: `NONE`, `ACTIVITY`, `PLAYTIME`, `GAMES`, `CUSTOM`. When set, insight cards are rendered instead of `gameList`. |
 | `customCard` | No | — | Repeatable card key used when `insightCategory=CUSTOM`. Up to six selected cards are rendered in request order. |
-| `style` | No | `STEAM` | Widget color style. See `GET /api/widget/styles` for the current list (currently `STEAM`, `MIDNIGHT`, `NEON`, `SUNSET`, `FOREST`, `PASTEL`). |
+| `style` | No | `STEAM` | Widget color style. See `GET /api/widget/styles` for the current list (currently `STEAM`, `MIDNIGHT`, `PASTEL`, `NEON`, `SUNSET`, `FOREST`, `CRIMSON`, `GOLD`, `MONOCHROME`, `PAPER`, `VIOLET`, `EMERALD`, `SYNTHWAVE`, `SLATE`). |
 | `playingRightNow` | No | `true` | Include currently played game status. |
 | `purpose` | No | `General` | Free-text tag used for analytics/hit segmentation. |
 | `width` | No | `0` | Output width in pixels. `0` keeps original size. |
