@@ -90,7 +90,7 @@
             Steam Wrapped
         </h1>
         <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            Your year in gaming, Spotify-Wrapped style. Turn your tracked playtime insights into an Instagram Story sized recap you can download and share.
+            Your gaming, Spotify-Wrapped style. Pick a year, month, or week and turn your tracked playtime into an Instagram Story sized recap you can download and share.
         </p>
     </section>
 
@@ -110,8 +110,45 @@
                         <option value="STEAM">Steam Blue</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 md:items-end">
+                <div class="w-full md:w-[222px] space-y-2">
+                    <label class="block font-label-md text-label-md text-on-surface-variant uppercase pl-1">Period</label>
+                    <div class="pill-toggle-group" role="group" aria-label="Wrapped period">
+                        <label class="pill-toggle">
+                            <input type="radio" name="periodMode" value="year" checked>
+                            <span>Year</span>
+                        </label>
+                        <label class="pill-toggle">
+                            <input type="radio" name="periodMode" value="month">
+                            <span>Month</span>
+                        </label>
+                        <label class="pill-toggle">
+                            <input type="radio" name="periodMode" value="week">
+                            <span>Week</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div data-period-field="year">
+                        <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="periodYear">Year</label>
+                        <input id="periodYear" type="number" step="1" min="2003"
+                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                    </div>
+                    <div data-period-field="month" class="hidden">
+                        <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="periodMonth">Month</label>
+                        <input id="periodMonth" type="month"
+                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                    </div>
+                    <div data-period-field="week" class="hidden">
+                        <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="periodWeek">Any day in that week</label>
+                        <input id="periodWeek" type="date"
+                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                    </div>
+                </div>
                 <button type="submit" data-umami-event="button_generate_wrapped"
-                        class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap">
+                        class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap h-fit">
                     Generate my Wrapped
                 </button>
             </div>

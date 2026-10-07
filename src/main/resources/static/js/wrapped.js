@@ -20,11 +20,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('wrappedDownloadBtn');
     const shareBtn = document.getElementById('wrappedShareBtn');
 
+    const periodModeInputs = document.querySelectorAll('input[name="periodMode"]');
+    const periodYearInput = document.getElementById('periodYear');
+    const periodMonthInput = document.getElementById('periodMonth');
+    const periodWeekInput = document.getElementById('periodWeek');
+    const periodFields = {
+        year: document.querySelector('[data-period-field="year"]'),
+        month: document.querySelector('[data-period-field="month"]'),
+        week: document.querySelector('[data-period-field="week"]')
+    };
+
     const STAGE_WIDTH = 1080;
     const STAGE_HEIGHT = 1920;
     const SLIDE_DURATION_MS = 6000;
 
     let themeColorsById = {};
+    let currentPeriod = null;
     let slides = [];
     let currentIndex = 0;
     let rafId = null;
@@ -61,6 +72,173 @@ document.addEventListener('DOMContentLoaded', () => {
         const m = Number(minutes) || 0;
         if (h === 0 && m === 0) return '0m';
         return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    };
+
+    const minutesToHM = (totalMinutes) => ({
+        hours: Math.floor(totalMinutes / 60),
+        minutes: Math.round(totalMinutes % 60)
+    });
+
+    const fmtMinutes = (totalMinutes) => {
+        const { hours, minutes } = minutesToHM(totalMinutes);
+        return fmtDuration(hours, minutes);
+    };
+
+    // ── Period (year / month / week) helpers ────────────────────────────────
+
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const toIsoDate = (date) => `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    const parseIsoDate = (iso) => {
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    };
+    const fmtShort = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const isLeapYear = (y) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+
+    const mostRecentMonday = (date) => {
+        const d = new Date(date);
+        const day = d.getDay(); // 0 = Sunday .. 6 = Saturday
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setDate(d.getDate() + diff);
+        return d;
+    };
+
+    const getPeriodMode = () => document.querySelector('input[name="periodMode"]:checked')?.value || 'year';
+
+    const updatePeriodFieldVisibility = () => {
+        const mode = getPeriodMode();
+        Object.entries(periodFields).forEach(([key, el]) => {
+            if (el) el.classList.toggle('hidden', key !== mode);
+        });
+    };
+
+    // Builds the {startDate, endDate, label, noun, periodDays, includesToday} descriptor for
+    // whichever period is currently selected in the form. Returns null if the value is incomplete.
+    const getPeriodRange = (mode) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (mode === 'month') {
+            const raw = periodMonthInput.value;
+            if (!raw) return null;
+            const [y, m] = raw.split('-').map(Number);
+            if (!y || !m) return null;
+            const start = new Date(y, m - 1, 1);
+            const end = new Date(y, m, 0);
+            return {
+                startDate: toIsoDate(start),
+                endDate: toIsoDate(end),
+                label: start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+                noun: 'month',
+                periodDays: end.getDate(),
+                includesToday: today >= start && today <= end
+            };
+        }
+
+        if (mode === 'week') {
+            const raw = periodWeekInput.value;
+            if (!raw) return null;
+            const anchor = mostRecentMonday(parseIsoDate(raw));
+            const end = new Date(anchor);
+            end.setDate(end.getDate() + 6);
+            return {
+                startDate: toIsoDate(anchor),
+                endDate: toIsoDate(end),
+                label: `${fmtShort(anchor)} – ${fmtShort(end)}, ${end.getFullYear()}`,
+                noun: 'week',
+                periodDays: 7,
+                includesToday: today >= anchor && today <= end
+            };
+        }
+
+        // year
+        const y = Number(periodYearInput.value) || today.getFullYear();
+        const start = new Date(y, 0, 1);
+        const end = new Date(y, 11, 31);
+        return {
+            startDate: toIsoDate(start),
+            endDate: toIsoDate(end),
+            label: String(y),
+            noun: 'year',
+            periodDays: isLeapYear(y) ? 366 : 365,
+            includesToday: today >= start && today <= end
+        };
+    };
+
+    const initPeriodDefaults = () => {
+        const today = new Date();
+        periodYearInput.value = String(today.getFullYear());
+        periodMonthInput.value = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}`;
+        periodWeekInput.value = toIsoDate(mostRecentMonday(today));
+        updatePeriodFieldVisibility();
+    };
+
+    periodModeInputs.forEach((input) => input.addEventListener('change', updatePeriodFieldVisibility));
+
+    // Aggregates raw /api/tracking/profile-date rows (one row per game per day) into the handful
+    // of stats the slides need, scoped to whatever date range was requested.
+    const aggregatePeriod = (rows) => {
+        const minutesByDate = new Map();
+        const minutesByGame = new Map();
+        let totalMinutes = 0;
+
+        rows.forEach((row) => {
+            const dateStr = fmtDate(row.id?.date);
+            const minutes = (Number(row.playtimeHours) || 0) * 60 + (Number(row.playtimeMinutes) || 0);
+            if (!dateStr || minutes <= 0) return;
+            minutesByDate.set(dateStr, (minutesByDate.get(dateStr) || 0) + minutes);
+            const game = (row.gamename ?? row.name ?? '').trim();
+            if (game) {
+                minutesByGame.set(game, (minutesByGame.get(game) || 0) + minutes);
+            }
+            totalMinutes += minutes;
+        });
+
+        if (totalMinutes <= 0) return null;
+
+        let topGameName = null;
+        let topGameMinutes = 0;
+        minutesByGame.forEach((minutes, name) => {
+            if (minutes > topGameMinutes) { topGameMinutes = minutes; topGameName = name; }
+        });
+
+        let peakDate = null;
+        let peakMinutes = 0;
+        minutesByDate.forEach((minutes, date) => {
+            if (minutes > peakMinutes) { peakMinutes = minutes; peakDate = date; }
+        });
+
+        const activeDates = Array.from(minutesByDate.keys()).sort();
+        let longestDays = 0;
+        let longestStart = null;
+        let longestEnd = null;
+        let runDays = 0;
+        let runStart = null;
+        let prevDate = null;
+        activeDates.forEach((dateStr) => {
+            const current = parseIsoDate(dateStr);
+            if (prevDate && (current - prevDate) === 86400000) {
+                runDays += 1;
+            } else {
+                runDays = 1;
+                runStart = dateStr;
+            }
+            if (runDays > longestDays) {
+                longestDays = runDays;
+                longestStart = runStart;
+                longestEnd = dateStr;
+            }
+            prevDate = current;
+        });
+
+        return {
+            totalMinutes,
+            topGame: topGameName ? { name: topGameName, minutes: topGameMinutes } : null,
+            uniqueGames: minutesByGame.size,
+            peakDay: peakDate ? { date: peakDate, minutes: peakMinutes } : null,
+            longestStreak: longestDays ? { days: longestDays, start: longestStart, end: longestEnd } : null,
+            activeDays: minutesByDate.size
+        };
     };
 
     const bigNumberBlock = (value, unit) => `
@@ -102,10 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ── Slide builders ───────────────────────────────────────────────────────
+    // All builders take the period descriptor from getPeriodRange() (start/end/label/noun) plus
+    // the aggregated periodStats for that window, so the same slides work for a year, a month or
+    // a week alike. `alltime` (from /api/tracking/insights/playtime, optional) only powers the
+    // "% of all-time" context line.
 
-    const year = new Date().getFullYear();
-
-    const buildCoverSlide = (profile) => {
+    const buildCoverSlide = (profile, period) => {
         const name = profile?.name ? escapeHtml(profile.name) : 'Your';
         const avatar = profile?.avatarUrl
             ? `<img class="wrapped-avatar" src="${escapeHtml(profile.avatarUrl)}" crossorigin="anonymous" alt="">`
@@ -115,85 +295,92 @@ document.addEventListener('DOMContentLoaded', () => {
             ${blob('width:520px;height:520px;bottom:-180px;right:-160px;')}
             <div class="wrapped-slide-inner">
                 ${avatar}
-                <span class="wrapped-eyebrow">Steam Wrapped ${year}</span>
-                <h2 class="wrapped-headline">${name}'s year<br>in gaming</h2>
-                <p class="wrapped-caption">Let's relive the hours, the streaks, and the game that owned your year.</p>
+                <span class="wrapped-eyebrow">Steam Wrapped</span>
+                <h2 class="wrapped-headline">${name}'s ${escapeHtml(period.noun)}<br>in gaming</h2>
+                <p class="wrapped-caption">${escapeHtml(period.label)} — let's relive the hours, the streaks, and the game that owned it.</p>
             </div>
             ${footerBrand()}`;
     };
 
-    const buildTotalPlaytimeSlide = (playtime) => {
-        const hours = Number(playtime.yearHours) || 0;
-        const minutes = Number(playtime.yearMinutes) || 0;
-        const alltimeMinutesTotal = (Number(playtime.alltimeHours) || 0) * 60 + (Number(playtime.alltimeMinutes) || 0);
-        const yearMinutesTotal = hours * 60 + minutes;
+    const buildTotalPlaytimeSlide = (periodStats, period, alltime) => {
+        const { hours, minutes } = minutesToHM(periodStats.totalMinutes);
         let subcaption = '';
-        if (alltimeMinutesTotal > 0) {
-            const pct = Math.min(100, Math.round((yearMinutesTotal / alltimeMinutesTotal) * 100));
-            subcaption = `That's ${pct}% of your all-time ${fmtDuration(playtime.alltimeHours, playtime.alltimeMinutes)} on record.`;
+        const alltimeMinutesTotal = alltime ? (Number(alltime.alltimeHours) || 0) * 60 + (Number(alltime.alltimeMinutes) || 0) : 0;
+        if (alltimeMinutesTotal > periodStats.totalMinutes) {
+            const pct = Math.max(1, Math.min(100, Math.round((periodStats.totalMinutes / alltimeMinutesTotal) * 100)));
+            subcaption = `That's ${pct}% of your all-time ${fmtDuration(alltime.alltimeHours, alltime.alltimeMinutes)} on record.`;
         }
         return `
             ${blob('width:560px;height:560px;top:-200px;right:-180px;')}
             <div class="wrapped-slide-inner">
                 <span class="wrapped-icon-badge"><span class="material-symbols-outlined">timer</span></span>
-                <span class="wrapped-eyebrow">Total playtime in ${year}</span>
+                <span class="wrapped-eyebrow">Total playtime · ${escapeHtml(period.label)}</span>
                 ${bigNumberBlock(hours, 'HOURS')}
-                <p class="wrapped-caption">That's ${fmtDuration(hours, minutes)} across your library this year.</p>
+                <p class="wrapped-caption">That's ${fmtDuration(hours, minutes)} across your library this ${escapeHtml(period.noun)}.</p>
                 ${subcaption ? `<p class="wrapped-subcaption">${subcaption}</p>` : ''}
             </div>
             ${footerBrand()}`;
     };
 
-    const buildTopGameSlide = (games) => {
-        const duration = fmtDuration(games.mostPlayedYearHours, games.mostPlayedYearMinutes);
+    const buildTopGameSlide = (periodStats, period) => {
+        const duration = fmtMinutes(periodStats.topGame.minutes);
         return `
             ${blob('width:600px;height:600px;bottom:-220px;left:-180px;')}
             <div class="wrapped-slide-inner">
                 <span class="wrapped-icon-badge"><span class="material-symbols-outlined">emoji_events</span></span>
                 <span class="wrapped-eyebrow">Most played game</span>
-                <h2 class="wrapped-headline">${escapeHtml(games.mostPlayedYearGame)}</h2>
-                <p class="wrapped-caption">${duration} this year — your undisputed #1.</p>
+                <h2 class="wrapped-headline">${escapeHtml(periodStats.topGame.name)}</h2>
+                <p class="wrapped-caption">${duration} this ${escapeHtml(period.noun)} — your undisputed #1.</p>
             </div>
             ${footerBrand()}`;
     };
 
-    const buildVarietySlide = (playtime) => {
-        const thisYear = Number(playtime.uniqueGamesThisYear) || 0;
-        const alltime = Number(playtime.uniqueGamesAlltime) || 0;
-        const subcaption = alltime > 0 ? `Out of ${alltime} games you've played all-time.` : '';
+    const buildVarietySlide = (periodStats, period) => {
+        const count = periodStats.uniqueGames;
         return `
             ${blob('width:560px;height:560px;top:-200px;left:-180px;')}
             <div class="wrapped-slide-inner">
                 <span class="wrapped-icon-badge"><span class="material-symbols-outlined">sports_esports</span></span>
                 <span class="wrapped-eyebrow">Game rotation</span>
-                ${bigNumberBlock(thisYear, thisYear === 1 ? 'GAME' : 'GAMES')}
-                <p class="wrapped-caption">different games kept you busy in ${year}.</p>
-                ${subcaption ? `<p class="wrapped-subcaption">${subcaption}</p>` : ''}
+                ${bigNumberBlock(count, count === 1 ? 'GAME' : 'GAMES')}
+                <p class="wrapped-caption">different games kept you busy ${period.noun === 'week' ? 'this week' : `in ${escapeHtml(period.label)}`}.</p>
             </div>
             ${footerBrand()}`;
     };
 
-    const buildStreakSlide = (activity) => {
-        const days = Number(activity.longestStreakYearDays) || 0;
-        const range = fmtDateRange(activity.longestStreakYearStart, activity.longestStreakYearEnd);
-        const current = Number(activity.currentStreakDays) || 0;
-        const subcaption = current > 0 ? `You're currently on a ${current} day streak — keep it going.` : '';
+    const buildActiveDaysSlide = (periodStats, period) => {
+        const days = periodStats.activeDays;
+        return `
+            ${blob('width:560px;height:560px;bottom:-200px;left:-180px;')}
+            <div class="wrapped-slide-inner">
+                <span class="wrapped-icon-badge"><span class="material-symbols-outlined">event_available</span></span>
+                <span class="wrapped-eyebrow">Showing up</span>
+                ${bigNumberBlock(days, days === 1 ? 'DAY ACTIVE' : 'DAYS ACTIVE')}
+                <p class="wrapped-caption">out of ${period.periodDays} days in ${escapeHtml(period.label)} — that's ${Math.round((days / period.periodDays) * 100)}% of the ${escapeHtml(period.noun)}.</p>
+            </div>
+            ${footerBrand()}`;
+    };
+
+    const buildStreakSlide = (periodStats, period, currentStreakDays) => {
+        const { days, start, end } = periodStats.longestStreak;
+        const range = fmtDateRange(start, end);
+        const subcaption = period.includesToday && currentStreakDays > 0
+            ? `You're currently on a ${currentStreakDays} day streak — keep it going.`
+            : '';
         return `
             ${blob('width:560px;height:560px;bottom:-200px;right:-180px;')}
             <div class="wrapped-slide-inner">
                 <span class="wrapped-icon-badge"><span class="material-symbols-outlined">local_fire_department</span></span>
                 <span class="wrapped-eyebrow">Dedication</span>
                 ${bigNumberBlock(days, 'DAY STREAK')}
-                <p class="wrapped-caption">Your longest run in ${year}${range ? ` · ${range}` : ''}.</p>
+                <p class="wrapped-caption">Your longest run in ${escapeHtml(period.label)}${range ? ` · ${range}` : ''}.</p>
                 ${subcaption ? `<p class="wrapped-subcaption">${subcaption}</p>` : ''}
             </div>
             ${footerBrand()}`;
     };
 
-    const buildPeakDaySlide = (playtime) => {
-        const hours = Number(playtime.bestDayHours) || 0;
-        const minutes = Number(playtime.bestDayMinutes) || 0;
-        const date = fmtDate(playtime.bestDayDate);
+    const buildPeakDaySlide = (periodStats, period) => {
+        const { hours, minutes } = minutesToHM(periodStats.peakDay.minutes);
         const value = hours > 0 ? hours : minutes;
         const unit = hours > 0 ? 'HOURS' : 'MINUTES';
         return `
@@ -202,24 +389,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="wrapped-icon-badge"><span class="material-symbols-outlined">star</span></span>
                 <span class="wrapped-eyebrow">Peak day</span>
                 ${bigNumberBlock(value, unit)}
-                <p class="wrapped-caption">played in a single day${date ? ` on ${date}` : ''} — your most intense session of ${year}.</p>
+                <p class="wrapped-caption">played in a single day on ${periodStats.peakDay.date} — your most intense session of ${escapeHtml(period.label)}.</p>
             </div>
             ${footerBrand()}`;
     };
 
-    const buildRecapSlide = ({ activity, playtime, games }) => {
+    const buildRecapSlide = (periodStats, period) => {
         const items = [];
-        if (games?.mostPlayedYearGame) {
-            items.push({ icon: 'emoji_events', label: 'Top game', value: games.mostPlayedYearGame });
+        if (periodStats.topGame) {
+            items.push({ icon: 'emoji_events', label: 'Top game', value: periodStats.topGame.name });
         }
-        if (playtime && (playtime.yearHours || playtime.yearMinutes)) {
-            items.push({ icon: 'timer', label: 'Total playtime', value: fmtDuration(playtime.yearHours, playtime.yearMinutes) });
-        }
-        if (playtime?.uniqueGamesThisYear) {
-            items.push({ icon: 'sports_esports', label: 'Games played', value: `${playtime.uniqueGamesThisYear}` });
-        }
-        if (activity?.longestStreakYearDays) {
-            items.push({ icon: 'local_fire_department', label: 'Longest streak', value: `${activity.longestStreakYearDays} days` });
+        items.push({ icon: 'timer', label: 'Total playtime', value: fmtMinutes(periodStats.totalMinutes) });
+        items.push({ icon: 'sports_esports', label: 'Games played', value: `${periodStats.uniqueGames}` });
+        if (periodStats.longestStreak) {
+            items.push({ icon: 'local_fire_department', label: 'Longest streak', value: `${periodStats.longestStreak.days} days` });
         }
         const grid = items.map((item) => `
             <div class="wrapped-recap-item">
@@ -231,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${blob('width:600px;height:600px;top:-220px;left:-180px;')}
             ${blob('width:500px;height:500px;bottom:-180px;right:-160px;')}
             <div class="wrapped-slide-inner" style="gap:28px;">
-                <span class="wrapped-eyebrow">${year} Recap</span>
+                <span class="wrapped-eyebrow">${escapeHtml(period.label)} Recap</span>
                 <h2 class="wrapped-headline" style="font-size:72px;">That's a wrap!</h2>
                 <div class="wrapped-recap-grid">${grid}</div>
             </div>
@@ -250,25 +433,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const buildSlides = ({ activity, playtime, games, profile }) => {
-        const built = [{ render: () => buildCoverSlide(profile) }];
+    const buildSlides = ({ periodStats, period, profile, alltime, currentStreakDays }) => {
+        const built = [{ render: () => buildCoverSlide(profile, period) }];
 
-        if (playtime && (playtime.yearHours || playtime.yearMinutes)) {
-            built.push({ render: () => buildTotalPlaytimeSlide(playtime) });
+        built.push({ render: () => buildTotalPlaytimeSlide(periodStats, period, alltime) });
+        if (periodStats.topGame) {
+            built.push({ render: () => buildTopGameSlide(periodStats, period) });
         }
-        if (games?.mostPlayedYearGame) {
-            built.push({ render: () => buildTopGameSlide(games) });
+        if (periodStats.uniqueGames > 0) {
+            built.push({ render: () => buildVarietySlide(periodStats, period) });
         }
-        if (playtime?.uniqueGamesThisYear) {
-            built.push({ render: () => buildVarietySlide(playtime) });
+        built.push({ render: () => buildActiveDaysSlide(periodStats, period) });
+        if (periodStats.longestStreak && periodStats.longestStreak.days > 1) {
+            built.push({ render: () => buildStreakSlide(periodStats, period, currentStreakDays) });
         }
-        if (activity?.longestStreakYearDays) {
-            built.push({ render: () => buildStreakSlide(activity) });
+        if (periodStats.peakDay) {
+            built.push({ render: () => buildPeakDaySlide(periodStats, period) });
         }
-        if (playtime && (playtime.bestDayHours || playtime.bestDayMinutes)) {
-            built.push({ render: () => buildPeakDaySlide(playtime) });
-        }
-        built.push({ render: () => buildRecapSlide({ activity, playtime, games }) });
+        built.push({ render: () => buildRecapSlide(periodStats, period) });
         return built;
     };
 
@@ -453,6 +635,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const periodSlug = () => (currentPeriod?.label || 'wrapped').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
     downloadBtn.addEventListener('click', async () => {
         if (!storyActive) return;
         pauseTimer();
@@ -463,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = URL.createObjectURL(blob2);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `steam-wrapped-${year}-slide-${currentIndex + 1}.png`;
+            a.download = `steam-wrapped-${periodSlug()}-slide-${currentIndex + 1}.png`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -483,14 +667,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const canvas = await captureCurrentSlide();
             const blob2 = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
             if (!blob2) throw new Error('Could not render image');
-            const file = new File([blob2], `steam-wrapped-${year}.png`, { type: 'image/png' });
+            const file = new File([blob2], `steam-wrapped-${periodSlug()}.png`, { type: 'image/png' });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({ files: [file], title: 'My Steam Wrapped' });
             } else {
                 const url = URL.createObjectURL(blob2);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `steam-wrapped-${year}-slide-${currentIndex + 1}.png`;
+                a.download = `steam-wrapped-${periodSlug()}-slide-${currentIndex + 1}.png`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -510,22 +694,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Main flow ────────────────────────────────────────────────────────────
 
     const generateWrapped = async (steamId) => {
-        setMessage('Loading your year in gaming…');
+        const mode = getPeriodMode();
+        const period = getPeriodRange(mode);
+        if (!period) {
+            setMessage('Pick a valid period first.', true);
+            wrappedMessage.classList.remove('hidden');
+            return;
+        }
+
+        setMessage(`Loading your ${period.noun} in gaming…`);
         wrappedMessage.classList.remove('hidden');
         wrappedSection.classList.add('hidden');
         storyActive = false;
         cancelTimer();
+        currentPeriod = period;
 
-        const params = new URLSearchParams({ steamid: steamId });
-        const [activity, playtime, games, profile] = await Promise.all([
-            fetchJsonOrNull(`/api/tracking/insights/activity?${params}`),
-            fetchJsonOrNull(`/api/tracking/insights/playtime?${params}`),
-            fetchJsonOrNull(`/api/tracking/insights/games?${params}`),
+        const dateParams = new URLSearchParams({ steamid: steamId, startDate: period.startDate, endDate: period.endDate });
+        const insightParams = new URLSearchParams({ steamid: steamId });
+        const [rows, playtimeInsights, activityInsights, profile] = await Promise.all([
+            fetchJsonOrNull(`/api/tracking/profile-date?${dateParams}`),
+            fetchJsonOrNull(`/api/tracking/insights/playtime?${insightParams}`),
+            fetchJsonOrNull(`/api/tracking/insights/activity?${insightParams}`),
             fetchJsonOrNull(`/api/profile/live?steamId=${encodeURIComponent(steamId)}`)
         ]);
 
-        if (!activity && !playtime && !games) {
-            setMessage('No tracking insights yet for this profile. Enable Play Tracking and check back after a few days of play.', true);
+        const periodStats = Array.isArray(rows) ? aggregatePeriod(rows) : null;
+
+        if (!periodStats) {
+            const hasAnyTrackingAtAll = playtimeInsights || activityInsights || (Array.isArray(rows) && rows.length > 0);
+            if (!hasAnyTrackingAtAll) {
+                setMessage('No tracking data yet for this profile. Enable Play Tracking and check back after a few days of play.', true);
+            } else {
+                setMessage(`No activity recorded for ${period.label}. Try a different period.`, true);
+            }
             return;
         }
 
@@ -537,7 +738,13 @@ document.addEventListener('DOMContentLoaded', () => {
             preload.src = profile.avatarUrl;
         }
 
-        slides = buildSlides({ activity, playtime, games, profile });
+        slides = buildSlides({
+            periodStats,
+            period,
+            profile,
+            alltime: playtimeInsights,
+            currentStreakDays: Number(activityInsights?.currentStreakDays) || 0
+        });
         renderProgressBars();
         applyTheme(themeSelect.value);
         wrappedMessage.classList.add('hidden');
@@ -591,6 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadThemes();
     updateStageScale();
+    initPeriodDefaults();
 
     const detected = bootstrapSteamId({
         input: steamIdInput,
