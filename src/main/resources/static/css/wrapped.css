@@ -97,6 +97,34 @@
     font-weight: 500;
 }
 
+.wrapped-trend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 16px 28px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: var(--w-text, #fff);
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.wrapped-trend-chip .material-symbols-outlined {
+    font-size: 32px;
+    color: var(--w-accent, #c084fc);
+}
+
+.wrapped-trend-up .material-symbols-outlined {
+    color: #4ade80;
+}
+
+.wrapped-trend-down .material-symbols-outlined {
+    color: #f87171;
+}
+
 .wrapped-icon-badge {
     width: 160px;
     height: 160px;

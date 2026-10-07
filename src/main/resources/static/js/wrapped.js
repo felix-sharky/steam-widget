@@ -165,6 +165,42 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
+    // The immediately-preceding period of the same length/kind (previous year, previous
+    // calendar month, or the 7 days before this week), used to power "vs last {noun}" trend
+    // chips. Derived purely from the current period's startDate so it never depends on form state.
+    const getPreviousPeriodRange = (period, mode) => {
+        const start = parseIsoDate(period.startDate);
+
+        if (mode === 'month') {
+            const prevEnd = new Date(start);
+            prevEnd.setDate(0); // "day 0" rolls back to the last day of the previous month
+            const prevStart = new Date(prevEnd.getFullYear(), prevEnd.getMonth(), 1);
+            return {
+                startDate: toIsoDate(prevStart),
+                endDate: toIsoDate(prevEnd),
+                label: prevStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+            };
+        }
+
+        if (mode === 'week') {
+            const prevStart = new Date(start);
+            prevStart.setDate(prevStart.getDate() - 7);
+            const prevEnd = new Date(prevStart);
+            prevEnd.setDate(prevEnd.getDate() + 6);
+            return {
+                startDate: toIsoDate(prevStart),
+                endDate: toIsoDate(prevEnd),
+                label: `${fmtShort(prevStart)} – ${fmtShort(prevEnd)}, ${prevEnd.getFullYear()}`
+            };
+        }
+
+        // year
+        const prevYear = start.getFullYear() - 1;
+        const prevStart = new Date(prevYear, 0, 1);
+        const prevEnd = new Date(prevYear, 11, 31);
+        return { startDate: toIsoDate(prevStart), endDate: toIsoDate(prevEnd), label: String(prevYear) };
+    };
+
     const initPeriodDefaults = () => {
         const today = new Date();
         periodYearInput.value = String(today.getFullYear());
@@ -245,6 +281,27 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="wrapped-big-number">${escapeHtml(value)}</div>
         <div class="wrapped-eyebrow" style="margin-top:-18px;">${escapeHtml(unit)}</div>`;
 
+    // A small "vs last {noun}" pill comparing a numeric stat (minutes, a game count, a day count,
+    // ...) against the same stat from the immediately-preceding period. `previous` is null when
+    // there's no data for that prior period at all (e.g. the very first tracked month).
+    const trendChip = (current, previous, noun) => {
+        if (previous === null || previous === undefined) {
+            return `<div class="wrapped-trend-chip"><span class="material-symbols-outlined">new_releases</span><span>First time tracking this ${escapeHtml(noun)}</span></div>`;
+        }
+        if (previous === 0) {
+            if (current === 0) return '';
+            return `<div class="wrapped-trend-chip wrapped-trend-up"><span class="material-symbols-outlined">trending_up</span><span>Up from zero last ${escapeHtml(noun)}</span></div>`;
+        }
+        const pct = Math.round(((current - previous) / previous) * 100);
+        if (pct === 0) {
+            return `<div class="wrapped-trend-chip"><span class="material-symbols-outlined">trending_flat</span><span>Same as last ${escapeHtml(noun)}</span></div>`;
+        }
+        const up = pct > 0;
+        const icon = up ? 'trending_up' : 'trending_down';
+        const cls = up ? 'wrapped-trend-up' : 'wrapped-trend-down';
+        return `<div class="wrapped-trend-chip ${cls}"><span class="material-symbols-outlined">${icon}</span><span>${up ? '+' : ''}${pct}% vs last ${escapeHtml(noun)}</span></div>`;
+    };
+
     const footerBrand = () => `
         <div class="wrapped-footer-brand">
             <span class="brand-name">steam-widget</span>
@@ -302,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${footerBrand()}`;
     };
 
-    const buildTotalPlaytimeSlide = (periodStats, period, alltime) => {
+    const buildTotalPlaytimeSlide = (periodStats, period, alltime, previousStats) => {
         const { hours, minutes } = minutesToHM(periodStats.totalMinutes);
         let subcaption = '';
         const alltimeMinutesTotal = alltime ? (Number(alltime.alltimeHours) || 0) * 60 + (Number(alltime.alltimeMinutes) || 0) : 0;
@@ -318,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${bigNumberBlock(hours, 'HOURS')}
                 <p class="wrapped-caption">That's ${fmtDuration(hours, minutes)} across your library this ${escapeHtml(period.noun)}.</p>
                 ${subcaption ? `<p class="wrapped-subcaption">${subcaption}</p>` : ''}
+                ${trendChip(periodStats.totalMinutes, previousStats ? previousStats.totalMinutes : null, period.noun)}
             </div>
             ${footerBrand()}`;
     };
@@ -335,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${footerBrand()}`;
     };
 
-    const buildVarietySlide = (periodStats, period) => {
+    const buildVarietySlide = (periodStats, period, previousStats) => {
         const count = periodStats.uniqueGames;
         return `
             ${blob('width:560px;height:560px;top:-200px;left:-180px;')}
@@ -344,11 +402,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="wrapped-eyebrow">Game rotation</span>
                 ${bigNumberBlock(count, count === 1 ? 'GAME' : 'GAMES')}
                 <p class="wrapped-caption">different games kept you busy ${period.noun === 'week' ? 'this week' : `in ${escapeHtml(period.label)}`}.</p>
+                ${trendChip(count, previousStats ? previousStats.uniqueGames : null, period.noun)}
             </div>
             ${footerBrand()}`;
     };
 
-    const buildActiveDaysSlide = (periodStats, period) => {
+    const buildActiveDaysSlide = (periodStats, period, previousStats) => {
         const days = periodStats.activeDays;
         return `
             ${blob('width:560px;height:560px;bottom:-200px;left:-180px;')}
@@ -357,6 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="wrapped-eyebrow">Showing up</span>
                 ${bigNumberBlock(days, days === 1 ? 'DAY ACTIVE' : 'DAYS ACTIVE')}
                 <p class="wrapped-caption">out of ${period.periodDays} days in ${escapeHtml(period.label)} — that's ${Math.round((days / period.periodDays) * 100)}% of the ${escapeHtml(period.noun)}.</p>
+                ${trendChip(days, previousStats ? previousStats.activeDays : null, period.noun)}
             </div>
             ${footerBrand()}`;
     };
@@ -433,17 +493,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const buildSlides = ({ periodStats, period, profile, alltime, currentStreakDays }) => {
+    const buildSlides = ({ periodStats, period, profile, alltime, currentStreakDays, previousStats }) => {
         const built = [{ render: () => buildCoverSlide(profile, period) }];
 
-        built.push({ render: () => buildTotalPlaytimeSlide(periodStats, period, alltime) });
+        built.push({ render: () => buildTotalPlaytimeSlide(periodStats, period, alltime, previousStats) });
         if (periodStats.topGame) {
             built.push({ render: () => buildTopGameSlide(periodStats, period) });
         }
         if (periodStats.uniqueGames > 0) {
-            built.push({ render: () => buildVarietySlide(periodStats, period) });
+            built.push({ render: () => buildVarietySlide(periodStats, period, previousStats) });
         }
-        built.push({ render: () => buildActiveDaysSlide(periodStats, period) });
+        built.push({ render: () => buildActiveDaysSlide(periodStats, period, previousStats) });
         if (periodStats.longestStreak && periodStats.longestStreak.days > 1) {
             built.push({ render: () => buildStreakSlide(periodStats, period, currentStreakDays) });
         }
@@ -709,10 +769,13 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelTimer();
         currentPeriod = period;
 
+        const previousRange = getPreviousPeriodRange(period, mode);
         const dateParams = new URLSearchParams({ steamid: steamId, startDate: period.startDate, endDate: period.endDate });
+        const previousDateParams = new URLSearchParams({ steamid: steamId, startDate: previousRange.startDate, endDate: previousRange.endDate });
         const insightParams = new URLSearchParams({ steamid: steamId });
-        const [rows, playtimeInsights, activityInsights, profile] = await Promise.all([
+        const [rows, prevRows, playtimeInsights, activityInsights, profile] = await Promise.all([
             fetchJsonOrNull(`/api/tracking/profile-date?${dateParams}`),
+            fetchJsonOrNull(`/api/tracking/profile-date?${previousDateParams}`),
             fetchJsonOrNull(`/api/tracking/insights/playtime?${insightParams}`),
             fetchJsonOrNull(`/api/tracking/insights/activity?${insightParams}`),
             fetchJsonOrNull(`/api/profile/live?steamId=${encodeURIComponent(steamId)}`)
@@ -730,6 +793,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // null = the fetch failed and the previous period is genuinely unknown (trend chips say
+        // so). An array that aggregates to no activity is a known zero, not an unknown.
+        const previousStats = Array.isArray(prevRows)
+            ? (aggregatePeriod(prevRows) || { totalMinutes: 0, uniqueGames: 0, activeDays: 0, topGame: null, peakDay: null, longestStreak: null })
+            : null;
+
         if (profile?.avatarUrl) {
             // Warm the browser cache so the cover slide's <img> paints immediately instead of
             // popping in, and so an early download/share doesn't race the network fetch.
@@ -743,7 +812,8 @@ document.addEventListener('DOMContentLoaded', () => {
             period,
             profile,
             alltime: playtimeInsights,
-            currentStreakDays: Number(activityInsights?.currentStreakDays) || 0
+            currentStreakDays: Number(activityInsights?.currentStreakDays) || 0,
+            previousStats
         });
         renderProgressBars();
         applyTheme(themeSelect.value);
