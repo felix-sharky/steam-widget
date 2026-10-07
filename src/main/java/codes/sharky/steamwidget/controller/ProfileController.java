@@ -1,10 +1,12 @@
 package codes.sharky.steamwidget.controller;
 
 import codes.sharky.steamwidget.entity.Profile;
+import codes.sharky.steamwidget.model.ProfileSummary;
 import codes.sharky.steamwidget.model.ResolvedProfile;
 import codes.sharky.steamwidget.service.ProfileService;
 import codes.sharky.steamwidget.service.SteamWebAPIService;
 import com.google.common.base.Strings;
+import com.lukaspradel.steamapi.data.json.playersummaries.Player;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,6 +64,20 @@ public class ProfileController {
             // Ignore
         }
         return profile;
+    }
+
+    /**
+     * Resolves live name and avatar for a Steam ID directly from the Steam Web API, regardless of
+     * whether the profile is tracked or cached. Used by pages that need a profile picture, such as
+     * the Wrapped story generator.
+     *
+     * @param steamId Steam64 ID or vanity URL to look up
+     * @return live profile summary; fields are blank/null if resolution failed
+     */
+    @GetMapping("/api/profile/live")
+    public @ResponseBody ProfileSummary getLiveProfile(@RequestParam String steamId) {
+        Player player = steamWebAPIService.getUserBySteamId(steamId);
+        return new ProfileSummary(player.getSteamid(), player.getPersonaname(), player.getAvatarfull(), player.getProfileurl());
     }
 
 }

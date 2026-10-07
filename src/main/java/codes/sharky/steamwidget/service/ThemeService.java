@@ -1,5 +1,6 @@
 package codes.sharky.steamwidget.service;
 
+import codes.sharky.steamwidget.model.ThemeColors;
 import codes.sharky.steamwidget.model.ThemePalette;
 import codes.sharky.steamwidget.model.ThemeSummary;
 import codes.sharky.steamwidget.model.WidgetStyle;
@@ -34,19 +35,26 @@ public class ThemeService {
     /** Theme ids and display labels, in the order they appear in themes.json. */
     private List<ThemeSummary> themeSummaries;
 
+    /** Theme colors as hex strings, in the order they appear in themes.json, for frontend use. */
+    private List<ThemeColors> themeColors;
+
     @PostConstruct
     void loadThemes() {
         try (InputStream inputStream = new ClassPathResource(THEMES_RESOURCE).getInputStream()) {
             ThemesFile themesFile = objectMapper.readValue(inputStream, ThemesFile.class);
             Map<String, ThemePalette> palettes = new HashMap<>();
             List<ThemeSummary> summaries = new ArrayList<>();
+            List<ThemeColors> colors = new ArrayList<>();
             for (JsonThemePalette theme : themesFile.themes()) {
                 String id = theme.id().trim().toUpperCase(Locale.ROOT);
                 palettes.put(id, theme.toPalette());
                 summaries.add(new ThemeSummary(id, theme.label()));
+                colors.add(new ThemeColors(id, theme.label(), theme.backgroundStart(), theme.backgroundEnd(),
+                        theme.accent(), theme.text(), theme.muted()));
             }
             this.palettesById = Map.copyOf(palettes);
             this.themeSummaries = List.copyOf(summaries);
+            this.themeColors = List.copyOf(colors);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load " + THEMES_RESOURCE, e);
         }
@@ -75,6 +83,11 @@ public class ThemeService {
     /** Theme ids and display labels, in the order they appear in themes.json - for the frontend style picker. */
     public List<ThemeSummary> getThemeSummaries() {
         return themeSummaries;
+    }
+
+    /** Theme colors as hex strings, in the order they appear in themes.json - for frontend rendering. */
+    public List<ThemeColors> getThemeColors() {
+        return themeColors;
     }
 
     private record ThemesFile(List<JsonThemePalette> themes) {

@@ -1,5 +1,6 @@
 package codes.sharky.steamwidget.controller;
 
+import codes.sharky.steamwidget.model.ThemeColors;
 import codes.sharky.steamwidget.model.ThemeSummary;
 import codes.sharky.steamwidget.service.ThemeService;
 import org.springframework.http.MediaType;
@@ -25,5 +26,14 @@ public class ThemeController {
     @GetMapping(value = "/api/widget/styles", produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody List<ThemeSummary> getWidgetStyles() {
         return themeService.getThemeSummaries();
+    }
+
+    /**
+     * Returns the full theme color palettes (as hex strings) so pages that render their own
+     * themed UI client-side, such as the Wrapped story generator, can match the widget themes.
+     */
+    @GetMapping(value = "/api/widget/themes", produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody List<ThemeColors> getWidgetThemeColors() {
+        return themeService.getThemeColors();
     }
 }
