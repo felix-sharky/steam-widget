@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endDateInput = document.getElementById('endDate');
     const tableBody = document.getElementById('tableBody');
     const tableStatus = document.getElementById('tableStatus');
+    const tableGameFilter = document.getElementById('tableGameFilter');
     const backNav = document.getElementById('trackingBackNav');
     const chartStatus = document.getElementById('chartStatus');
     const chartCanvas = document.getElementById('trackingChart');
@@ -167,13 +168,29 @@ document.addEventListener('DOMContentLoaded', () => {
         backNav.href = url.toString();
     };
 
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[ch]));
+
+    const getGameFilterText = () => (tableGameFilter?.value || '').trim().toLowerCase();
+
     const renderRows = (rows, mode = currentMode) => {
         if (!rows.length) {
             tableBody.innerHTML = '<tr><td colspan="4" class="muted">No tracking data found for this profile.</td></tr>';
             return;
         }
 
-        tableBody.innerHTML = rows.map((row, index) => {
+        const filterText = getGameFilterText();
+        const filteredRows = filterText
+            ? rows.filter((row) => (row.game || '').toLowerCase().includes(filterText))
+            : rows;
+
+        if (!filteredRows.length) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="muted">No games match &ldquo;${escapeHtml(tableGameFilter.value.trim())}&rdquo;.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = filteredRows.map((row, index) => {
             const isActive = selectedGames.has(row.game);
             const periodLabel = row.label || (mode === 'date' ? 'Unknown date' : 'Unknown period');
             return `<tr class="table-row-selectable ${isActive ? 'table-row-active' : ''}" data-index="${index}" data-game="${row.game ?? ''}">
@@ -350,7 +367,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: '#cbd5f5' },
+                        labels: {
+                            color: '#cbd5f5',
+                            // Only list datasets currently shown on the chart (the total line, plus
+                            // any games focused via the table) — with one dataset per game ever
+                            // played, an unfiltered legend can run to hundreds of entries.
+                            filter: (legendItem, data) => !data.datasets[legendItem.datasetIndex].hidden
+                        },
                         onClick(evt, legendItem, legend) {
                             if (typeof defaultLegendClick === 'function') {
                                 defaultLegendClick.call(this, evt, legendItem, legend);
@@ -526,6 +549,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tableBody.addEventListener('click', toggleRowSelection);
 
+    if (tableGameFilter) {
+        tableGameFilter.addEventListener('input', () => {
+            renderRows(currentRows, currentMode);
+            if (!currentRows.length) {
+                return;
+            }
+            const filterText = getGameFilterText();
+            if (!filterText) {
+                setStatus('badge-success', `Loaded ${currentRows.length} rows (${currentMode})`);
+                return;
+            }
+            const matchCount = currentRows.filter((row) => (row.game || '').toLowerCase().includes(filterText)).length;
+            setStatus(matchCount ? 'badge-success' : 'badge-idle', `Showing ${matchCount} of ${currentRows.length} rows`);
+        });
+    }
+
     const updateViewCopy = (mode) => {
         const isDaily = mode === 'date';
         const viewLabel = isDaily ? 'Daily' : 'Monthly';
@@ -614,6 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sorted = sortRowsByDate(normalized);
             currentRows = sorted;
             selectedGames.clear();
+            if (tableGameFilter) tableGameFilter.value = '';
             renderRows(sorted, viewMode);
             renderChart(sorted);
             setStatus('badge-success', `Loaded ${sorted.length} rows (${viewMode})`);

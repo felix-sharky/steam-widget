@@ -225,6 +225,21 @@ code {
     font-size: 18px;
 }
 
+/* Below this width, cards run edge-to-edge and a full pill button covers form
+   controls underneath it (e.g. the Year field on Wrapped). Collapse to an
+   icon-only FAB so it has a much smaller footprint over page content. */
+@media (max-width: 640px) {
+    .share-btn {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.65rem;
+        gap: 0;
+    }
+    .share-btn-label {
+        display: none;
+    }
+}
+
 /* Share toast */
 #shareToast {
     position: fixed;
