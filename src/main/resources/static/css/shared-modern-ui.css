@@ -248,3 +248,131 @@ code {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* Year-end Wrapped banner (injected by layout-effects.js). */
+.year-end-banner {
+    position: relative;
+    background: linear-gradient(110deg, rgba(139, 92, 246, 0.95) 0%, rgba(109, 59, 215, 0.95) 45%, rgba(3, 181, 211, 0.95) 100%);
+    border-bottom: 1px solid rgba(208, 188, 255, 0.35);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.25);
+    color: #ffffff;
+    font-family: 'Sora', sans-serif;
+}
+
+.year-end-banner__inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.875rem 3.25rem 0.875rem 20px;
+}
+
+.year-end-banner__icon {
+    font-size: 36px;
+    flex-shrink: 0;
+    animation: year-end-banner-pop 2.4s ease-in-out infinite;
+}
+
+.year-end-banner__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.year-end-banner__title {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.year-end-banner__body {
+    font-size: 14px;
+    line-height: 20px;
+    opacity: 0.92;
+}
+
+.year-end-banner__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.year-end-banner__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: transform 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+.year-end-banner__btn .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.year-end-banner__btn:hover {
+    transform: translateY(-1px);
+}
+
+.year-end-banner__btn--primary {
+    background: #ffffff;
+    color: #3c0091;
+    box-shadow: 0 4px 14px rgba(6, 14, 32, 0.25);
+}
+
+.year-end-banner__btn--secondary {
+    background: rgba(6, 14, 32, 0.25);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.year-end-banner__btn--secondary:hover {
+    background: rgba(6, 14, 32, 0.4);
+}
+
+.year-end-banner__close {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    padding: 0.375rem;
+    border-radius: 9999px;
+    color: #ffffff;
+    opacity: 0.8;
+    transition: opacity 0.15s, background-color 0.15s;
+}
+
+.year-end-banner__close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes year-end-banner-pop {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    10% { transform: rotate(-12deg) scale(1.1); }
+    20% { transform: rotate(10deg) scale(1.1); }
+    30% { transform: rotate(0deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .year-end-banner__icon { animation: none; }
+}
+
+@media (max-width: 767px) {
+    .year-end-banner__inner {
+        flex-wrap: wrap;
+        padding-right: 2.75rem;
+    }
+    .year-end-banner__icon { display: none; }
+    .year-end-banner__actions { width: 100%; }
+    .year-end-banner__btn { flex: 1; justify-content: center; }
+    .year-end-banner__close { top: 0.75rem; transform: none; }
+}

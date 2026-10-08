@@ -206,6 +206,14 @@ document.addEventListener('DOMContentLoaded', () => {
         periodYearInput.value = String(today.getFullYear());
         periodMonthInput.value = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}`;
         periodWeekInput.value = toIsoDate(mostRecentMonday(today));
+
+        // ?year=YYYY (used by the year-end banner) preselects a full-year Wrapped.
+        const requestedYear = Number(new URLSearchParams(window.location.search).get('year'));
+        if (Number.isInteger(requestedYear) && requestedYear >= 2003 && requestedYear <= today.getFullYear()) {
+            periodYearInput.value = String(requestedYear);
+            const yearRadio = document.querySelector('input[name="periodMode"][value="year"]');
+            if (yearRadio) yearRadio.checked = true;
+        }
         updatePeriodFieldVisibility();
     };
 

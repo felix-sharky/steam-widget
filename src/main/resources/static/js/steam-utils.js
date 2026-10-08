@@ -26,7 +26,8 @@
         window.history.replaceState({}, '', next);
     };
 
-    namespace.syncNavLinks = function syncNavLinks(steamId, selector = '.nav-link[data-base]') {
+    // Also covers the year-end banner's links so they carry the Steam ID a visitor enters.
+    namespace.syncNavLinks = function syncNavLinks(steamId, selector = '.nav-link[data-base], .year-end-banner a[data-base]') {
         document.querySelectorAll(selector).forEach((link) => {
             const base = link.getAttribute('data-base') || link.getAttribute('href') || link.href;
             const target = new URL(base, window.location.origin);
