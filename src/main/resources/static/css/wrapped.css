@@ -219,6 +219,27 @@
     word-break: break-word;
 }
 
+/* Page-hero echo of the story-slide progress bar below — the thing that makes this page
+   distinct from every other page's identical gradient headline. First segment lit, like
+   slide 1 of a story about to start. */
+.hero-story-strip {
+    display: flex;
+    gap: 6px;
+    max-width: 180px;
+    margin: 0 auto;
+}
+
+.hero-story-strip span {
+    flex: 1;
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(208, 188, 255, 0.18);
+}
+
+.hero-story-strip span:first-child {
+    background: linear-gradient(90deg, #8b5cf6, #4cd7f6);
+}
+
 /* Progress bar + tap zones overlay the stage but are excluded from export (siblings of the
    captured .wrapped-slide-content node). */
 .wrapped-progress-row {

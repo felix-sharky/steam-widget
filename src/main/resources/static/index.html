@@ -93,8 +93,18 @@
             transition: transform 0.2s;
         }
         .toggle-track.checked .toggle-thumb { transform: translateX(20px); }
-        /* Widget preview area */
-        .widget-preview-container { min-height: 200px; }
+        /* Widget preview area — a recessed "canvas" (per DESIGN.md's Widget Preview
+           Container spec) rather than another flat glass-card, so the actual output
+           reads as the page's one highlight instead of blending in with the form. */
+        .widget-preview-container {
+            min-height: 200px;
+            background-color: #060e20;
+            background-image:
+                radial-gradient(circle at 20% 15%, rgba(139, 92, 246, 0.18), transparent 55%),
+                radial-gradient(circle, rgba(208, 188, 255, 0.1) 1px, transparent 1px);
+            background-size: auto, 22px 22px;
+            box-shadow: inset 0 2px 16px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(139, 92, 246, 0.12);
+        }
         .widget-preview-container img { display: inline-block; max-width: 100%; }
         /* Dynamic content classes used by generator.js */
         #widgetContainer .label {
@@ -423,13 +433,13 @@
 
         <!-- Column 2: Preview (Right) -->
         <div class="lg:col-span-5 flex flex-col">
-            <div class="glass-card p-stack-lg rounded-xl flex-grow flex flex-col lg:sticky lg:top-24">
+            <div class="glass-card glass-card--featured p-stack-lg rounded-xl flex-grow flex flex-col lg:sticky lg:top-24">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="material-symbols-outlined text-primary-container">visibility</span>
                     <h2 class="font-headline-md text-headline-md text-on-surface">Widget preview</h2>
                 </div>
                 <!-- Widget container used by generator.js -->
-                <div id="widgetContainer" class="widget-preview-container flex-grow flex flex-col items-center justify-center border-2 border-dashed border-primary-container/20 rounded-lg bg-surface-container-lowest/30 p-8 text-center space-y-4">
+                <div id="widgetContainer" class="widget-preview-container flex-grow flex flex-col items-center justify-center rounded-lg p-8 text-center space-y-4">
                     <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center animate-pulse">
                         <span class="material-symbols-outlined text-primary-container text-4xl">pending</span>
                     </div>

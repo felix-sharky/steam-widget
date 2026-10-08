@@ -9,9 +9,26 @@
     border: 1px solid rgba(139, 92, 246, 0.15);
 }
 
+/* For read-only data sections (insight panels, charts, tables) that sit alongside
+   interactive glass-cards (forms, settings) on the same page. Deliberately quieter —
+   no blur, no violet tint — so the cards you act on keep more visual weight than the
+   cards you just read, instead of every section competing at the same volume. */
+.data-card {
+    background: rgba(23, 31, 51, 0.32);
+    border: 1px solid rgba(73, 68, 84, 0.3);
+}
+
 .glow-hover:hover {
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
     border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Reserved for the one or two highest-priority surfaces per page (e.g. a live
+   result/output, not every card) — a persistent neon-glow edge so it reads as
+   more important than the plain glass-card sections around it. */
+.glass-card--featured {
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.12), 0 0 40px rgba(139, 92, 246, 0.16);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
