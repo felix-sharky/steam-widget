@@ -665,8 +665,8 @@ document.addEventListener('DOMContentLoaded', () => {
         wrappedMessage.className = `mt-4 text-sm ${isError ? 'text-[#ff516a]' : 'text-[#4cd7f6]'}`;
     };
 
-    // Avatar/other <img> tags inside a freshly-rendered slide may still be mid-fetch; html2canvas
-    // snapshots whatever is painted right now, so an export taken too early would show a blank
+    // Avatar/other <img> tags inside a freshly-rendered slide may still be mid-fetch; the exporter
+    // snapshots whatever is loaded right now, so an export taken too early would show a blank
     // box instead of the image. Wait for every image in the slide to settle (load or fail) first.
     const waitForImages = async (container, timeoutMs = 4000) => {
         const imgs = Array.from(container.querySelectorAll('img'));
@@ -681,8 +681,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const captureCurrentSlide = async () => {
-        if (typeof html2canvas !== 'function') {
-            throw new Error('html2canvas not loaded yet');
+        // modern-screenshot renders the slide through an SVG foreignObject, so the browser itself
+        // paints it — gradient text, blurred blobs and font metrics match the on-screen preview.
+        const domToCanvas = window.modernScreenshot?.domToCanvas;
+        if (typeof domToCanvas !== 'function') {
+            throw new Error('modern-screenshot not loaded yet');
         }
         const prevTransform = stage.style.transform;
         stage.style.transform = 'none';
@@ -691,9 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // backgrounded/throttled right as the user taps download/share.
         await new Promise((resolve) => setTimeout(resolve, 50));
         try {
-            return await html2canvas(slideContent, {
+            return await domToCanvas(slideContent, {
                 backgroundColor: null,
-                useCORS: true,
                 width: STAGE_WIDTH,
                 height: STAGE_HEIGHT,
                 scale: 1
