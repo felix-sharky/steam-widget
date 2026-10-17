@@ -1,20 +1,3 @@
-/* Conference ID Badge — this site's confirmed design direction (see DESIGN.md
-   and .impeccable/surfaces/index-html.md). The page is a dark expo-hall
-   surface; panels are dark cardstock sitting on it — a premium black-badge-
-   stock material, not the cream-paper version. Only the one featured panel
-   is the actual badge object: hole-punch, lanyard clip, laminate sheen,
-   barcode. Everything else is a plain sheet.
-
-   Most colors here read from the CSS variables in css/themes.css (via
-   rgb(var(--c-x) / alpha)) so switching [data-theme] on <html> re-themes
-   them along with every Tailwind bg-, text-, and border-prefixed class. The
-   badge object (.glass-card--featured, .badge-hole, .card-rarity-tag,
-   .badge-barcode below) also takes its cardstock, hole, and barcode-ink color
-   from the active theme — only its metal lanyard clip and glossy laminate
-   sheen stay fixed, since those model a physical material rather than page
-   chrome. The widget preview canvas is the one thing that intentionally stays
-   fixed across all three themes; see its own comment. */
-
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
@@ -404,14 +387,16 @@ code {
     transform: translateX(20px);
 }
 
-/* Widget preview — a small embedded display window set into the badge,
-   like a digital photo pocket; stays dark so the preview content (styled
-   for dark grounds elsewhere on the site) still reads correctly. */
+/* Widget preview — a small embedded display window set into the badge, like a
+   digital photo pocket. Now theme-variable: the widget preview image itself
+   already adapts to the active theme (Card/Midnight/Light styles stay synced
+   with the site theme — see steam-utils.js), so keeping this frame fixed dark
+   made light-mode previews look like they'd been dropped into the wrong card. */
 .widget-preview-container {
     min-height: 200px;
-    background-color: #161412;
+    background-color: rgb(var(--c-surface-container-lowest));
     border-radius: 8px;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), inset 0 0 0 1px #3a352c;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgb(var(--c-outline-variant));
 }
 .widget-preview-container img {
     display: inline-block;
@@ -424,17 +409,17 @@ code {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #a69c89;
+    color: rgb(var(--c-on-surface-variant));
     font-family: 'Public Sans', sans-serif;
 }
 #widgetContainer .link-box,
 #widgetContainer .code-box {
     margin-top: 6px;
     padding: 10px 14px;
-    background: #0e0d0b;
-    border: 1px solid #3a352c;
+    background: rgb(var(--c-surface-container-low));
+    border: 1px solid rgb(var(--c-outline-variant));
     border-radius: 6px;
-    color: #e8e2d3;
+    color: rgb(var(--c-on-surface));
     word-wrap: break-word;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
@@ -443,7 +428,7 @@ code {
     white-space: pre-wrap;
 }
 #widgetContainer p {
-    color: #e6a08a;
+    color: rgb(var(--c-error));
     font-size: 14px;
 }
 

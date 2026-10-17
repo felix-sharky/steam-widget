@@ -1,11 +1,3 @@
-// Theme tokens for "Conference ID Badge" — this site's confirmed design
-// direction (see DESIGN.md / .impeccable/surfaces/index-html.md): a dark
-// expo-hall page with dark-cardstock panels and one orange accent. Values
-// below read from CSS variables (see css/themes.css) instead of literal
-// hex so the whole token set — including every existing opacity-modified
-// class like bg-primary-container/30 — responds to the [data-theme]
-// attribute theme-switcher.js sets on <html>. css/themes.css defines the
-// "default" (this theme), "dark", and "light" variable sets.
 window.tailwind = window.tailwind || {};
 window.tailwind.config = {
     darkMode: 'class',

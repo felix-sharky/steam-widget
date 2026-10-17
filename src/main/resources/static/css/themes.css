@@ -1,25 +1,3 @@
-/* Site-wide color themes.
-   Each design token below is a CSS variable holding "R G B" channel values;
-   tailwind-theme-badge.js reads them as rgb(var(--c-x) / <alpha-value>) so every
-   existing bg-, text-, and border-prefixed utility class — including opacity
-   modifiers like bg-primary-container/30 — re-themes automatically. Switching [data-theme]
-   on <html> (see theme-switcher.js) is the only thing that needs to happen.
-
-   "default" is Conference ID Badge, this site's confirmed design direction
-   (see DESIGN.md / .impeccable/surfaces/index-html.md) — dark cardstock, a single
-   confident orange+teal accent pair, Barlow Condensed + Public Sans + IBM Plex
-   Mono. "dark" and "light" are plainer, neutral-surface alternatives for people
-   who just want a conventional dark or light UI without the cardstock styling —
-   each also carries its own distinct accent pair (dark: blue/cyan, light:
-   emerald/amber) so the three themes read as genuinely different looks, not
-   just the same orange button recolored onto different backgrounds.
-
-   The widget-preview canvas, and the badge object's metal lanyard clip and
-   glossy laminate sheen (badge-ui.css), intentionally stay fixed across all
-   three themes — they render a physical material or an image preview, not
-   page chrome, so they shouldn't flip color with the theme switch. Everything
-   else on the badge (cardstock, hole, barcode ink, ribbon) does re-theme. */
-
 :root,
 [data-theme="default"] {
     --c-background: 31 29 27;
