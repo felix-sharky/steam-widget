@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Impeccable ###
+.impeccable/hook.cache.json

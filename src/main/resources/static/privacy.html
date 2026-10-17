@@ -2,88 +2,117 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>(function(){try{var t=localStorage.getItem('steamWidgetTheme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>steam-widget | Privacy Policy</title>
     <meta name="description" content="Privacy Policy for steam-widget.com — what data we collect, why, and your rights under GDPR.">
     <meta name="keywords" content="steam-widget privacy policy, GDPR, data protection">
-    <meta name="theme-color" content="#7c3aed">
+    <meta name="theme-color" content="#e07d26">
     <link rel="canonical" href="https://steam-widget.com/privacy.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="steam-widget">
     <meta property="og:title" content="steam-widget | Privacy Policy">
     <meta property="og:description" content="Privacy Policy for steam-widget.com — what data we collect, why, and your rights under GDPR.">
     <meta property="og:url" content="https://steam-widget.com/privacy.html">
-    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="300">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="steam-widget | Privacy Policy">
     <meta name="twitter:description" content="Privacy Policy for steam-widget.com — what data we collect, why, and your rights under GDPR.">
-    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <link rel="icon" type="image/png" href="/img/logo.png"/>
     <link rel="apple-touch-icon" href="/img/logo.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="/js/tailwind-theme.js"></script>
-    <link href="https://fonts.bunny.net/css?family=sora:400,600,700,800|jetbrains-mono:500&display=swap" rel="stylesheet">
+    <script src="/js/tailwind-theme-badge.js"></script>
+    <link href="https://fonts.bunny.net/css?family=barlow-condensed:600,700,800|public-sans:400,500,600,700|ibm-plex-mono:500,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css">
-    <link rel="stylesheet" href="/css/shared-modern-ui.css">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/badge-ui.css">
     <script defer src="/js/layout-effects.js"></script>
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
     <style>
         .prose h2 { margin-top: 2rem; margin-bottom: 0.5rem; }
         .prose h3 { margin-top: 1.25rem; margin-bottom: 0.25rem; }
-        .prose p, .prose li { line-height: 1.75; }
+        .prose p, .prose li { line-height: 1.75; max-width: 56ch; }
         .prose ul { list-style: disc; padding-left: 1.5rem; }
         .prose ul li { margin-bottom: 0.25rem; }
-        .prose a { color: #a78bfa; text-decoration: underline; }
-        .prose a:hover { color: #ede9fe; }
-        .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
-            background: rgba(139,92,246,0.12); padding: 0.1em 0.4em; border-radius: 4px; }
+        .prose a { color: rgb(var(--c-primary)); text-decoration: underline; }
+        .prose a:hover { filter: brightness(1.1); }
+        .prose code { font-family: 'IBM Plex Mono', monospace; font-size: 0.85em;
+            background: rgb(var(--c-secondary) / 0.14); color: rgb(var(--c-secondary)); padding: 0.1em 0.4em; border-radius: 4px; }
         .prose table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        .prose th { text-align: left; padding: 0.5rem 0.75rem; background: rgba(139,92,246,0.12);
+        .prose th { text-align: left; padding: 0.5rem 0.75rem; background: rgb(var(--c-surface-container-lowest));
             font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;
-            font-family: 'JetBrains Mono', monospace; color: #cbc3d7; }
-        .prose td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(139,92,246,0.1);
-            font-size: 14px; color: #b0aab8; vertical-align: top; }
-        .prose td:first-child { color: #dae2fd; font-weight: 600; }
+            font-family: 'IBM Plex Mono', monospace; color: rgb(var(--c-tertiary)); }
+        .prose td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgb(var(--c-outline-variant));
+            font-size: 14px; color: rgb(var(--c-on-surface-variant)); vertical-align: top; }
+        .prose td:first-child { color: rgb(var(--c-on-surface)); font-weight: 600; }
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md custom-scrollbar">
 
 <!-- Top Navigation Bar -->
-<header class="sticky top-0 w-full bg-surface-container-low/80 backdrop-blur-md z-50 border-b border-outline-variant/30 shadow-sm">
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
     <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
-        <div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary-fixed-dim">steam-widget</div>
-        <div class="hidden md:flex gap-6 items-center">
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/" data-base="/" href="/">Generator</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/wrapped.html" data-base="/wrapped.html" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+            steam-widget
         </div>
-        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+        <div class="hidden md:flex gap-6 items-center">
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/" data-base="/" href="/">Generator</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/wrapped.html" data-base="/wrapped.html" href="/wrapped.html">Wrapped</a>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
+        <button id="mobileMenuBtn" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
             <span class="material-symbols-outlined">menu</span>
         </button>
     </nav>
-    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking.html">Play Tracking</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/playing-stats.html">Playing Stats</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/wrapped.html">Wrapped</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/tracking.html">Play Tracking</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/playing-stats.html">Playing Stats</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/profile-metrics.html">Profile Metrics</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
+            <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
     </div>
 </header>
 
 <main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-stack-lg">
 
     <!-- Hero -->
-    <section class="text-center py-stack-lg space-y-stack-sm">
-        <h1 class="font-headline-xl text-headline-xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">
+    <section class="py-stack-md space-y-stack-sm">
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">
             Privacy Policy
         </h1>
         <p>
@@ -109,10 +138,11 @@
         <!-- 2. Data collected -->
         <h2 class="font-headline-md text-headline-md text-on-surface">2. Data We Collect</h2>
 
-        <h3 class="font-headline-sm text-on-surface">2.1 Widget Views (Hit Counters)</h3>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">2.1 Widget Views (Hit Counters)</h3>
         <p>
             Every time a Steam widget image is loaded, we record a hit event. The following data is stored for each hit:
         </p>
+        <div class="overflow-x-auto">
         <table>
             <thead><tr><th>Field</th><th>Description</th><th>Legal basis</th></tr></thead>
             <tbody>
@@ -122,6 +152,7 @@
                 <tr><td><code>ip</code></td><td>IPv4 address of the viewer</td><td>Legitimate interest (abuse prevention)</td></tr>
             </tbody>
         </table>
+        </div>
         <p>
             IP addresses are personal data under GDPR. They are stored solely to detect and prevent abusive
             automated traffic, are not shared with third parties, and are <strong class="text-on-surface">nullified
@@ -130,11 +161,12 @@
             approach that satisfies GDPR requirements while preserving aggregated usage data.
         </p>
 
-        <h3 class="font-headline-sm text-on-surface">2.2 Steam Profile Data</h3>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">2.2 Steam Profile Data</h3>
         <p>
             When a Steam profile is looked up on this service — either by the profile owner or by a third party
             embedding a widget — we cache the following data retrieved from the Steam Web API:
         </p>
+        <div class="overflow-x-auto">
         <table>
             <thead><tr><th>Field</th><th>Description</th><th>Legal basis</th></tr></thead>
             <tbody>
@@ -142,18 +174,20 @@
                 <tr><td><code>name</code></td><td>Steam display name (public profile data)</td><td>Legitimate interest</td></tr>
             </tbody>
         </table>
+        </div>
         <p>
             Only <strong class="text-on-surface">public</strong> Steam profiles are processed. We do not access
             private profile information. This data originates from Valve's public Steam Web API and is refreshed
             periodically as long as the profile is active on this service.
         </p>
 
-        <h3 class="font-headline-sm text-on-surface">2.3 Playtime Tracking (Opt-in)</h3>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">2.3 Playtime Tracking (Opt-in)</h3>
         <p>
             Playtime tracking is entirely <strong class="text-on-surface">opt-in</strong>. It is activated only
             when you explicitly authenticate with Steam and choose to enable tracking. The following data is recorded
             periodically for tracked profiles:
         </p>
+        <div class="overflow-x-auto">
         <table>
             <thead><tr><th>Field</th><th>Description</th></tr></thead>
             <tbody>
@@ -164,6 +198,7 @@
                 <tr><td><code>total_playing_time</code></td><td>Cumulative minutes played (from Steam)</td></tr>
             </tbody>
         </table>
+        </div>
         <p>
             Legal basis: <strong class="text-on-surface">consent</strong> — you may withdraw consent at any time
             by disabling tracking on the <a href="/tracking.html">Play Tracking</a> page.
@@ -172,7 +207,8 @@
 
         <!-- 3. Cookies -->
         <h2 class="font-headline-md text-headline-md text-on-surface">3. Cookies &amp; Session Storage</h2>
-        <p>This service sets one cookie:</p>
+        <p>This service sets two cookies:</p>
+        <div class="overflow-x-auto">
         <table>
             <thead><tr><th>Cookie</th><th>Purpose</th><th>Lifetime</th><th>Accessible from JS</th></tr></thead>
             <tbody>
@@ -182,16 +218,31 @@
                     <td>7 days</td>
                     <td>Yes (required for pre-fill feature)</td>
                 </tr>
+                <tr>
+                    <td><code>SESSION</code></td>
+                    <td>Identifies your server-side session after a Steam login, used to authorize claiming a profile page, changing its section visibility, and un-claiming it. Strictly functional — no tracking or profiling.</td>
+                    <td>Until session timeout</td>
+                    <td>No (HttpOnly)</td>
+                </tr>
             </tbody>
         </table>
+        </div>
         <p>
-            The cookie is set with the <code>Secure</code> and <code>SameSite=Lax</code> flags.
+            Both cookies are set with the <code>Secure</code> and <code>SameSite=Lax</code> flags.
             No advertising, analytics, or cross-site tracking cookies are set by this service.
-            You can clear the cookie at any time through your browser settings without losing any data.
+            You can clear either cookie at any time through your browser settings without losing any data.
+        </p>
+        <p>
+            Claiming a profile page creates a corresponding server-side session record in our database
+            (rather than purely in-memory on one server), so your session stays valid no matter which of
+            our application instances handles your request. This record is identified by a random session
+            ID — the same value stored in the <code>SESSION</code> cookie — and is automatically removed
+            when the session expires or you log out.
         </p>
 
         <!-- 4. Third parties -->
         <h2 class="font-headline-md text-headline-md text-on-surface">4. Third-Party Services</h2>
+        <div class="overflow-x-auto">
         <table>
             <thead><tr><th>Service</th><th>Purpose</th><th>Data sent</th><th>Privacy info</th></tr></thead>
             <tbody>
@@ -203,7 +254,7 @@
                 </tr>
                 <tr>
                     <td>Bunny Fonts (bunny.net)</td>
-                    <td>Load web fonts (Sora, JetBrains Mono) — GDPR-compliant EU CDN, no IP logging for profiling</td>
+                    <td>Load web fonts (Barlow Condensed, Public Sans, IBM Plex Mono) — GDPR-compliant EU CDN, no IP logging for profiling</td>
                     <td>Your IP address is sent to Bunny's EU servers for font file delivery only</td>
                     <td><a href="https://bunny.net/privacy" target="_blank" rel="noopener noreferrer">Bunny.net Privacy Policy</a></td>
                 </tr>
@@ -221,6 +272,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
         <p>
             <strong class="text-on-surface">No Google services</strong> are used for font or asset delivery.
             Google Fonts CDN has been replaced with privacy-focused alternatives to eliminate IP transmission to Google's infrastructure.
@@ -228,6 +280,7 @@
 
         <!-- 5. Data retention -->
         <h2 class="font-headline-md text-headline-md text-on-surface">5. Data Retention</h2>
+        <div class="overflow-x-auto">
         <table>
             <thead><tr><th>Data type</th><th>Stage 1 (short-term)</th><th>Stage 2 (long-term)</th></tr></thead>
             <tbody>
@@ -255,6 +308,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <!-- 6. Your rights -->
         <h2 class="font-headline-md text-headline-md text-on-surface">6. Your Rights Under GDPR</h2>
@@ -294,23 +348,23 @@
 </main>
 
 <!-- Footer -->
-<footer class="bg-surface-dim border-t border-outline-variant/20 py-stack-lg mt-stack-lg">
+<footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
     <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
         <div class="flex flex-col items-center md:items-start gap-2">
-            <div class="font-headline-lg text-headline-lg font-extrabold text-primary-fixed-dim">steam-widget</div>
+            <div class="font-headline-sm text-headline-sm text-on-surface">steam-widget</div>
             <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
         </div>
         <div class="flex flex-wrap justify-center gap-6">
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
-            <a class="text-primary-container font-bold border-b border-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
+            <a class="text-primary font-bold border-b border-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
         </div>
         <div class="flex items-center gap-4 text-on-surface-variant">
-            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary-container cursor-pointer transition-colors" title="Created by Sharky">
-                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">code</span>
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined">code</span>
             </a>
         </div>
     </div>
@@ -338,13 +392,3 @@ function sharePage() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-

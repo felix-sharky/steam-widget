@@ -197,6 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     };
 
+    const getThemeColor = utils.getThemeColor || ((token, alpha) => (alpha === undefined ? '#e8e2d3' : 'rgba(232,226,211,' + alpha + ')'));
+
     const renderChart = (rows, mode = currentMode) => {
         if (!rows.length) {
             if (chartInstance) {
@@ -252,21 +254,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: {
                     x: {
                         stacked: true,
-                        ticks: { color: '#cbd5f5' }
+                        ticks: { color: getThemeColor('on-surface-variant') },
+                        grid: { color: getThemeColor('outline-variant', 0.3) }
                     },
                     y: {
                         stacked: true,
                         beginAtZero: true,
                         ticks: {
-                            color: '#cbd5f5',
+                            color: getThemeColor('on-surface-variant'),
                             precision: 0
-                        }
+                        },
+                        grid: { color: getThemeColor('outline-variant', 0.3) }
                     }
                 },
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: '#cbd5f5' }
+                        labels: { color: getThemeColor('on-surface-variant') }
                     }
                 }
             }

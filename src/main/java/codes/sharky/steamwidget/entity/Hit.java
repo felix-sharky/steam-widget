@@ -29,7 +29,7 @@ public class Hit {
     @Column(name = "purpose")
     private String purpose;
 
-    @Column(name = "ip", length = 15)
+    @Column(name = "ip", length = 50)
     private String ip;
 
     public Hit(String steam64id, LocalDateTime datetime, String purpose, String ip) {

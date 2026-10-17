@@ -1,6 +1,7 @@
 package codes.sharky.steamwidget.service;
 
 import codes.sharky.steamwidget.utils.IPUtils;
+import codes.sharky.steamwidget.utils.PersonaStateFormatter;
 import com.google.common.base.Strings;
 import com.lukaspradel.steamapi.core.exception.SteamApiException;
 import com.lukaspradel.steamapi.data.json.ownedgames.GetOwnedGames;
@@ -482,17 +483,7 @@ public class SteamWidgetService {
         if (showPlayingRightNow && !game.isBlank()) {
             return "Now playing " + game;
         }
-        int state = player.getPersonastate() == null ? -1 : player.getPersonastate().intValue();
-        return switch (state) {
-            case 0 -> "Offline";
-            case 1 -> "Online";
-            case 2 -> "Busy";
-            case 3 -> "Away";
-            case 4 -> "Snooze";
-            case 5 -> "Looking to trade";
-            case 6 -> "Looking to play";
-            default -> "Unknown";
-        };
+        return PersonaStateFormatter.formatPersonaState(player.getPersonastate());
     }
 
     private void drawFittedString(Graphics2D g, String text, int x, int y, int maxWidth) {

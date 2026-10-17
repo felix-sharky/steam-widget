@@ -1,10 +1,12 @@
 package codes.sharky.steamwidget.controller;
 
 import codes.sharky.steamwidget.component.SteamOpenID;
-import codes.sharky.steamwidget.service.SteamTrackerService;
+import codes.sharky.steamwidget.service.ProfileService;
+import codes.sharky.steamwidget.service.SessionAttributes;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,46 +16,48 @@ import java.util.Map;
 
 /**
  * Controller handling Steam OpenID login and callback flows.
- * Builds redirect URLs based on the incoming request and persists the Steam ID in a cookie on success.
+ * Builds redirect URLs based on the incoming request, establishes a server-side session on
+ * success, persists the Steam ID in a convenience cookie, and claims a profile page when the
+ * login was initiated from that page's "Claim this page" link.
  */
 @Controller
 public class SteamOpenIDController {
 
     private final SteamOpenID steamOpenID;
+    private final ProfileService profileService;
 
-    /**
-     * Creates the controller with the Steam OpenID helper.
-     *
-     * @param steamOpenID component handling OpenID URL generation and verification
-     */
-    public SteamOpenIDController(SteamOpenID steamOpenID) {
+    public SteamOpenIDController(SteamOpenID steamOpenID, ProfileService profileService) {
         this.steamOpenID = steamOpenID;
+        this.profileService = profileService;
     }
 
     /**
-     * Initiates Steam OpenID login by redirecting the user to Steam's login page.
-     *
-     * @param request              incoming HTTP request used to build the base URL
-     * @param httpServletResponse  response used to issue the redirect
+     * Initiates Steam OpenID login by redirecting the user to Steam's login page. If a
+     * {@code returnTo} is provided (e.g. from a profile page's "Claim this page" link), it's
+     * stashed in the session so the callback can redirect back there and claim the page.
      */
     @GetMapping("/steam/login")
-    public void loginRedirect(HttpServletRequest request, HttpServletResponse httpServletResponse) {
+    public void loginRedirect(@RequestParam(required = false) String returnTo,
+                               HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
                 .replacePath(null)
                 .build()
                 .toUriString();
+
+        if (returnTo != null && returnTo.matches("/u/\\d{17}")) {
+            request.getSession(true).setAttribute(SessionAttributes.CLAIM_RETURN_TO, returnTo);
+        }
 
         httpServletResponse.setHeader("Location", steamOpenID.login(baseUrl + "/steam/login/callback"));
         httpServletResponse.setStatus(302);
     }
 
     /**
-     * Handles the Steam OpenID callback, verifies the response, sets a Steam ID cookie, and redirects back to the app.
-     * If verification fails, redirects to the base URL without setting the cookie.
-     *
-     * @param allParams            all callback parameters received from Steam
-     * @param request              incoming HTTP request used to build the base URL and verify the OpenID response
-     * @param httpServletResponse  response used to set cookies and issue the redirect
+     * Handles the Steam OpenID callback. On success: establishes a real session identifying the
+     * authenticated Steam ID (used to authorize claim/settings/un-claim actions — never the
+     * convenience cookie below), sets the convenience cookie as before, and if the login was
+     * initiated with a {@code returnTo} targeting the authenticated Steam ID's own profile page,
+     * claims that page and redirects there. Otherwise redirects to the base URL as before.
      */
     @GetMapping("/steam/login/callback")
     public void loginCallback(@RequestParam Map<String, String> allParams, HttpServletRequest request, HttpServletResponse httpServletResponse) {
@@ -77,7 +81,42 @@ public class SteamOpenIDController {
         steamIdCookie.setAttribute("SameSite", "Lax");
         httpServletResponse.addCookie(steamIdCookie);
 
+        HttpSession session = request.getSession(true);
+        request.changeSessionId();
+        session.setAttribute(SessionAttributes.AUTHENTICATED_STEAM_ID, steamId64);
+
+        Object claimReturnTo = session.getAttribute(SessionAttributes.CLAIM_RETURN_TO);
+        session.removeAttribute(SessionAttributes.CLAIM_RETURN_TO);
+        String returnTo = claimReturnTo == null ? null : claimReturnTo.toString();
+
+        if (returnTo != null && returnTo.equals("/u/" + steamId64)) {
+            profileService.claimProfile(steamId64);
+            httpServletResponse.setHeader("Location", baseUrl + returnTo);
+            httpServletResponse.setStatus(302);
+            return;
+        }
+
         httpServletResponse.setHeader("Location", baseUrl + "/?steamId=" + steamId64);
+        httpServletResponse.setStatus(302);
+    }
+
+    /**
+     * Logs out: invalidates the claim/settings session (the convenience cookie is left alone —
+     * it was never used for authorization) and redirects home.
+     */
+    @GetMapping("/steam/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse httpServletResponse) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+                .replacePath(null)
+                .build()
+                .toUriString();
+
+        httpServletResponse.setHeader("Location", baseUrl + "/");
         httpServletResponse.setStatus(302);
     }
 

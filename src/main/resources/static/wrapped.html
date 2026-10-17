@@ -2,24 +2,25 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>(function(){try{var t=localStorage.getItem('steamWidgetTheme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>steam-widget | Steam Wrapped</title>
     <meta name="description" content="Generate your Steam Wrapped — an Instagram Story sized recap of your year in gaming with top games, playtime, and streaks, ready to share.">
     <meta name="keywords" content="Steam Wrapped, Steam year in review, Steam story, Steam playtime recap, Spotify Wrapped for Steam, Steam stats story, shareable Steam stats">
-    <meta name="theme-color" content="#7c3aed">
+    <meta name="theme-color" content="#e07d26">
     <link rel="canonical" href="https://steam-widget.com/wrapped.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="steam-widget">
     <meta property="og:title" content="steam-widget | Steam Wrapped">
     <meta property="og:description" content="Generate your Steam Wrapped — an Instagram Story sized recap of your year in gaming with top games, playtime, and streaks, ready to share.">
     <meta property="og:url" content="https://steam-widget.com/wrapped.html">
-    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="300">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="steam-widget | Steam Wrapped">
     <meta name="twitter:description" content="Generate your Steam Wrapped — an Instagram Story sized recap of your year in gaming with top games, playtime, and streaks, ready to share.">
-    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -41,10 +42,11 @@
     <link rel="icon" type="image/png" href="/img/logo.png"/>
     <link rel="apple-touch-icon" href="/img/logo.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="/js/tailwind-theme.js"></script>
-    <link href="https://fonts.bunny.net/css?family=sora:400,600,700,800|jetbrains-mono:500&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <script src="/js/tailwind-theme-badge.js"></script>
+    <link href="https://fonts.bunny.net/css?family=barlow-condensed:600,700,800|public-sans:400,500,600,700|ibm-plex-mono:500,600&display=swap" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/shared-modern-ui.css">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/badge-ui.css">
     <link rel="stylesheet" href="/css/wrapped.css">
     <script defer src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.7.0/dist/index.js"></script>
     <script type="text/javascript" src="/js/steam-utils.js"></script>
@@ -55,59 +57,86 @@
 <body class="bg-background text-on-background font-body-md custom-scrollbar">
 
 <!-- Top Navigation Bar -->
-<header class="sticky top-0 w-full bg-surface-container-low/80 backdrop-blur-md z-50 border-b border-outline-variant/30 shadow-sm">
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
     <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
-        <div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary-fixed-dim">steam-widget</div>
-        <div class="hidden md:flex gap-6 items-center">
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/" data-base="/" href="/">Generator</a>
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="nav-link text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
-               aria-current="page" data-route="/wrapped.html" data-base="/wrapped.html" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+            steam-widget
         </div>
-        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+        <div class="hidden md:flex gap-6 items-center">
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/" data-base="/" href="/">Generator</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
+               data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
+            <a class="nav-link text-primary font-bold pb-1 transition-colors duration-150 font-label-md text-label-md uppercase"
+               aria-current="page" data-route="/wrapped.html" data-base="/wrapped.html" href="/wrapped.html">Wrapped</a>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
+        <button id="mobileMenuBtn" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
             <span class="material-symbols-outlined">menu</span>
         </button>
     </nav>
-    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking.html">Play Tracking</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/playing-stats.html">Playing Stats</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-primary-container" href="/wrapped.html">Wrapped</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/tracking.html">Play Tracking</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/playing-stats.html">Playing Stats</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/profile-metrics.html">Profile Metrics</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-primary" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
+            <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
     </div>
 </header>
 
 <main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-6">
     <!-- Hero -->
-    <section class="text-center py-stack-lg space-y-stack-sm">
+    <section class="py-stack-md space-y-stack-sm">
         <div class="hero-story-strip" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-        <h1 class="inline-block font-headline-xl text-headline-xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-tertiary-container">
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">
             Steam Wrapped
         </h1>
-        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
             Your gaming, Spotify-Wrapped style. Pick a year, month, or week and turn your tracked playtime into an Instagram Story sized recap you can download and share.
         </p>
     </section>
 
     <!-- Search Card -->
-    <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-300">
+    <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-150">
         <form id="wrappedForm" class="space-y-stack-md" autocomplete="off">
-            <label class="block font-label-md text-label-md text-primary-container tracking-widest uppercase" for="steamId">Steam ID</label>
+            <label class="block font-label-md text-label-md text-primary uppercase" for="steamId">Steam ID</label>
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="relative flex-grow">
                     <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required
-                           class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors placeholder:text-on-surface-variant/40">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/50 pointer-events-none">search</span>
+                           class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/60 pointer-events-none">search</span>
                 </div>
                 <div class="space-y-2 md:w-56">
                     <select id="themeSelect"
-                            class="w-full h-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors cursor-pointer">
+                            class="w-full h-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface font-body-md focus:border-primary focus:outline-none transition-colors cursor-pointer">
                         <option value="STEAM">Steam Blue</option>
                     </select>
                 </div>
@@ -135,25 +164,25 @@
                     <div data-period-field="year">
                         <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="periodYear">Year</label>
                         <input id="periodYear" type="number" step="1" min="2003"
-                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                               class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors">
                     </div>
                     <div data-period-field="month" class="hidden">
                         <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="periodMonth">Month</label>
                         <input id="periodMonth" type="month"
-                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                               class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors">
                     </div>
                     <div data-period-field="week" class="hidden">
                         <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="periodWeek">Any day in that week</label>
                         <input id="periodWeek" type="date"
-                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                               class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors">
                     </div>
                 </div>
                 <button type="submit" data-umami-event="button_generate_wrapped"
-                        class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap h-fit">
+                        class="badge-btn-primary px-8 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95 whitespace-nowrap h-fit">
                     Generate my Wrapped
                 </button>
             </div>
-            <p class="text-on-surface-variant/70 text-xs">Needs Play Tracking enabled for this profile. Not tracking yet? <a class="text-primary-container hover:underline" href="/tracking.html">Turn it on here</a>.</p>
+            <p class="text-on-surface-variant text-xs">Needs Play Tracking enabled for this profile. Not tracking yet? <a class="text-primary hover:underline" href="/tracking.html">Turn it on here</a>.</p>
         </form>
         <p id="wrappedMessage" class="hidden mt-4 text-sm"></p>
     </div>
@@ -174,40 +203,40 @@
 
         <div class="wrapped-controls-bar">
             <button type="button" id="wrappedRestartBtn"
-                    class="bg-surface-container-highest text-on-surface px-5 py-3 rounded-lg font-bold text-sm border border-outline-variant/20 transition-all duration-200 active:scale-95 hover:border-primary-container/60 flex items-center gap-2">
+                    class="badge-btn-secondary px-5 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95 flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">replay</span> Restart
             </button>
             <button type="button" id="wrappedDownloadBtn" data-umami-event="button_download_wrapped_slide"
-                    class="bg-primary-container text-on-primary-container px-5 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 flex items-center gap-2">
+                    class="badge-btn-primary px-5 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95 flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">download</span> Download this slide
             </button>
             <button type="button" id="wrappedShareBtn" data-umami-event="button_share_wrapped_slide"
-                    class="bg-surface-container-highest text-on-surface px-5 py-3 rounded-lg font-bold text-sm border border-outline-variant/20 transition-all duration-200 active:scale-95 hover:border-primary-container/60 flex items-center gap-2">
+                    class="badge-btn-secondary px-5 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95 flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">ios_share</span> Share to Instagram
             </button>
         </div>
-        <p class="text-center text-on-surface-variant/60 text-xs max-w-xl mx-auto">Downloads a 1080×1920 PNG of the slide currently showing — sized for Instagram/TikTok/Snapchat Stories. Use the theme picker above and regenerate to try a different look.</p>
+        <p class="text-center text-on-surface-variant text-xs max-w-xl mx-auto">Downloads a 1080×1920 PNG of the slide currently showing — sized for Instagram/TikTok/Snapchat Stories. Use the theme picker above and regenerate to try a different look.</p>
     </section>
 </main>
 
 <!-- Footer -->
-<footer class="bg-surface-dim border-t border-outline-variant/20 py-stack-lg mt-stack-lg">
+<footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
     <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
         <div class="flex flex-col items-center md:items-start gap-2">
-            <div class="font-headline-lg text-headline-lg font-extrabold text-primary-fixed-dim">steam-widget</div>
+            <div class="font-headline-sm text-headline-sm text-on-surface">steam-widget</div>
             <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
         </div>
         <div class="flex flex-wrap justify-center gap-6">
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="text-primary-container font-bold transition-colors duration-200 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
+            <a class="text-primary font-bold transition-colors duration-150 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
         </div>
         <div class="flex items-center gap-4 text-on-surface-variant">
-            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary-container cursor-pointer transition-colors" title="Created by Sharky">
-                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">code</span>
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined">code</span>
             </a>
         </div>
     </div>

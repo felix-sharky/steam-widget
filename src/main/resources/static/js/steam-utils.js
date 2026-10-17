@@ -3,6 +3,17 @@
 
     const namespace = window.SteamWidget = window.SteamWidget || {};
 
+    // Canvas-rendered content (Chart.js) can't read CSS custom properties on its own —
+    // it needs plain rgb()/hex strings up front. This reads the current theme's actual
+    // "R G B" channel values (see css/themes.css) so chart colors match whichever
+    // theme is active instead of hardcoding colors tuned for just one of the three.
+    // Pass alpha (0-1) for a translucent fill; omit it for an opaque color.
+    namespace.getThemeColor = function getThemeColor(token, alpha) {
+        const channels = getComputedStyle(document.documentElement).getPropertyValue(`--c-${token}`).trim();
+        if (!channels) return '#888888';
+        return alpha === undefined ? `rgb(${channels})` : `rgb(${channels} / ${alpha})`;
+    };
+
     namespace.resolveSteamIdInput = async function resolveSteamIdInput(steamLike) {
         const trimmed = (steamLike || '').trim();
         if (!trimmed) {

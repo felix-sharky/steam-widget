@@ -42,4 +42,29 @@ public interface ProfileRepository extends JpaRepository<Profile, String>, JpaSp
     @Transactional
     @Query(value = "update Profile p set p.tracking = (not p.tracking) where p.steam64id = :steamId")
     void toggleTracking(String steamId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update Profile p set p.claimed = true, p.claimedAt = :claimedAt where p.steam64id = :steamId")
+    void claimProfile(@Param("steamId") String steamId, @Param("claimedAt") LocalDateTime claimedAt);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update Profile p set p.claimed = false, p.claimedAt = null, p.showNowPlaying = true, " +
+            "p.showHeadlineStats = true, p.showTopGames = true, p.showWidgetGallery = true where p.steam64id = :steamId")
+    void unclaimProfile(@Param("steamId") String steamId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update Profile p set p.showNowPlaying = :showNowPlaying, p.showHeadlineStats = :showHeadlineStats, " +
+            "p.showTopGames = :showTopGames, p.showWidgetGallery = :showWidgetGallery where p.steam64id = :steamId")
+    void updateSectionVisibility(@Param("steamId") String steamId,
+                                  @Param("showNowPlaying") boolean showNowPlaying,
+                                  @Param("showHeadlineStats") boolean showHeadlineStats,
+                                  @Param("showTopGames") boolean showTopGames,
+                                  @Param("showWidgetGallery") boolean showWidgetGallery);
+
+    boolean existsBySteam64idAndClaimedIsTrue(String steam64id);
+
+    List<Profile> findAllByClaimedIsTrue();
 }

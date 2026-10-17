@@ -189,4 +189,53 @@ public class ProfileService {
         }
     }
 
+    /**
+     * Claims a profile's page for the Steam account that just logged in. Creates the profile
+     * row if it doesn't exist yet (e.g. a profile that's never been viewed or tracked before).
+     *
+     * @param steamId Steam ID of the profile being claimed
+     */
+    public void claimProfile(String steamId) {
+        if (!repository.existsById(steamId)) {
+            Profile profile = new Profile(steamId, null, 0L);
+            profile.setClaimed(true);
+            profile.setClaimedAt(LocalDateTime.now());
+            repository.save(profile);
+        } else {
+            repository.claimProfile(steamId, LocalDateTime.now());
+        }
+    }
+
+    /**
+     * Reverts a profile's page to its unclaimed default state: unclaimed, un-timestamped, and
+     * every section visibility flag reset to shown.
+     *
+     * @param steamId Steam ID of the profile being un-claimed
+     */
+    public void unclaimProfile(String steamId) {
+        repository.unclaimProfile(steamId);
+    }
+
+    /**
+     * Updates which sections a claimed profile's page shows.
+     */
+    public void updateSectionVisibility(String steamId, boolean showNowPlaying, boolean showHeadlineStats,
+                                         boolean showTopGames, boolean showWidgetGallery) {
+        repository.updateSectionVisibility(steamId, showNowPlaying, showHeadlineStats, showTopGames, showWidgetGallery);
+    }
+
+    /**
+     * @return true if the profile has been claimed by its owner.
+     */
+    public boolean isProfileClaimed(String steamId) {
+        return repository.existsBySteam64idAndClaimedIsTrue(steamId);
+    }
+
+    /**
+     * @return every claimed profile, for building the sitemap.
+     */
+    public List<Profile> getClaimedProfiles() {
+        return repository.findAllByClaimedIsTrue();
+    }
+
 }

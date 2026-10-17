@@ -1,0 +1,592 @@
+/* Conference ID Badge — this site's confirmed design direction (see DESIGN.md
+   and .impeccable/surfaces/index-html.md). The page is a dark expo-hall
+   surface; panels are dark cardstock sitting on it — a premium black-badge-
+   stock material, not the cream-paper version. Only the one featured panel
+   is the actual badge object: hole-punch, lanyard clip, laminate sheen,
+   barcode. Everything else is a plain sheet.
+
+   Most colors here read from the CSS variables in css/themes.css (via
+   rgb(var(--c-x) / alpha)) so switching [data-theme] on <html> re-themes
+   them along with every Tailwind bg-, text-, and border-prefixed class. The
+   badge object (.glass-card--featured, .badge-hole, .card-rarity-tag,
+   .badge-barcode below) also takes its cardstock, hole, and barcode-ink color
+   from the active theme — only its metal lanyard clip and glossy laminate
+   sheen stay fixed, since those model a physical material rather than page
+   chrome. The widget preview canvas is the one thing that intentionally stays
+   fixed across all three themes; see its own comment. */
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+::selection {
+    background: rgb(var(--c-primary));
+    color: rgb(var(--c-on-primary));
+}
+*:focus-visible {
+    outline: 2px solid rgb(var(--c-primary));
+    outline-offset: 2px;
+}
+a, button {
+    text-underline-offset: 3px;
+}
+.tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+select option,
+select optgroup {
+    background-color: rgb(var(--c-surface-container));
+    color: rgb(var(--c-on-surface));
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgb(var(--c-surface-dim));
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-outline));
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--c-on-surface-variant));
+}
+
+/* Dark cardstock sheet — a registration form sitting on the dark table,
+   a soft real-world drop shadow (no blur-as-decoration, this is a flat
+   physical sheet with real thickness). The generic on-surface/on-surface-
+   variant/primary token classes already read correctly against this —
+   no light-mode color flip needed. */
+.glass-card {
+    position: relative;
+    background: rgb(var(--c-surface-container));
+    border: 1px solid rgb(var(--c-outline-variant));
+    box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.glass-card input,
+.glass-card select {
+    background: rgb(var(--c-surface-container-lowest));
+    border-color: rgb(var(--c-outline-variant));
+    color: rgb(var(--c-on-surface));
+}
+.glass-card input::placeholder { color: rgb(var(--c-on-surface-variant)); }
+.glass-card input:focus,
+.glass-card select:focus { border-color: rgb(var(--c-primary)); }
+
+.data-card {
+    background: rgb(var(--c-surface-container-low));
+    border: 1px solid rgb(var(--c-outline-variant));
+}
+
+/* Status badges (tracking/stats pages) — small pill tags set dynamically by
+   tracking.js/playing-stats.js. */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.badge-idle {
+    background: rgb(var(--c-outline) / 0.3);
+    color: rgb(var(--c-on-surface-variant));
+    border: 1px solid rgb(var(--c-outline) / 0.5);
+}
+.badge-on,
+.badge-success {
+    background: rgb(var(--c-secondary) / 0.16);
+    color: rgb(var(--c-secondary));
+    border: 1px solid rgb(var(--c-secondary) / 0.4);
+}
+.badge-off,
+.badge-error {
+    background: rgb(var(--c-error) / 0.16);
+    color: rgb(var(--c-error));
+    border: 1px solid rgb(var(--c-error) / 0.4);
+}
+.badge-loading {
+    background: rgb(var(--c-primary) / 0.14);
+    color: rgb(var(--c-primary));
+    border: 1px solid rgb(var(--c-primary) / 0.35);
+}
+
+/* Data tables (stats/metrics pages). */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.data-table th {
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--c-on-surface-variant));
+    border-bottom: 1px solid rgb(var(--c-outline-variant));
+}
+.data-table td {
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid rgb(var(--c-outline-variant) / 0.6);
+    color: rgb(var(--c-on-surface));
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+}
+.data-table tbody tr:hover {
+    background: rgb(var(--c-primary) / 0.06);
+}
+.table-row-selectable {
+    cursor: pointer;
+}
+.table-row-active {
+    background: rgb(var(--c-secondary) / 0.1) !important;
+}
+.muted {
+    color: rgb(var(--c-on-surface-variant));
+}
+code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85em;
+    color: rgb(var(--c-secondary));
+    background: rgb(var(--c-secondary) / 0.12);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+/* Pill toggle group (view-mode switches). */
+.pill-toggle-group {
+    display: flex;
+    width: 100%;
+    background: rgb(var(--c-surface-container-lowest));
+    border: 1px solid rgb(var(--c-outline-variant));
+    border-radius: 0.5rem;
+    padding: 4px;
+    gap: 4px;
+}
+.pill-toggle {
+    cursor: pointer;
+    flex: 1;
+}
+.pill-toggle input {
+    display: none;
+}
+.pill-toggle span {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.375rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgb(var(--c-on-surface-variant));
+    transition: all 0.2s;
+}
+.pill-toggle input:checked + span {
+    background: rgb(var(--c-primary-container));
+    color: rgb(var(--c-on-primary-container));
+    box-shadow: 0 2px 8px rgb(var(--c-primary-container) / 0.35);
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 320px;
+}
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Definition-list profile summary (tracking page). */
+.profile-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 16px;
+}
+.profile-meta dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--c-on-surface-variant));
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 4px;
+}
+.profile-meta dd {
+    margin: 0;
+    font-size: 1rem;
+    color: rgb(var(--c-on-surface));
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Site theme switcher (nav bar, desktop + mobile instances; see
+   layout-effects.js for the wiring and themes.css for the palettes). A
+   compact icon segmented control rather than a text dropdown. */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: rgb(var(--c-surface-container-lowest));
+    border: 1px solid rgb(var(--c-outline-variant));
+    border-radius: 9999px;
+    padding: 3px;
+}
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    color: rgb(var(--c-on-surface-variant));
+    transition: background-color 0.15s, color 0.15s;
+}
+.theme-toggle-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+.theme-toggle-btn:hover {
+    color: rgb(var(--c-on-surface));
+}
+.theme-toggle-btn.active {
+    background: rgb(var(--c-primary-container));
+    color: rgb(var(--c-on-primary-container));
+}
+
+.glow-hover {
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.glow-hover:hover {
+    border-color: rgb(var(--c-primary));
+    box-shadow: 0 0 0 1px rgb(var(--c-primary));
+}
+
+/* The badge itself — hole-punch, lanyard clip, laminate sheen. A premium
+   cardstock badge with a glossier sheen than the plain sheets. Its cardstock
+   and hole color follow the active theme (rendered a shade more elevated
+   than a plain .glass-card, so it still reads as the featured object); only
+   the metal clip gradient and the glossy sheen overlay stay fixed, since
+   those model a physical material rather than page chrome. */
+.glass-card--featured {
+    margin-top: 26px;
+    background: rgb(var(--c-surface-container-high));
+    border-color: rgb(var(--c-outline));
+    overflow: hidden;
+}
+.glass-card--featured::before {
+    content: '';
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 30px;
+    background: linear-gradient(180deg, #9a9a9a, #5f5f5f);
+    border-radius: 5px 5px 2px 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+.glass-card--featured::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.1) 55%, transparent 70%);
+    mix-blend-mode: overlay;
+}
+.badge-hole {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 10px;
+    border-radius: 9999px;
+    background: rgb(var(--c-background));
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+    z-index: 2;
+}
+
+/* Role ribbon — reused as a corner tag on the badge. Kept on the primary-
+   container token (the vivid button-safe orange) rather than the text-safe
+   primary token, so it stays a solid, confident accent in every theme. */
+.card-rarity-tag {
+    position: absolute;
+    top: 34px;
+    right: 14px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.7rem;
+    background: rgb(var(--c-primary-container));
+    color: rgb(var(--c-on-primary-container));
+    font-family: 'Public Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 3px;
+}
+.card-rarity-tag .gem,
+.card-gem {
+    display: none;
+}
+
+/* Barcode strip — real variable-width bars, not a decorative repeat. */
+.badge-barcode {
+    display: flex;
+    align-items: stretch;
+    height: 32px;
+    gap: 1px;
+}
+.badge-barcode span {
+    display: block;
+    background: rgb(var(--c-on-surface));
+    flex-shrink: 0;
+}
+
+.badge-btn-primary {
+    background: rgb(var(--c-primary-container));
+    color: rgb(var(--c-on-primary-container));
+    border: none;
+}
+.badge-btn-primary:hover {
+    filter: brightness(1.1);
+}
+.badge-btn-secondary {
+    background: rgb(var(--c-surface-container-lowest));
+    color: rgb(var(--c-on-surface));
+    border: 1px solid rgb(var(--c-outline-variant));
+}
+.badge-btn-secondary:hover {
+    border-color: rgb(var(--c-primary));
+}
+
+/* Toggle — a plain modern switch; a conference badge has no native
+   convention for this, so it stays neutral rather than forcing a theme. */
+.toggle-track {
+    width: 44px;
+    height: 24px;
+    background: rgb(var(--c-outline-variant));
+    border-radius: 9999px;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+.toggle-track.checked {
+    background: rgb(var(--c-primary-container));
+}
+.toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    /* Fixed white rather than theme-variable: a physical toggle knob reads as a
+       solid plastic/metal piece, not page text — it needs to stay legible
+       against both the neutral track and the vivid orange "on" track in every
+       theme, which an on-surface token (dark text in the light theme) can't. */
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+.toggle-track.checked .toggle-thumb {
+    transform: translateX(20px);
+}
+
+/* Widget preview — a small embedded display window set into the badge,
+   like a digital photo pocket; stays dark so the preview content (styled
+   for dark grounds elsewhere on the site) still reads correctly. */
+.widget-preview-container {
+    min-height: 200px;
+    background-color: #161412;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), inset 0 0 0 1px #3a352c;
+}
+.widget-preview-container img {
+    display: inline-block;
+    max-width: 100%;
+}
+
+#widgetContainer .label {
+    margin-top: 12px;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #a69c89;
+    font-family: 'Public Sans', sans-serif;
+}
+#widgetContainer .link-box,
+#widgetContainer .code-box {
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: #0e0d0b;
+    border: 1px solid #3a352c;
+    border-radius: 6px;
+    color: #e8e2d3;
+    word-wrap: break-word;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+}
+#widgetContainer .code-box {
+    white-space: pre-wrap;
+}
+#widgetContainer p {
+    color: #e6a08a;
+    font-size: 14px;
+}
+
+.share-btn {
+    position: fixed;
+    bottom: 1.75rem;
+    right: 1.75rem;
+    z-index: 200;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 9999px;
+    background: rgb(var(--c-primary-container));
+    color: rgb(var(--c-on-primary-container));
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    transition: filter 0.2s, transform 0.15s;
+    font-family: 'Public Sans', sans-serif;
+}
+.share-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+.share-btn:active {
+    transform: translateY(0);
+}
+.share-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+@media (max-width: 640px) {
+    .share-btn {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.65rem;
+        gap: 0;
+    }
+    .share-btn-label {
+        display: none;
+    }
+}
+
+#shareToast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: rgb(var(--c-surface-container-highest));
+    color: rgb(var(--c-on-surface));
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Public Sans', sans-serif;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 9999;
+    white-space: nowrap;
+}
+#shareToast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.year-end-banner {
+    position: relative;
+    background: linear-gradient(110deg,
+        rgb(var(--c-surface-bright)) 0%, rgb(var(--c-surface)) 55%, rgb(var(--c-surface-dim)) 100%);
+    border-bottom: 1px solid rgb(var(--c-outline-variant));
+    color: rgb(var(--c-on-surface));
+    font-family: 'Public Sans', sans-serif;
+}
+.year-end-banner__inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.875rem 3.25rem 0.875rem 20px;
+}
+.year-end-banner__icon {
+    font-size: 36px;
+    flex-shrink: 0;
+    color: rgb(var(--c-primary));
+}
+.year-end-banner__text {
+    flex: 1;
+    min-width: 0;
+}
+.year-end-banner__title {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 700;
+}
+.year-end-banner__body {
+    font-size: 14px;
+    line-height: 20px;
+    opacity: 0.85;
+}
+.year-end-banner__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.year-end-banner__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-family: 'Public Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.year-end-banner__btn--primary {
+    background: rgb(var(--c-primary-container));
+    color: rgb(var(--c-on-primary-container));
+}
+.year-end-banner__btn--secondary {
+    background: rgb(var(--c-on-surface) / 0.08);
+    color: rgb(var(--c-on-surface));
+    border: 1px solid rgb(var(--c-on-surface) / 0.25);
+}
+.year-end-banner__close {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    padding: 0.375rem;
+    color: rgb(var(--c-on-surface));
+}
+@media (max-width: 767px) {
+    .year-end-banner__inner {
+        flex-wrap: wrap;
+        padding-right: 2.75rem;
+    }
+    .year-end-banner__icon { display: none; }
+    .year-end-banner__actions { width: 100%; }
+    .year-end-banner__btn { flex: 1; justify-content: center; }
+    .year-end-banner__close { top: 0.75rem; transform: none; }
+}

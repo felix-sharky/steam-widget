@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let chartInstance;
     let currentRows = [];
     const selectedGames = new Set();
+    const getThemeColor = utils.getThemeColor || ((token, alpha) => (alpha === undefined ? '#e8e2d3' : 'rgba(232,226,211,' + alpha + ')'));
 
     const setStatus = (badge, text) => {
         tableStatus.className = `badge ${badge}`;
@@ -309,8 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
         datasets.push({
             label: 'All games total',
             data: labels.map((label) => buckets[label].total ?? 0),
-            borderColor: '#ffffff',
-            backgroundColor: 'rgba(255,255,255,0.15)',
+            borderColor: getThemeColor('on-surface'),
+            backgroundColor: getThemeColor('on-surface', 0.15),
             borderWidth: 2,
             tension: 0.3,
             fill: false,
@@ -359,16 +360,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
+                    x: {
+                        ticks: { color: getThemeColor('on-surface-variant') },
+                        grid: { color: getThemeColor('outline-variant', 0.3) }
+                    },
                     y: {
                         beginAtZero: true,
-                        ticks: { precision: 0 }
+                        ticks: { precision: 0, color: getThemeColor('on-surface-variant') },
+                        grid: { color: getThemeColor('outline-variant', 0.3) }
                     }
                 },
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#cbd5f5',
+                            color: getThemeColor('on-surface-variant'),
                             // Only list datasets currently shown on the chart (the total line, plus
                             // any games focused via the table) — with one dataset per game ever
                             // played, an unfiltered legend can run to hundreds of entries.
