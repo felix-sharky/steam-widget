@@ -144,7 +144,7 @@ public class SteamWidgetService {
     }
 
     public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {
-        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, WidgetStyle.STEAM, showPlayingRightNow, purpose, ip);
+        return generateWidgetImage(steamId, showGames, recentGamesCount, insightCategory, WidgetStyle.CARD, showPlayingRightNow, purpose, ip);
     }
 
     public BufferedImage generateWidgetImage(String steamId, @NotNull ShowedGames showGames, int recentGamesCount, @NotNull InsightCategory insightCategory, @NotNull WidgetStyle style, boolean showPlayingRightNow, String purpose, String ip) throws SteamApiException {

@@ -12,7 +12,7 @@ import java.util.Objects;
 public final class WidgetStyle {
 
     /** Fallback style used when none is requested. Must have a matching entry in themes.json. */
-    public static final WidgetStyle STEAM = new WidgetStyle("STEAM");
+    public static final WidgetStyle CARD = new WidgetStyle("CARD");
 
     private final String id;
 

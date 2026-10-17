@@ -14,6 +14,15 @@
         return alpha === undefined ? `rgb(${channels})` : `rgb(${channels} / ${alpha})`;
     };
 
+    // Maps the site chrome theme (the data-theme attribute set by the nav icon toggle; see
+    // layout-effects.js) to the matching widget image style (a themes.json id) — so picking
+    // "Dark" for the page also picks "Midnight" for the badge/Wrapped preview, etc. "default"
+    // is the Card theme and needs no data-theme attribute, same convention as everywhere else.
+    namespace.SITE_TO_WIDGET_STYLE = { default: 'CARD', dark: 'MIDNIGHT', light: 'LIGHT' };
+    namespace.getWidgetStyleForSiteTheme = function getWidgetStyleForSiteTheme(siteTheme) {
+        return namespace.SITE_TO_WIDGET_STYLE[siteTheme] || 'CARD';
+    };
+
     namespace.resolveSteamIdInput = async function resolveSteamIdInput(steamLike) {
         const trimmed = (steamLike || '').trim();
         if (!trimmed) {

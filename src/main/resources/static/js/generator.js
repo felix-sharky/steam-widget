@@ -119,7 +119,13 @@ async function loadWidgetStyles() {
             option.textContent = label || id;
             widgetStyleField.appendChild(option);
         });
-        if (styles.some((style) => style.id === previousValue)) {
+        // Prefer the style matching the current site theme (card/dark/light ->
+        // Card/Midnight/Light) over whatever the static HTML fallback selected.
+        const siteTheme = document.documentElement.getAttribute('data-theme') || 'default';
+        const mappedStyle = (window.SteamWidget?.getWidgetStyleForSiteTheme || (() => 'CARD'))(siteTheme);
+        if (styles.some((style) => style.id === mappedStyle)) {
+            widgetStyleField.value = mappedStyle;
+        } else if (styles.some((style) => style.id === previousValue)) {
             widgetStyleField.value = previousValue;
         }
     } catch (error) {
@@ -387,7 +393,7 @@ function constructSafeUrl(steamId, playingRightNow, gameList, gameListSize, insi
         params.append('width', displayWidth);
     }
 
-    if (widgetStyle && widgetStyle !== 'STEAM') {
+    if (widgetStyle && widgetStyle !== 'CARD') {
         params.append('style', widgetStyle);
     }
 

@@ -55,6 +55,25 @@ const initThemeSwitcher = () => {
         });
     };
 
+    // Keeps the widget style picker (Generator's "Badge finish", Wrapped's theme select) in
+    // step with the site theme — card/dark/light map to the Card/Midnight/Light widget styles
+    // (see SteamWidget.SITE_TO_WIDGET_STYLE). Only touches it if the matching <option> is
+    // already loaded (both selects populate async from /api/widget/styles|themes), and fires
+    // 'change' so whichever page it's on (live widget preview, Wrapped slide) re-renders.
+    const syncWidgetStyle = (siteTheme) => {
+        const widgetUtils = window.SteamWidget || {};
+        const getMapped = widgetUtils.getWidgetStyleForSiteTheme || (() => 'CARD');
+        const mapped = getMapped(siteTheme);
+        ['widgetStyle', 'themeSelect'].forEach((id) => {
+            const select = document.getElementById(id);
+            if (!select) return;
+            const hasOption = Array.from(select.options).some((o) => o.value === mapped);
+            if (!hasOption || select.value === mapped) return;
+            select.value = mapped;
+            select.dispatchEvent(new Event('change'));
+        });
+    };
+
     markActive(document.documentElement.getAttribute('data-theme') || 'default');
 
     buttons.forEach((button) => {
@@ -63,6 +82,7 @@ const initThemeSwitcher = () => {
             try {
                 localStorage.setItem(THEME_STORAGE_KEY, next);
             } catch (e) { /* storage unavailable – theme still applies for this load */ }
+            syncWidgetStyle(next);
             if (hasChart) {
                 window.location.reload();
                 return;
