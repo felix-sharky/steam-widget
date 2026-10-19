@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     await loadWidgetStyles();
+    updateBadgeIdentity(null);
 
     const navLinks = Array.from(document.querySelectorAll('.nav-link[data-base]'));
 
@@ -95,6 +96,42 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 let currentWidgetShare = null;
 
+// A Steam64 id is always 17 digits; this is what "NO. <id>" shows before a real one exists.
+const STEAM_ID_64_LENGTH = 17;
+
+// Updates the printed badge number and its QR code (a scannable link to this profile's
+// /u/{steamId} page — a little easter egg). With no steamId yet, the number falls back to
+// all zeros at Steam64 length and the QR points at the homepage, so the badge never looks
+// broken before a profile is entered.
+function updateBadgeIdentity(steamId) {
+    const numberField = document.getElementById('badgeNumber');
+    if (numberField) {
+        numberField.textContent = `NO. ${steamId || '0'.repeat(STEAM_ID_64_LENGTH)}`;
+    }
+
+    const qrContainer = document.getElementById('badgeQrCode');
+    if (!qrContainer || typeof QRCode === 'undefined') {
+        return;
+    }
+    const profileUrl = `${window.location.origin}${steamId ? `/u/${steamId}` : '/'}`;
+    qrContainer.innerHTML = '';
+    // Theme-aware module color (same text color printed everywhere else on the badge)
+    // rather than fixed black, so it reads correctly against each theme's cardstock.
+    const moduleColor = (window.SteamWidget?.getThemeColor || (() => '#000000'))('on-surface');
+    try {
+        new QRCode(qrContainer, {
+            text: profileUrl,
+            width: 160,
+            height: 160,
+            colorDark: moduleColor,
+            colorLight: 'rgba(0, 0, 0, 0)',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    } catch (error) {
+        console.error('Failed to render badge QR code', error);
+    }
+}
+
 // Populates the widget style picker from the backend instead of a hardcoded option list, so
 // themes.json is the single source of truth for which styles exist.
 async function loadWidgetStyles() {
@@ -156,6 +193,7 @@ async function generateWidget() {
 
         persistSteamIdInQuery();
         syncNavLinks();
+        updateBadgeIdentity(null);
 
         currentWidgetShare = null;
         return null;
@@ -167,6 +205,7 @@ async function generateWidget() {
             const errorMessage = document.createElement('p');
             errorMessage.textContent = 'Unable to resolve that Steam ID or vanity URL.';
             widgetContainer.appendChild(errorMessage);
+            updateBadgeIdentity(null);
             currentWidgetShare = null;
             return null;
         }
@@ -177,6 +216,7 @@ async function generateWidget() {
         const errorMessage = document.createElement('p');
         errorMessage.textContent = 'Failed to resolve this Steam identifier. Please try again later.';
         widgetContainer.appendChild(errorMessage);
+        updateBadgeIdentity(null);
         currentWidgetShare = null;
         return null;
     }
@@ -187,6 +227,7 @@ async function generateWidget() {
     // Update the window's location to include steamId as a query parameter
     persistSteamIdInQuery(steamId);
     syncNavLinks(steamId);
+    updateBadgeIdentity(steamId);
 
     const playingRightNow = document.getElementById('playingRightNow').checked;
     const widgetContent = document.getElementById('widgetContent').value;

@@ -76,6 +76,7 @@
     <link rel="stylesheet" href="/css/themes.css">
     <link rel="stylesheet" href="/css/badge-ui.css">
     <script type="text/javascript" src="/js/steam-utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="text/javascript" src="/js/generator.js"></script>
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
     <script defer src="/js/layout-effects.js"></script>
@@ -429,16 +430,9 @@
                     </div>
                 </div>
                 <div class="mt-5 pt-4 border-t border-outline-variant flex items-center justify-between gap-3">
-                    <div class="badge-barcode" aria-hidden="true">
-                        <span style="width:2px"></span><span style="width:1px"></span><span style="width:3px"></span>
-                        <span style="width:1px"></span><span style="width:2px"></span><span style="width:4px"></span>
-                        <span style="width:1px"></span><span style="width:2px"></span><span style="width:1px"></span>
-                        <span style="width:3px"></span><span style="width:2px"></span><span style="width:1px"></span>
-                        <span style="width:4px"></span><span style="width:1px"></span><span style="width:2px"></span>
-                        <span style="width:3px"></span><span style="width:1px"></span><span style="width:2px"></span>
-                        <span style="width:1px"></span><span style="width:3px"></span>
-                    </div>
-                    <span class="font-label-sm text-label-sm text-on-surface-variant" style="font-family: 'IBM Plex Mono', monospace;">NO. 000104</span>
+                    <div id="badgeQrCode" class="badge-qrcode"
+                         title="Scan to open this profile's steam-widget page" aria-hidden="true"></div>
+                    <span id="badgeNumber" class="font-label-sm text-label-sm text-on-surface-variant" style="font-family: 'IBM Plex Mono', monospace;">NO. 0000000000000000</span>
                 </div>
             </div>
         </div>

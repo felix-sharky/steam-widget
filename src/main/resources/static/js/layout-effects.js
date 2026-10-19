@@ -74,6 +74,15 @@ const initThemeSwitcher = () => {
         });
     };
 
+    // The badge's QR module color tracks the theme's text color too (see generator.js);
+    // that only happens as a side effect of regenerating the widget, which needs a Steam
+    // ID. This covers the default/no-ID state directly so the QR still re-colors.
+    const refreshBadgeQr = () => {
+        if (typeof window.updateBadgeIdentity !== 'function') return;
+        const steamIdField = document.getElementById('steamId');
+        window.updateBadgeIdentity(steamIdField?.value?.trim() || null);
+    };
+
     markActive(document.documentElement.getAttribute('data-theme') || 'default');
 
     buttons.forEach((button) => {
@@ -82,13 +91,14 @@ const initThemeSwitcher = () => {
             try {
                 localStorage.setItem(THEME_STORAGE_KEY, next);
             } catch (e) { /* storage unavailable – theme still applies for this load */ }
-            syncWidgetStyle(next);
             if (hasChart) {
                 window.location.reload();
                 return;
             }
             applyTheme(next);
             markActive(next);
+            syncWidgetStyle(next);
+            refreshBadgeQr();
         });
     });
 };

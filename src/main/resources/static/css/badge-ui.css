@@ -1,3 +1,19 @@
+/* Sticky footer: every page follows the same <body> > header/main/footer structure,
+   so this keeps the footer pinned to the bottom of the viewport on short pages
+   (nothing floating mid-screen on a tall display) while still flowing naturally
+   below content, and scrolling normally, on pages tall enough to need it. */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+body > main {
+    flex: 1 0 auto;
+}
+body > footer {
+    flex-shrink: 0;
+}
+
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
@@ -324,17 +340,25 @@ code {
     display: none;
 }
 
-/* Barcode strip — real variable-width bars, not a decorative repeat. */
-.badge-barcode {
-    display: flex;
-    align-items: stretch;
-    height: 32px;
-    gap: 1px;
-}
-.badge-barcode span {
-    display: block;
-    background: rgb(var(--c-on-surface));
+/* A real, scannable QR code (generator.js draws into the canvas) linking to this
+   profile's /u/{steamId} page — a little easter egg. Fixed black-on-white rather
+   than theme-variable: a QR code needs guaranteed high contrast to scan reliably,
+   which a dark-on-dark theme could otherwise break, so it stays print-ready like
+   the real barcode on a physical badge regardless of the page's theme. */
+.badge-qrcode {
+    width: 64px;
+    height: 64px;
     flex-shrink: 0;
+    border-radius: 4px;
+    padding: 5px;
+}
+/* qrcodejs renders at a fixed pixel size into a canvas/img it injects; scale that
+   down to the container so we can render it oversized (crisper) and display small. */
+.badge-qrcode canvas,
+.badge-qrcode img {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .badge-btn-primary {
