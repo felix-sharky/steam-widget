@@ -350,9 +350,11 @@ const showNavLoginIndicator = async () => {
     const steamId = await fetchSessionSteamId();
     const profile = steamId ? await fetchProfileSummary(steamId) : null;
 
-    // Join the desktop link group when the page has one (index.html-style nav), otherwise
-    // fall back to the nav element itself (profile.html's simpler two-link nav).
-    const linkGroup = nav.querySelector('.hidden.md\\:flex') || nav;
+    // Join the desktop link group when the page has one (index.html-style nav), or a page's
+    // explicitly marked link group (simpler single-row navs, e.g. profile-settings.html);
+    // only fall back to the nav element itself as a last resort, since appending there adds
+    // a 3rd justify-between child and drags the existing links toward the center.
+    const linkGroup = nav.querySelector('.hidden.md\\:flex') || nav.querySelector('#navLinkGroup') || nav;
     linkGroup.appendChild(buildNavAccountMenu(steamId, profile));
 };
 

@@ -15,7 +15,9 @@
     <link rel="stylesheet" href="/css/themes.css">
     <link rel="stylesheet" href="/css/badge-ui.css">
     <style>
-        input[type="checkbox"].settings-check { accent-color: rgb(var(--c-primary)); width: 1.1rem; height: 1.1rem; }
+        .settings-switch-input:checked ~ .toggle-track { background: rgb(var(--c-primary-container)); }
+        .settings-switch-input:checked ~ .toggle-track .toggle-thumb { transform: translateX(20px); }
+        .settings-switch-input:focus-visible ~ .toggle-track { outline: 2px solid rgb(var(--c-primary)); outline-offset: 2px; }
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md custom-scrollbar">
@@ -23,7 +25,7 @@
 <header class="w-full bg-surface-container-lowest border-b border-outline-variant">
     <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
         <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
-        <div class="flex items-center gap-4">
+        <div id="navLinkGroup" class="flex items-center gap-4">
             <a th:href="@{'/u/' + ${steamId}}"
                class="inline-flex items-center gap-1 text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase">
                 <span class="material-symbols-outlined text-base">arrow_back</span>
@@ -56,37 +58,40 @@
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Section visibility</h2>
         </div>
 
-        <label class="flex items-start gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
-            <input type="checkbox" name="showNowPlaying" value="true" th:checked="${profile.showNowPlaying}" class="settings-check mt-0.5"/>
-            <span>
+        <label class="flex items-center justify-between gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
+            <span class="min-w-0">
                 <span class="block font-body-md text-on-surface font-semibold">Now-playing status</span>
                 <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">Show "Now playing X" when you're in a game.</span>
             </span>
+            <input type="checkbox" name="showNowPlaying" value="true" th:checked="${profile.showNowPlaying}" class="settings-switch-input sr-only"/>
+            <span class="toggle-track inline-block shrink-0">
+                <span class="toggle-thumb"></span>
+            </span>
         </label>
 
-        <label class="flex items-start gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
-            <input type="checkbox" name="showHeadlineStats" value="true" th:checked="${profile.showHeadlineStats}" class="settings-check mt-0.5"/>
-            <span>
+        <label class="flex items-center justify-between gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
+            <span class="min-w-0">
                 <span class="block font-body-md text-on-surface font-semibold">Headline stats &amp; heatmap</span>
                 <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">Total hours, games this year, streak, and the activity heatmap.</span>
             </span>
+            <input type="checkbox" name="showHeadlineStats" value="true" th:checked="${profile.showHeadlineStats}" class="settings-switch-input sr-only"/>
+            <span class="toggle-track inline-block shrink-0">
+                <span class="toggle-thumb"></span>
+            </span>
         </label>
 
-        <label class="flex items-start gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
-            <input type="checkbox" name="showTopGames" value="true" th:checked="${profile.showTopGames}" class="settings-check mt-0.5"/>
-            <span>
+        <label class="flex items-center justify-between gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
+            <span class="min-w-0">
                 <span class="block font-body-md text-on-surface font-semibold">Top games</span>
                 <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">All-time and last-2-weeks top games.</span>
             </span>
-        </label>
-
-        <label class="flex items-start gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
-            <input type="checkbox" name="showWidgetGallery" value="true" th:checked="${profile.showWidgetGallery}" class="settings-check mt-0.5"/>
-            <span>
-                <span class="block font-body-md text-on-surface font-semibold">Widget style gallery</span>
-                <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">Preview grid of the widget styles others can embed.</span>
+            <input type="checkbox" name="showTopGames" value="true" th:checked="${profile.showTopGames}" class="settings-switch-input sr-only"/>
+            <span class="toggle-track inline-block shrink-0">
+                <span class="toggle-thumb"></span>
             </span>
         </label>
+
+        <input type="hidden" name="showWidgetGallery" th:value="${profile.showWidgetGallery}"/>
 
         <button type="submit"
                 class="badge-btn-primary inline-flex items-center gap-1.5 px-6 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">

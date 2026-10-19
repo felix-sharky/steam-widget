@@ -208,6 +208,7 @@ public class ProfilePageService {
                 : live.displayName() + "'s public Steam profile on steam-widget.";
 
         List<WidgetGalleryEntry> gallery = themeService.getThemeSummaries().stream()
+                .filter(summary -> !"CARD".equals(summary.id()))
                 .limit(WIDGET_GALLERY_LIMIT)
                 .map(summary -> new WidgetGalleryEntry(
                         summary.id(),
