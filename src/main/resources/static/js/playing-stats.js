@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('tableBody');
     const tableStatus = document.getElementById('tableStatus');
     const tableGameFilter = document.getElementById('tableGameFilter');
-    const backNav = document.getElementById('trackingBackNav');
     const chartStatus = document.getElementById('chartStatus');
     const chartCanvas = document.getElementById('trackingChart');
     const viewModeInputs = document.querySelectorAll('input[name="viewMode"]');
@@ -68,6 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const trendDescription = document.getElementById('trendDescription');
     const tableTitle = document.getElementById('tableTitle');
     const tableDescription = document.getElementById('tableDescription');
+    const activateTrackingCard = document.getElementById('activateTrackingCard');
+    const statsContent = document.getElementById('statsContent');
+    const disableTrackingHint = document.getElementById('disableTrackingHint');
 
     const getViewMode = () => {
         return getSelectedViewMode({ inputName: 'viewMode', dailyValue: 'date', defaultMode: 'month' });
@@ -76,6 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let chartInstance;
     let currentRows = [];
     const selectedGames = new Set();
+    // Avoids re-checking /api/profile on every view-mode/date-range tweak once we already
+    // know this steamId is tracked for the current page load.
+    let trackedSteamId = null;
+    const getThemeColor = utils.getThemeColor || ((token, alpha) => (alpha === undefined ? '#e8e2d3' : 'rgba(232,226,211,' + alpha + ')'));
 
     const setStatus = (badge, text) => {
         tableStatus.className = `badge ${badge}`;
@@ -150,22 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(({ dataset, visible }) => visible && !dataset.meta?.isTotal)
             .map(({ dataset }) => dataset.label);
         setChartState('badge-success', describeVisibleGames(visibleGames));
-    };
-
-    const appendSteamIdToBackLink = () => {
-        const id = steamIdInput.value.trim();
-        syncNavLinks(id);
-        if (!backNav) {
-            return;
-        }
-        const base = backNav.getAttribute('data-base') || backNav.href;
-        const url = new URL(base, window.location.origin);
-        if (id) {
-            url.searchParams.set('steamId', id);
-        } else {
-            url.searchParams.delete('steamId');
-        }
-        backNav.href = url.toString();
     };
 
     const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (ch) => ({
@@ -246,6 +236,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Playing Stats only has anything to show once daily play tracking is on for a profile
+    // (see /tracking/* endpoints) — this page used to be two separate pages (Play Tracking
+    // and Playing Stats); merging them means checking that status first and branching
+    // between the real stats UI and a prompt to turn tracking on, instead of linking out.
+    const fetchTrackingStatus = async (steamId) => {
+        const response = await fetch(`/api/profile?steamId=${encodeURIComponent(steamId)}`);
+        if (!response.ok) {
+            throw new Error(`Request failed: ${response.status}`);
+        }
+        return response.json();
+    };
+
+    const setGateState = (isTracked) => {
+        if (activateTrackingCard) activateTrackingCard.hidden = isTracked;
+        statsContent?.classList.toggle('hidden', !isTracked);
+        if (disableTrackingHint) disableTrackingHint.hidden = !isTracked;
+    };
+
     const fetchStats = async (steamId, mode, startDate, endDate) => {
         const endpoint = mode === 'date' ? '/api/tracking/profile-date' : '/api/tracking/profile-month';
         const params = new URLSearchParams({ steamid: steamId });
@@ -309,8 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
         datasets.push({
             label: 'All games total',
             data: labels.map((label) => buckets[label].total ?? 0),
-            borderColor: '#ffffff',
-            backgroundColor: 'rgba(255,255,255,0.15)',
+            borderColor: getThemeColor('on-surface'),
+            backgroundColor: getThemeColor('on-surface', 0.15),
             borderWidth: 2,
             tension: 0.3,
             fill: false,
@@ -359,16 +367,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
+                    x: {
+                        ticks: { color: getThemeColor('on-surface-variant') },
+                        grid: { color: getThemeColor('outline-variant', 0.3) }
+                    },
                     y: {
                         beginAtZero: true,
-                        ticks: { precision: 0 }
+                        ticks: { precision: 0, color: getThemeColor('on-surface-variant') },
+                        grid: { color: getThemeColor('outline-variant', 0.3) }
                     }
                 },
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#cbd5f5',
+                            color: getThemeColor('on-surface-variant'),
                             // Only list datasets currently shown on the chart (the total line, plus
                             // any games focused via the table) — with one dataset per game ever
                             // played, an unfiltered legend can run to hundreds of entries.
@@ -642,7 +655,32 @@ document.addEventListener('DOMContentLoaded', () => {
         persistSteamIdInQuery(steamId);
         persistDateFiltersInQuery();
         syncNavLinks(steamId);
-        appendSteamIdToBackLink();
+
+        let isTracked = trackedSteamId === steamId;
+        if (!isTracked) {
+            setStatus('badge-loading', 'Checking tracking status…');
+            setChartState('badge-loading', 'Checking tracking status…');
+            if (activateTrackingCard) activateTrackingCard.hidden = true;
+            statsContent?.classList.add('hidden');
+
+            try {
+                const profile = await fetchTrackingStatus(steamId);
+                isTracked = Boolean(profile.tracking);
+            } catch (error) {
+                console.error(error);
+                setStatus('badge-error', 'Lookup failed');
+                setChartState('badge-error', 'Lookup failed');
+                return;
+            }
+
+            trackedSteamId = isTracked ? steamId : null;
+            setGateState(isTracked);
+            if (!isTracked) {
+                setStatus('badge-idle', 'Tracking not enabled');
+                setChartState('badge-idle', 'Tracking not enabled');
+                return;
+            }
+        }
 
         setStatus('badge-loading', 'Loading…');
         setChartState('badge-loading', 'Loading…');
@@ -686,13 +724,11 @@ document.addEventListener('DOMContentLoaded', () => {
             input: steamIdInput,
             onDetected: (steamId) => {
                 syncNavLinks(steamId);
-                appendSteamIdToBackLink();
                 form.dispatchEvent(new Event('submit'));
             }
         });
         if (!detected) {
             syncNavLinks('');
-            appendSteamIdToBackLink();
         }
     };
 

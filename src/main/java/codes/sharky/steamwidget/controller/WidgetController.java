@@ -55,7 +55,7 @@ public class WidgetController {
             @RequestParam(name = "gameListSize", required = false, defaultValue = "6") int gameListSize,
             @RequestParam(name = "insightCategory", required = false, defaultValue = "NONE") InsightCategory insightCategory,
             @RequestParam(name = "customCard", required = false) List<String> customCards,
-            @RequestParam(name = "style", required = false, defaultValue = "STEAM") WidgetStyle style,
+            @RequestParam(name = "style", required = false, defaultValue = "CARD") WidgetStyle style,
             @RequestParam(name = "playingRightNow", required = false, defaultValue = "true") boolean playingRightNow,
             @RequestParam(name = "purpose", required = false, defaultValue = "General") String purpose,
             @RequestParam(name = "width", required = false, defaultValue = "0") int width,

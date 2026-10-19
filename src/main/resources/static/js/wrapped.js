@@ -319,8 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const blob = (style) => `<div class="wrapped-blob" style="${style}"></div>`;
 
     const applyTheme = (themeId) => {
-        const theme = themeColorsById[themeId] || themeColorsById.STEAM || {
-            backgroundStart: '#140a1f', backgroundEnd: '#3b0764', accent: '#c084fc', text: '#faf5ff', muted: '#e9d5ff'
+        const theme = themeColorsById[themeId] || themeColorsById.CARD || {
+            backgroundStart: '#1f1d1b', backgroundEnd: '#322e28', accent: '#e07d26', text: '#e8e2d3', muted: '#a69c89'
         };
         slideContent.style.setProperty('--w-bg-start', theme.backgroundStart);
         slideContent.style.setProperty('--w-bg-end', theme.backgroundEnd);
@@ -339,6 +339,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!Array.isArray(themes) || !themes.length) return;
             themeColorsById = Object.fromEntries(themes.map((t) => [t.id, t]));
             themeSelect.innerHTML = themes.map((t) => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.label)}</option>`).join('');
+            // Default to the style matching the current site theme (card/dark/light ->
+            // Card/Midnight/Light) rather than whichever option happens to land first.
+            const siteTheme = document.documentElement.getAttribute('data-theme') || 'default';
+            const mappedStyle = (window.SteamWidget?.getWidgetStyleForSiteTheme || (() => 'CARD'))(siteTheme);
+            if (themes.some((t) => t.id === mappedStyle)) {
+                themeSelect.value = mappedStyle;
+            }
         } catch (e) {
             console.warn('Failed to load themes, using default.', e);
         }

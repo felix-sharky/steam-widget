@@ -152,7 +152,7 @@ public class SteamTrackerService {
             if (tracker.isEmpty() || tracker.get().getTotalPlayingTime() < game.getPlaytimeForever()) {
                 long newPlaytime = init ? 0L : tracker.map(playingTracker -> game.getPlaytimeForever() - playingTracker.getTotalPlayingTime()).orElseGet(game::getPlaytimeForever);
                 log.info("User {} played {} for {} minutes.", steamId, game.getName(), newPlaytime);
-                PlayingTracker newTracker = new PlayingTracker(steamId, game.getAppid().toString(), game.getName(), newPlaytime, game.getPlaytimeForever());
+                PlayingTracker newTracker = new PlayingTracker(steamId, game.getAppid().toString(), game.getName(), Math.toIntExact(newPlaytime), Math.toIntExact(game.getPlaytimeForever()));
                 profileService.savePlayingTracker(newTracker);
             }
         } catch (Exception exception) {

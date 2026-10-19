@@ -35,13 +35,13 @@ public class PlayingTracker {
 
     @ColumnDefault("0")
     @Column(name = "delta_playing_time", nullable = false)
-    private Long deltaPlayingTime;
+    private Integer deltaPlayingTime;
 
     @ColumnDefault("0")
     @Column(name = "total_playing_time", nullable = false)
-    private Long totalPlayingTime;
+    private Integer totalPlayingTime;
 
-    public PlayingTracker(String steam64id, String game, String gamename, Long deltaPlayingTime, Long totalPlayingTime) {
+    public PlayingTracker(String steam64id, String game, String gamename, Integer deltaPlayingTime, Integer totalPlayingTime) {
         this.steam64id = steam64id;
         this.game = game;
         this.gamename = gamename;

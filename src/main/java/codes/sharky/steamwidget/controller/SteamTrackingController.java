@@ -70,14 +70,14 @@ public class SteamTrackingController {
         String steamId64 = steamOpenID.verify(request.getRequestURL().toString(), request.getParameterMap());
 
         if (steamId64 == null) {
-            httpServletResponse.setHeader("Location", baseUrl + "/tracking.html");
+            httpServletResponse.setHeader("Location", baseUrl + "/playing-stats.html");
             httpServletResponse.setStatus(302);
             return;
         }
 
         addSteamIdCookie(httpServletResponse, request, steamId64);
 
-        httpServletResponse.setHeader("Location", baseUrl + "/tracking.html?steamId=" + steamId64);
+        httpServletResponse.setHeader("Location", baseUrl + "/playing-stats.html?steamId=" + steamId64);
         httpServletResponse.setStatus(302);
     }
 
@@ -115,7 +115,7 @@ public class SteamTrackingController {
         String steamId64 = steamOpenID.verify(request.getRequestURL().toString(), request.getParameterMap());
 
         if (steamId64 == null) {
-            httpServletResponse.setHeader("Location", baseUrl + "/tracking.html");
+            httpServletResponse.setHeader("Location", baseUrl + "/playing-stats.html");
             httpServletResponse.setStatus(302);
             return;
         }
@@ -123,7 +123,7 @@ public class SteamTrackingController {
         steamTrackerService.enableTracking(steamId64);
         addSteamIdCookie(httpServletResponse, request, steamId64);
 
-        httpServletResponse.setHeader("Location", baseUrl + "/tracking.html?steamId=" + steamId64);
+        httpServletResponse.setHeader("Location", baseUrl + "/playing-stats.html?steamId=" + steamId64);
         httpServletResponse.setStatus(302);
     }
 
@@ -161,7 +161,7 @@ public class SteamTrackingController {
         String steamId64 = steamOpenID.verify(request.getRequestURL().toString(), request.getParameterMap());
 
         if (steamId64 == null) {
-            httpServletResponse.setHeader("Location", baseUrl + "/tracking.html");
+            httpServletResponse.setHeader("Location", baseUrl + "/playing-stats.html");
             httpServletResponse.setStatus(302);
             return;
         }
@@ -169,7 +169,7 @@ public class SteamTrackingController {
         steamTrackerService.disableTracking(steamId64);
         addSteamIdCookie(httpServletResponse, request, steamId64);
 
-        httpServletResponse.setHeader("Location", baseUrl + "/tracking.html?steamId=" + steamId64);
+        httpServletResponse.setHeader("Location", baseUrl + "/playing-stats.html?steamId=" + steamId64);
         httpServletResponse.setStatus(302);
     }
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -38,6 +39,29 @@ public class Profile implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "steam64id")
     private ProfileCache profileCache;
+
+    @ColumnDefault("false")
+    @Column(name = "claimed", nullable = false)
+    private Boolean claimed = false;
+
+    @Column(name = "claimed_at")
+    private LocalDateTime claimedAt;
+
+    @ColumnDefault("true")
+    @Column(name = "show_now_playing", nullable = false)
+    private Boolean showNowPlaying = true;
+
+    @ColumnDefault("true")
+    @Column(name = "show_headline_stats", nullable = false)
+    private Boolean showHeadlineStats = true;
+
+    @ColumnDefault("true")
+    @Column(name = "show_top_games", nullable = false)
+    private Boolean showTopGames = true;
+
+    @ColumnDefault("true")
+    @Column(name = "show_widget_gallery", nullable = false)
+    private Boolean showWidgetGallery = true;
 
     public Profile(String steam64id, String name, Long hits) {
         this.steam64id = steam64id;

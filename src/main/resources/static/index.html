@@ -2,24 +2,25 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>(function(){try{var t=localStorage.getItem('steamWidgetTheme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>steam-widget | Steam Widget Generator</title>
     <meta name="description" content="Generate a customizable Steam widget from your Steam ID, preview it live, and embed your profile and gameplay stats anywhere.">
     <meta name="keywords" content="Steam widget, Steam profile badge, Steam ID widget, embeddable Steam badge, Steam stats, Steam widget generator, GitHub Steam badge">
-    <meta name="theme-color" content="#7c3aed">
+    <meta name="theme-color" content="#e07d26">
     <link rel="canonical" href="https://steam-widget.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="steam-widget">
     <meta property="og:title" content="steam-widget | Steam Widget Generator">
     <meta property="og:description" content="Generate a customizable Steam widget from your Steam ID, preview it live, and embed your profile and gameplay stats anywhere.">
     <meta property="og:url" content="https://steam-widget.com/">
-    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="300">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="steam-widget | Steam Widget Generator">
     <meta name="twitter:description" content="Generate a customizable Steam widget from your Steam ID, preview it live, and embed your profile and gameplay stats anywhere.">
-    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -69,132 +70,92 @@
     <link rel="icon" type="image/png" href="/img/logo.png"/>
     <link rel="apple-touch-icon" href="/img/logo.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="/js/tailwind-theme.js"></script>
-    <link href="https://fonts.bunny.net/css?family=sora:400,600,700,800|jetbrains-mono:500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css">
-    <link rel="stylesheet" href="/css/shared-modern-ui.css">
-    <style>
-        /* Toggle switch styling */
-        .toggle-track {
-            width: 44px; height: 24px;
-            background: #2d3449;
-            border-radius: 9999px;
-            position: relative;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        .toggle-track.checked { background: #8b5cf6; }
-        .toggle-thumb {
-            position: absolute;
-            top: 2px; left: 2px;
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            background: white;
-            transition: transform 0.2s;
-        }
-        .toggle-track.checked .toggle-thumb { transform: translateX(20px); }
-        /* Widget preview area — a recessed "canvas" (per DESIGN.md's Widget Preview
-           Container spec) rather than another flat glass-card, so the actual output
-           reads as the page's one highlight instead of blending in with the form. */
-        .widget-preview-container {
-            min-height: 200px;
-            background-color: #060e20;
-            background-image:
-                radial-gradient(circle at 20% 15%, rgba(139, 92, 246, 0.18), transparent 55%),
-                radial-gradient(circle, rgba(208, 188, 255, 0.1) 1px, transparent 1px);
-            background-size: auto, 22px 22px;
-            box-shadow: inset 0 2px 16px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(139, 92, 246, 0.12);
-        }
-        .widget-preview-container img { display: inline-block; max-width: 100%; }
-        /* Dynamic content classes used by generator.js */
-        #widgetContainer .label {
-            margin-top: 12px;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #cbc3d7;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        #widgetContainer .link-box,
-        #widgetContainer .code-box {
-            margin-top: 6px;
-            padding: 10px 14px;
-            background: rgba(6, 14, 32, 0.8);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            border-radius: 8px;
-            color: #dae2fd;
-            word-wrap: break-word;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-        }
-        #widgetContainer .code-box { white-space: pre-wrap; }
-        #widgetContainer p { color: #ffb4ab; font-size: 14px; }
-    </style>
+    <script src="/js/tailwind-theme-badge.js"></script>
+    <link href="https://fonts.bunny.net/css?family=barlow-condensed:600,700,800|public-sans:400,500,600,700|ibm-plex-mono:500,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css" integrity="sha384-jUBMcooxnDO+m521kIYXnrDot/SKMc2uMTTwewWSQp1tLxU+ZDJ/CWNo+whJkMDj" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/badge-ui.css">
     <script type="text/javascript" src="/js/steam-utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
     <script type="text/javascript" src="/js/generator.js"></script>
     <script defer src="https://umami.gamerzone.cloud/script.js" data-website-id="dc9569e5-f55b-4d84-b162-20f7e7715cd3"></script>
     <script defer src="/js/layout-effects.js"></script>
 </head>
-<body class="bg-background text-on-background font-body-md custom-scrollbar selection:bg-primary-container selection:text-on-primary-container">
+<body class="bg-background text-on-background font-body-md custom-scrollbar">
 
 <!-- Top Navigation Bar -->
-<header class="sticky top-0 w-full bg-surface-container-low/80 backdrop-blur-md z-50 border-b border-outline-variant/30 shadow-sm">
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
     <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
-        <div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary-fixed-dim">steam-widget</div>
+        <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
         <div class="hidden md:flex gap-6 items-center">
-            <a class="text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
+            <a class="nav-link text-primary font-bold pb-1 transition-colors duration-150 font-label-md text-label-md uppercase"
                data-route="/" data-base="/" href="/">Generator</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               id="trackingNav" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
                id="trackingMonthNav" data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               id="profileMetricsNav" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
                id="wrappedNav" data-route="/wrapped.html" data-base="/wrapped.html" href="/wrapped.html">Wrapped</a>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
         </div>
-        <!-- Mobile menu button -->
-        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+        <button id="mobileMenuBtn" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
             <span class="material-symbols-outlined">menu</span>
         </button>
     </nav>
-    <!-- Mobile nav -->
-    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
-        <a class="text-primary-container font-label-md text-label-md uppercase py-2" href="/">Generator</a>
-        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/tracking.html">Play Tracking</a>
-        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/playing-stats.html">Playing Stats</a>
-        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
-        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary-container" href="/wrapped.html">Wrapped</a>
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
+        <a class="text-primary font-label-md text-label-md uppercase py-2" href="/">Generator</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary" href="/playing-stats.html">Playing Stats</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
+            <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
     </div>
 </header>
 
 <main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-stack-lg">
-    <!-- Hero Section -->
-    <section class="text-center py-stack-lg space-y-stack-sm">
-        <h1 class="font-headline-xl text-headline-xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">
-            Steam Widget Generator
+    <!-- Hero -->
+    <section class="py-stack-md space-y-stack-sm">
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">
+            Print your Steam badge
         </h1>
-        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            Paste any Steam ID, vanity URL, or community ID to instantly generate an embeddable profile badge — perfect for GitHub READMEs, forums, personal sites, and dashboards.
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+            Register your Steam ID below and we'll issue a badge you can embed anywhere — your
+            GitHub README, a forum signature, or your own site.
         </p>
     </section>
 
-    <!-- Main Bento Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Column 1: Auth and Config (Left) -->
+        <!-- Column 1: Registration desk (Left) -->
         <div class="lg:col-span-7 space-y-6">
 
             <!-- Sign-In Card -->
-            <div class="glass-card p-stack-lg rounded-xl overflow-hidden relative group">
-                <div class="absolute inset-0 bg-gradient-to-br from-primary-container/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <div class="glass-card p-stack-lg rounded-xl relative">
                 <div class="relative z-10 space-y-4">
                     <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary-container" style="font-variation-settings:'FILL' 1;">login</span>
-                        <h2 class="font-headline-md text-headline-md text-on-surface">Sign in with Steam</h2>
+                        <span class="material-symbols-outlined text-primary">login</span>
+                        <h2 class="font-headline-sm text-headline-sm text-on-surface">Verify with Steam</h2>
                     </div>
-                    <p class="text-on-surface-variant font-body-md">Login with Steam to auto-fill your profile.</p>
-                    <a class="inline-block transition-transform duration-200 active:scale-95" href="/steam/login" data-umami-event="link_steam_login">
+                    <p class="text-on-surface-variant font-body-md">Sign in to auto-fill your registration and claim your own badge page.</p>
+                    <a class="inline-block transition-transform duration-150 active:scale-95" href="/steam/login" data-umami-event="link_steam_login">
                         <img src="/img/steam_login-button_openid.png" alt="Login with Steam" class="h-10">
                     </a>
                 </div>
@@ -202,18 +163,18 @@
 
             <!-- Manual ID Input -->
             <form id="widgetForm" onsubmit="generateWidget(); return false;" autocomplete="off">
-                <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-300 space-y-stack-md">
-                    <label class="block font-label-md text-label-md text-primary-container tracking-widest uppercase" for="steamId">Steam ID</label>
+                <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-150 space-y-stack-md">
+                    <label class="block font-label-md text-label-md text-primary uppercase" for="steamId">Steam ID</label>
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="relative flex-grow">
                             <input id="steamId" name="steamId"
-                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors placeholder:text-on-surface-variant/40"
+                                   class="w-full border rounded-lg px-4 py-3 font-body-md focus:outline-none transition-colors"
                                    placeholder="Enter Steam ID or vanity URL" type="text">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/50 pointer-events-none">search</span>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/60 pointer-events-none">badge</span>
                         </div>
                         <button type="submit" data-umami-event="button_generate_click"
-                                class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap">
-                            Generate widget
+                                class="badge-btn-primary px-8 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95 whitespace-nowrap">
+                            Print badge
                         </button>
                     </div>
                 </div>
@@ -221,16 +182,16 @@
                 <!-- Widget Options -->
                 <div class="glass-card p-stack-lg rounded-xl space-y-stack-lg mt-6">
                     <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary-container">settings_suggest</span>
-                        <h2 class="font-headline-md text-headline-md text-on-surface">Widget options</h2>
+                        <span class="material-symbols-outlined text-primary">settings_suggest</span>
+                        <h2 class="font-headline-sm text-headline-sm text-on-surface">Badge options</h2>
                     </div>
-                    <p class="text-on-surface-variant font-body-md">Fine-tune the info rendered on your widget to match your stream or profile aesthetics.</p>
+                    <p class="text-on-surface-variant font-body-md">Choose what prints on your badge.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg pt-2">
                         <!-- Now Playing Toggle -->
-                        <div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg border border-outline-variant/10">
+                        <div class="flex items-center justify-between py-2">
                             <div>
                                 <label class="block font-label-md text-label-md text-on-surface uppercase mb-1" for="playingRightNow">Display "Now Playing"</label>
-                                <span class="text-[11px] text-on-surface-variant/70 italic">Real-time activity status</span>
+                                <span class="text-xs text-on-surface-variant">Real-time activity status</span>
                             </div>
                             <div class="toggle-track checked" id="playingRightNowTrack" onclick="this.classList.toggle('checked'); document.getElementById('playingRightNow').checked = this.classList.contains('checked'); document.getElementById('playingRightNow').dispatchEvent(new Event('change'))">
                                 <div class="toggle-thumb"></div>
@@ -239,17 +200,17 @@
                         </div>
                         <!-- Widget Style -->
                         <div class="space-y-2">
-                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="widgetStyle">Widget Style</label>
+                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="widgetStyle">Badge finish</label>
                             <select id="widgetStyle"
-                                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors cursor-pointer">
-                                <option value="STEAM">Steam Blue</option>
+                                    class="w-full border rounded-lg px-4 py-2 font-body-md focus:outline-none transition-colors cursor-pointer">
+                                <option value="CARD">Card</option>
                             </select>
                         </div>
                         <!-- Widget Content -->
                         <div class="space-y-2">
-                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="widgetContent">Widget Content</label>
+                            <label class="block font-label-md text-label-md text-on-surface uppercase" for="widgetContent">Badge content</label>
                             <select id="widgetContent"
-                                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors cursor-pointer">
+                                    class="w-full border rounded-lg px-4 py-2 font-body-md focus:outline-none transition-colors cursor-pointer">
                                 <option value="GAME_NONE">Profile only</option>
                                 <option value="GAME_TOP_GAMES_TOTAL">Top games of all time</option>
                                 <option value="GAME_TOP_GAMES_RECENT">Top games last 2 weeks</option>
@@ -264,17 +225,17 @@
                         <div id="gameListSizeSection" class="space-y-2">
                             <label class="block font-label-md text-label-md text-on-surface uppercase" for="gameListSize">Max games displayed</label>
                             <input id="gameListSize"
-                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none transition-colors"
+                                   class="w-full border rounded-lg px-4 py-2 font-body-md focus:outline-none transition-colors tabular"
                                    max="10" min="0" type="number" value="6">
                         </div>
                         <!-- Custom Cards -->
-                        <div id="customCardsSection" class="hidden md:col-span-2 space-y-4 border border-outline-variant/20 rounded-xl p-4 bg-surface-container-lowest/50">
+                        <div id="customCardsSection" class="hidden md:col-span-2 space-y-4 border-t pt-4">
                             <div>
                                 <h3 class="font-label-md text-label-md text-on-surface uppercase">Custom cards</h3>
-                                <p class="text-[11px] text-on-surface-variant/70 mt-1">Configure up to six cards. Empty cards are skipped.</p>
+                                <p class="text-xs text-on-surface-variant mt-1">Configure up to six. Empty cards are skipped.</p>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="1">
+                                <select class="custom-card-field border rounded-lg px-3 py-2 font-body-md focus:outline-none" data-card-index="1">
                                     <option value="">Card 1: No card</option>
                                     <optgroup label="Activity">
                                         <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
@@ -299,7 +260,7 @@
                                         <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
                                     </optgroup>
                                 </select>
-                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="2">
+                                <select class="custom-card-field border rounded-lg px-3 py-2 font-body-md focus:outline-none" data-card-index="2">
                                     <option value="">Card 2: No card</option>
                                     <optgroup label="Activity">
                                         <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
@@ -324,7 +285,7 @@
                                         <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
                                     </optgroup>
                                 </select>
-                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="3">
+                                <select class="custom-card-field border rounded-lg px-3 py-2 font-body-md focus:outline-none" data-card-index="3">
                                     <option value="">Card 3: No card</option>
                                     <optgroup label="Activity">
                                         <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
@@ -349,7 +310,7 @@
                                         <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
                                     </optgroup>
                                 </select>
-                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="4">
+                                <select class="custom-card-field border rounded-lg px-3 py-2 font-body-md focus:outline-none" data-card-index="4">
                                     <option value="">Card 4: No card</option>
                                     <optgroup label="Activity">
                                         <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
@@ -374,7 +335,7 @@
                                         <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
                                     </optgroup>
                                 </select>
-                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="5">
+                                <select class="custom-card-field border rounded-lg px-3 py-2 font-body-md focus:outline-none" data-card-index="5">
                                     <option value="">Card 5: No card</option>
                                     <optgroup label="Activity">
                                         <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
@@ -399,7 +360,7 @@
                                         <option value="GAMES_STREAK_YEAR">Game streak (year)</option>
                                     </optgroup>
                                 </select>
-                                <select class="custom-card-field bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-body-md focus:border-primary-container focus:outline-none" data-card-index="6">
+                                <select class="custom-card-field border rounded-lg px-3 py-2 font-body-md focus:outline-none" data-card-index="6">
                                     <option value="">Card 6: No card</option>
                                     <optgroup label="Activity">
                                         <option value="ACTIVITY_CURRENT_STREAK">Current streak</option>
@@ -431,33 +392,39 @@
             </form>
         </div>
 
-        <!-- Column 2: Preview (Right) -->
+        <!-- Column 2: The badge (Right) -->
         <div class="lg:col-span-5 flex flex-col">
             <div class="glass-card glass-card--featured p-stack-lg rounded-xl flex-grow flex flex-col lg:sticky lg:top-24">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="material-symbols-outlined text-primary-container">visibility</span>
-                    <h2 class="font-headline-md text-headline-md text-on-surface">Widget preview</h2>
+                <div class="badge-hole" aria-hidden="true"></div>
+                <span class="card-rarity-tag">Attendee</span>
+                <div class="flex items-center gap-3 mb-4 mt-2">
+                    <span class="material-symbols-outlined text-primary">visibility</span>
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Your badge</h2>
                 </div>
                 <!-- Widget container used by generator.js -->
-                <div id="widgetContainer" class="widget-preview-container flex-grow flex flex-col items-center justify-center rounded-lg p-8 text-center space-y-4">
-                    <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center animate-pulse">
-                        <span class="material-symbols-outlined text-primary-container text-4xl">pending</span>
+                <div id="widgetContainer" class="widget-preview-container flex-grow flex flex-col items-center justify-center p-8 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center">
+                        <span class="material-symbols-outlined text-on-surface-variant text-4xl">pending</span>
                     </div>
                     <div class="space-y-2">
-                        <p class="font-body-md text-on-surface">No data available yet</p>
-                        <p class="text-on-surface-variant text-sm max-w-[200px] mx-auto">Generate a widget to see the preview, direct link, and embeddable HTML code.</p>
+                        <p class="font-body-md text-on-surface">No badge printed yet</p>
+                        <p class="text-on-surface-variant text-sm max-w-[200px] mx-auto">Print a badge to see the preview, direct link, and embed code.</p>
                     </div>
                 </div>
-                <!-- Placeholder actions (shown by generator.js) -->
-                <div id="widgetActions" class="mt-6 pt-6 border-t border-outline-variant/20 space-y-4 opacity-30 grayscale pointer-events-none hidden">
+                <div id="widgetActions" class="mt-6 pt-6 border-t border-outline-variant space-y-4 opacity-30 grayscale pointer-events-none hidden">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-sm text-on-surface-variant">link</span>
-                        <div class="h-2 bg-primary-container/30 rounded flex-grow"></div>
+                        <div class="h-2 bg-primary/30 rounded flex-grow"></div>
                     </div>
                     <div class="flex gap-2">
                         <div class="h-8 bg-surface-variant rounded w-1/2"></div>
                         <div class="h-8 bg-surface-variant rounded w-1/2"></div>
                     </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-outline-variant flex items-center justify-between gap-3">
+                    <div id="badgeQrCode" class="badge-qrcode"
+                         title="Scan to open this profile's steam-widget page" aria-hidden="true"></div>
+                    <span id="badgeNumber" class="font-label-sm text-label-sm text-on-surface-variant" style="font-family: 'IBM Plex Mono', monospace;">NO. 0000000000000000</span>
                 </div>
             </div>
         </div>
@@ -465,23 +432,21 @@
 </main>
 
 <!-- Footer -->
-<footer class="bg-surface-dim border-t border-outline-variant/20 py-stack-lg mt-stack-lg">
+<footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
     <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
         <div class="flex flex-col items-center md:items-start gap-2">
-            <div class="font-headline-lg text-headline-lg font-extrabold text-primary-fixed-dim">steam-widget</div>
+            <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
             <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
         </div>
         <div class="flex flex-wrap justify-center gap-6">
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
         </div>
         <div class="flex items-center gap-4 text-on-surface-variant">
-            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary-container cursor-pointer transition-colors" title="Created by Sharky">
-                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">code</span>
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined">code</span>
             </a>
         </div>
     </div>
@@ -492,25 +457,25 @@
     <span class="share-btn-label">Share</span>
 </button>
 
-<div id="widgetShareModal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/70 backdrop-blur-sm px-4" role="dialog" aria-modal="true" aria-labelledby="widgetShareTitle">
-    <div class="glass-card w-full max-w-4xl rounded-2xl p-stack-lg shadow-2xl border border-outline-variant/20">
+<div id="widgetShareModal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/70 px-4" role="dialog" aria-modal="true" aria-labelledby="widgetShareTitle">
+    <div class="glass-card w-full max-w-4xl rounded-2xl p-stack-lg">
         <div class="flex items-start justify-between gap-4 mb-5">
             <div>
-                <h2 id="widgetShareTitle" class="font-headline-md text-headline-md text-on-surface">Share your widget</h2>
-                <p class="text-on-surface-variant text-sm mt-1">Preview the current widget, then share the image directly or share this generator page.</p>
+                <h2 id="widgetShareTitle" class="font-headline-sm text-headline-sm text-on-surface">Share your badge</h2>
+                <p class="text-on-surface-variant text-sm mt-1">Preview the current badge, then share the image directly or share this page.</p>
             </div>
-            <button type="button" onclick="closeWidgetShareModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors" aria-label="Close share dialog">
+            <button type="button" onclick="closeWidgetShareModal()" class="p-2 text-on-surface-variant hover:text-primary transition-colors" aria-label="Close share dialog">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <div class="bg-surface-container-lowest/60 border border-outline-variant/20 rounded-xl p-4 overflow-auto text-center">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 overflow-auto text-center">
             <img id="widgetSharePreview" class="inline-block max-w-full rounded-lg" alt="Current Steam widget preview">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
-            <button type="button" onclick="shareCurrentWidgetImage()" class="bg-primary-container text-on-primary-container px-5 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110">
+            <button type="button" onclick="shareCurrentWidgetImage()" class="badge-btn-primary px-5 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
                 Share image
             </button>
-            <button type="button" onclick="shareCurrentSite()" class="bg-surface-container-highest text-on-surface px-5 py-3 rounded-lg font-bold text-sm border border-outline-variant/20 transition-all duration-200 active:scale-95 hover:border-primary-container/60">
+            <button type="button" onclick="shareCurrentSite()" class="badge-btn-secondary px-5 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
                 Share site
             </button>
         </div>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var t=localStorage.getItem('steamWidgetTheme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>steam-widget | Profile settings</title>
+    <link rel="icon" type="image/png" href="/img/logo.png"/>
+    <link rel="apple-touch-icon" href="/img/logo.png"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="/js/tailwind-theme-badge.js"></script>
+    <link href="https://fonts.bunny.net/css?family=barlow-condensed:600,700,800|public-sans:400,500,600,700|ibm-plex-mono:500,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css" integrity="sha384-jUBMcooxnDO+m521kIYXnrDot/SKMc2uMTTwewWSQp1tLxU+ZDJ/CWNo+whJkMDj" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/badge-ui.css">
+    <style>
+        .settings-switch-input:checked ~ .toggle-track { background: rgb(var(--c-primary-container)); }
+        .settings-switch-input:checked ~ .toggle-track .toggle-thumb { transform: translateX(20px); }
+        .settings-switch-input:focus-visible ~ .toggle-track { outline: 2px solid rgb(var(--c-primary)); outline-offset: 2px; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md custom-scrollbar">
+
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
+    <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
+        <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
+        <div id="navLinkGroup" class="flex items-center gap-4">
+            <a th:href="@{'/u/' + ${steamId}}"
+               class="inline-flex items-center gap-1 text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase">
+                <span class="material-symbols-outlined text-base">arrow_back</span>
+                Back to profile
+            </a>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-stack-lg max-w-2xl">
+    <div>
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">Profile page settings</h1>
+        <p class="text-on-surface-variant font-body-md mt-1">Choose what shows on your public steam-widget page.</p>
+    </div>
+
+    <form th:action="@{'/u/' + ${steamId} + '/settings'}" method="post" class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-150 space-y-stack-md">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-primary">visibility</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Section visibility</h2>
+        </div>
+
+        <label class="flex items-center justify-between gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
+            <span class="min-w-0">
+                <span class="block font-body-md text-on-surface font-semibold">Now-playing status</span>
+                <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">Show "Now playing X" when you're in a game.</span>
+            </span>
+            <input type="checkbox" name="showNowPlaying" value="true" th:checked="${profile.showNowPlaying}" class="settings-switch-input sr-only"/>
+            <span class="toggle-track inline-block shrink-0">
+                <span class="toggle-thumb"></span>
+            </span>
+        </label>
+
+        <label class="flex items-center justify-between gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
+            <span class="min-w-0">
+                <span class="block font-body-md text-on-surface font-semibold">Headline stats &amp; heatmap</span>
+                <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">Total hours, games this year, streak, and the activity heatmap.</span>
+            </span>
+            <input type="checkbox" name="showHeadlineStats" value="true" th:checked="${profile.showHeadlineStats}" class="settings-switch-input sr-only"/>
+            <span class="toggle-track inline-block shrink-0">
+                <span class="toggle-thumb"></span>
+            </span>
+        </label>
+
+        <label class="flex items-center justify-between gap-3 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant cursor-pointer hover:border-primary/40 transition-colors">
+            <span class="min-w-0">
+                <span class="block font-body-md text-on-surface font-semibold">Top games</span>
+                <span class="block font-label-sm text-label-sm text-on-surface-variant mt-0.5">All-time and last-2-weeks top games.</span>
+            </span>
+            <input type="checkbox" name="showTopGames" value="true" th:checked="${profile.showTopGames}" class="settings-switch-input sr-only"/>
+            <span class="toggle-track inline-block shrink-0">
+                <span class="toggle-thumb"></span>
+            </span>
+        </label>
+
+        <input type="hidden" name="showWidgetGallery" th:value="${profile.showWidgetGallery}"/>
+
+        <button type="submit"
+                class="badge-btn-primary inline-flex items-center gap-1.5 px-6 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+            Save changes
+        </button>
+    </form>
+
+    <form th:action="@{'/u/' + ${steamId} + '/unclaim'}" method="post" class="data-card p-stack-lg rounded-xl">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-tertiary">link_off</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Un-claim this page</h2>
+        </div>
+        <p class="text-on-surface-variant font-body-md mb-4">
+            Reverts your page to the default, unclaimed state (not indexed, section visibility reset). Nothing is deleted —
+            your Steam profile stays public and you can re-claim it any time.
+        </p>
+        <button type="submit"
+                class="badge-btn-secondary px-5 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+            Un-claim this page
+        </button>
+    </form>
+</main>
+
+<footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
+    <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
+        <div class="flex flex-col items-center md:items-start gap-2">
+            <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
+            <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6">
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
+        </div>
+    </div>
+</footer>
+
+<script defer src="/js/layout-effects.js"></script>
+</body>
+</html>

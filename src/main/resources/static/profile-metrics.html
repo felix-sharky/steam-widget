@@ -2,24 +2,25 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>(function(){try{var t=localStorage.getItem('steamWidgetTheme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>steam-widget | Steam Profile Metrics</title>
     <meta name="description" content="Analyze Steam profile visits and engagement with daily or monthly metrics, trends, and filterable date ranges.">
     <meta name="keywords" content="Steam profile metrics, Steam profile hits, Steam widget analytics, Steam profile traffic, Steam embed stats">
-    <meta name="theme-color" content="#7c3aed">
+    <meta name="theme-color" content="#e07d26">
     <link rel="canonical" href="https://steam-widget.com/profile-metrics.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="steam-widget">
     <meta property="og:title" content="steam-widget | Steam Profile Metrics">
     <meta property="og:description" content="Analyze Steam profile visits and engagement with daily or monthly metrics, trends, and filterable date ranges.">
     <meta property="og:url" content="https://steam-widget.com/profile-metrics.html">
-    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="300">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="steam-widget | Steam Profile Metrics">
     <meta name="twitter:description" content="Analyze Steam profile visits and engagement with daily or monthly metrics, trends, and filterable date ranges.">
-    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.png">
+    <meta name="twitter:image" content="https://steam-widget.com/img/logo_slogan.jpg">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -41,11 +42,12 @@
     <link rel="icon" type="image/png" href="/img/logo.png"/>
     <link rel="apple-touch-icon" href="/img/logo.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="/js/tailwind-theme.js"></script>
-    <link href="https://fonts.bunny.net/css?family=sora:400,600,700,800|jetbrains-mono:500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css">
-    <link rel="stylesheet" href="/css/shared-modern-ui.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script src="/js/tailwind-theme-badge.js"></script>
+    <link href="https://fonts.bunny.net/css?family=barlow-condensed:600,700,800|public-sans:400,500,600,700|ibm-plex-mono:500,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css" integrity="sha384-jUBMcooxnDO+m521kIYXnrDot/SKMc2uMTTwewWSQp1tLxU+ZDJ/CWNo+whJkMDj" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/badge-ui.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" integrity="sha384-Sse/HDqcypGpyTDpvZOJNnG0TT3feGQUkF9H+mnRvic+LjR+K1NhTt8f51KIQ3v3" crossorigin="anonymous"></script>
     <script defer src="/js/layout-effects.js"></script>
     <script defer src="/js/steam-utils.js"></script>
     <script defer src="/js/profile-metrics.js"></script>
@@ -54,57 +56,76 @@
 <body class="bg-background text-on-background font-body-md custom-scrollbar">
 
 <!-- Top Navigation Bar -->
-<header class="sticky top-0 w-full bg-surface-container-low/80 backdrop-blur-md z-50 border-b border-outline-variant/30 shadow-sm">
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
     <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
-        <div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary-fixed-dim">steam-widget</div>
+        <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
         <div class="hidden md:flex gap-6 items-center">
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
                data-route="/" data-base="/" href="/">Generator</a>
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
-               data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
                data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
-            <a class="nav-link text-primary-container font-bold border-b-2 border-primary-container pb-1 transition-all duration-200 font-label-md text-label-md uppercase"
-               aria-current="page" data-route="/profile-metrics.html" data-base="/profile-metrics.html" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="nav-link text-on-surface-variant font-medium hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase"
+            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
                data-route="/wrapped.html" data-base="/wrapped.html" href="/wrapped.html">Wrapped</a>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
         </div>
-        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+        <button id="mobileMenuBtn" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
             <span class="material-symbols-outlined">menu</span>
         </button>
     </nav>
-    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant/20 bg-surface-container-low/95 backdrop-blur-md px-gutter py-3 flex flex-col gap-3">
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/tracking.html">Play Tracking</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/playing-stats.html">Playing Stats</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-primary-container" href="/profile-metrics.html">Profile Metrics</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary-container" href="/wrapped.html">Wrapped</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/playing-stats.html">Playing Stats</a>
+        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
+            <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
     </div>
 </header>
 
 <main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-6">
     <!-- Hero -->
-    <section class="text-center py-stack-lg space-y-stack-sm">
-        <h1 class="font-headline-xl text-headline-xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">
+    <section class="py-stack-md space-y-stack-sm">
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">
             Profile Metrics
         </h1>
-        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
             See exactly how many times your Steam widget has been viewed — daily and monthly hit counts, trend charts, and breakdown by embed purpose.
         </p>
     </section>
 
     <!-- Search Card -->
-    <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-300">
+    <div class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-150">
         <form id="profileMetricsForm" class="space-y-stack-md" autocomplete="off">
-            <label class="block font-label-md text-label-md text-primary-container tracking-widest uppercase" for="steamId">Steam ID</label>
+            <label class="block font-label-md text-label-md text-primary uppercase" for="steamId">Steam ID</label>
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="relative flex-grow">
                     <input id="steamId" name="steamId" type="text" placeholder="Steam64 or vanity URL" required
-                           class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors placeholder:text-on-surface-variant/40">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/50 pointer-events-none">search</span>
+                           class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/60 pointer-events-none">search</span>
                 </div>
                 <button type="submit" data-umami-event="button_load_stats_profile"
-                        class="bg-primary-container text-on-primary-container px-8 py-3 rounded-lg font-bold text-sm transition-all duration-200 active:scale-95 hover:brightness-110 shadow-lg shadow-primary-container/20 whitespace-nowrap">
+                        class="badge-btn-primary px-8 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95 whitespace-nowrap">
                     Load metrics
                 </button>
             </div>
@@ -130,12 +151,12 @@
             <div>
                 <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="startDate">Start date</label>
                 <input id="startDate" name="startDate" type="date"
-                       class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                       class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors">
             </div>
             <div>
                 <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2" for="endDate">End date</label>
                 <input id="endDate" name="endDate" type="date"
-                       class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary-container transition-colors">
+                       class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface font-body-md focus:outline-none focus:border-primary transition-colors">
             </div>
         </div>
     </div>
@@ -144,7 +165,7 @@
     <div class="data-card p-stack-lg rounded-xl" id="chartCard">
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
             <div>
-                <h2 class="font-headline-md text-headline-md text-on-surface" id="trendTitle">Monthly hits trend</h2>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface" id="trendTitle">Monthly hits trend</h2>
                 <p class="text-on-surface-variant text-sm mt-1" id="trendDescription">Chart displays hits per month.</p>
             </div>
             <span id="chartStatus" class="badge badge-idle self-start">No data loaded</span>
@@ -158,7 +179,7 @@
     <div class="data-card p-stack-lg rounded-xl" id="tableCard">
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
             <div>
-                <h2 class="font-headline-md text-headline-md text-on-surface" id="tableTitle">Monthly hits table</h2>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface" id="tableTitle">Monthly hits table</h2>
                 <p class="text-on-surface-variant text-sm mt-1" id="tableDescription">Data from <code>/api/metrics/profile/month</code>.</p>
             </div>
             <span id="tableStatus" class="badge badge-idle self-start">No data loaded</span>
@@ -183,23 +204,21 @@
 </main>
 
 <!-- Footer -->
-<footer class="bg-surface-dim border-t border-outline-variant/20 py-stack-lg mt-stack-lg">
+<footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
     <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
         <div class="flex flex-col items-center md:items-start gap-2">
-            <div class="font-headline-lg text-headline-lg font-extrabold text-primary-fixed-dim">steam-widget</div>
+            <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
             <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
         </div>
         <div class="flex flex-wrap justify-center gap-6">
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/">Generator</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/profile-metrics.html">Profile Metrics</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
-            <a class="text-on-surface-variant hover:text-primary-container transition-colors duration-200 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
         </div>
         <div class="flex items-center gap-4 text-on-surface-variant">
-            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary-container cursor-pointer transition-colors" title="Created by Sharky">
-                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">code</span>
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined">code</span>
             </a>
         </div>
     </div>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var t=localStorage.getItem('steamWidgetTheme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:if="${!visibility.claimed()}" name="robots" content="noindex">
+    <title th:text="${view.title()}">steam-widget | Steam profile</title>
+    <meta name="description" th:content="${view.metaDescription()}" content="A Steam profile tracked by steam-widget.">
+    <link rel="canonical" th:href="${view.canonicalUrl()}"/>
+    <meta property="og:type" content="profile">
+    <meta property="og:site_name" content="steam-widget">
+    <meta property="og:title" th:content="${view.title()}">
+    <meta property="og:description" th:content="${view.metaDescription()}">
+    <meta property="og:url" th:content="${view.canonicalUrl()}">
+    <meta property="og:image" content="https://steam-widget.com/img/logo_slogan.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="300">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/png" href="/img/logo.png"/>
+    <link rel="apple-touch-icon" href="/img/logo.png"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="/js/tailwind-theme-badge.js"></script>
+    <link href="https://fonts.bunny.net/css?family=barlow-condensed:600,700,800|public-sans:400,500,600,700|ibm-plex-mono:500,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-symbols@0.44.10/outlined.css" integrity="sha384-jUBMcooxnDO+m521kIYXnrDot/SKMc2uMTTwewWSQp1tLxU+ZDJ/CWNo+whJkMDj" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/badge-ui.css">
+    <style>
+        #heatmap { overflow-x: auto; padding-bottom: 2px; }
+        .heatmap-graph { width: max-content; margin: 0 auto; }
+        .heatmap-months { position: relative; height: 14px; margin-left: 28px; white-space: nowrap; }
+        .heatmap-month-label { position: absolute; top: 0; font-size: 11px; line-height: 14px; color: rgb(var(--c-on-surface-variant)); white-space: nowrap; }
+        .heatmap-body { display: flex; gap: 3px; width: max-content; }
+        .heatmap-daylabels { display: flex; flex-direction: column; gap: 3px; width: 28px; flex-shrink: 0; }
+        .heatmap-daylabels span { height: 11px; font-size: 9px; line-height: 11px; color: rgb(var(--c-on-surface-variant)); }
+        .heatmap-weeks { display: flex; gap: 3px; }
+        .heatmap-week { display: flex; flex-direction: column; gap: 3px; }
+        .heatmap-cell { width: 11px; height: 11px; border-radius: 2px; }
+        .heatmap-cell.heatmap-pad { background: transparent; }
+        .heatmap-0 { background: rgb(var(--c-surface-container-high)); }
+        .heatmap-1 { background: rgb(var(--c-primary) / 0.25); }
+        .heatmap-2 { background: rgb(var(--c-primary) / 0.5); }
+        .heatmap-3 { background: rgb(var(--c-primary) / 0.75); }
+        .heatmap-4 { background: rgb(var(--c-primary)); }
+        .heatmap-legend { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 6px; font-size: 11px; color: rgb(var(--c-on-surface-variant)); }
+        .heatmap-legend .heatmap-cell { width: 10px; height: 10px; }
+        .heatmap-tooltip { position: fixed; z-index: 50; background: rgb(var(--c-inverse-surface)); color: rgb(var(--c-inverse-on-surface)); font-size: 12px; font-weight: 600; line-height: 1.3; padding: 6px 10px; border-radius: 6px; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 10px rgb(0 0 0 / 0.3); opacity: 0; transform: translateY(2px); transition: opacity 0.1s ease, transform 0.1s ease; }
+        .heatmap-tooltip.visible { opacity: 1; transform: translateY(0); }
+        .heatmap-tooltip::after { content: ''; position: absolute; top: 100%; left: var(--arrow-left, 50%); transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgb(var(--c-inverse-surface)); }
+        .game-row img { width: 48px; height: 48px; border-radius: 8px; flex-shrink: 0; }
+        input[type="checkbox"].settings-check { accent-color: rgb(var(--c-primary)); }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md custom-scrollbar">
+
+<!-- Top Navigation Bar -->
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
+    <nav class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16" aria-label="Primary navigation">
+        <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
+        <div class="hidden md:flex gap-6 items-center">
+            <a class="text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
+            <a class="text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
+        <button id="mobileMenuBtn" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors" aria-label="Open menu">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </nav>
+    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary" href="/">Generator</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary" href="/playing-stats.html">Playing Stats</a>
+        <a class="text-on-surface-variant font-label-md text-label-md uppercase py-2 hover:text-primary" href="/wrapped.html">Wrapped</a>
+        <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
+            <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                    <span class="material-symbols-outlined">badge</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-container-max mx-auto px-gutter py-stack-lg space-y-stack-lg">
+
+    <!-- Identity header -->
+    <section class="flex flex-wrap items-center gap-6">
+        <img th:if="${view.avatarUrl()} != null" th:src="${view.avatarUrl()}" alt=""
+             class="w-24 h-24 rounded-full border-2 border-outline-variant shrink-0"/>
+        <div class="min-w-0">
+            <h1 class="font-headline-xl text-headline-xl text-on-surface inline-flex flex-wrap items-center gap-3">
+                <span class="break-words" th:text="${view.displayName()}">Steam profile</span>
+                <span th:if="${view.countryFlag()} != null" th:text="${view.countryFlag()}" class="text-3xl"></span>
+            </h1>
+            <p class="text-on-surface-variant font-body-md mt-1" th:text="${view.statusText()}">Status</p>
+            <div class="flex flex-wrap items-center gap-2 mt-3">
+                <a th:if="${!visibility.claimed()}" th:href="@{'/steam/login'(returnTo='/u/' + ${view.steamId64()})}"
+                   rel="nofollow"
+                   class="badge-btn-primary inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+                    <span class="material-symbols-outlined text-base">person_add</span>
+                    Claim this page
+                </a>
+                <a th:if="${visibility.claimed()} and ${visibility.owner()}" th:href="@{/profile-metrics.html(steamId=${view.steamId64()})}"
+                   class="badge-btn-secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+                    <span class="material-symbols-outlined text-base">bar_chart</span>
+                    View Widget Traffic
+                </a>
+                <a th:if="${visibility.claimed()} and ${visibility.owner()}" th:href="@{'/u/' + ${view.steamId64()} + '/settings'}"
+                   class="badge-btn-secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+                    <span class="material-symbols-outlined text-base">settings</span>
+                    Manage this page
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview -->
+    <section class="data-card p-stack-lg rounded-xl">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-secondary">bar_chart</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Overview</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="p-4 rounded-lg bg-surface-container-lowest border border-outline-variant">
+                <div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Games owned</div>
+                <div class="font-headline-sm text-headline-sm text-on-surface mt-1" th:text="${view.gamesOwned()}">0</div>
+            </div>
+            <th:block th:if="${visibility.showHeadlineStats()} and ${view.isTracked()}">
+                <div class="p-4 rounded-lg bg-surface-container-lowest border border-outline-variant">
+                    <div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total hours</div>
+                    <div class="font-headline-sm text-headline-sm text-on-surface mt-1" th:text="${view.trackedStats().totalHours()}">0</div>
+                </div>
+                <div class="p-4 rounded-lg bg-surface-container-lowest border border-outline-variant">
+                    <div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Games this year</div>
+                    <div class="font-headline-sm text-headline-sm text-on-surface mt-1" th:text="${view.trackedStats().gamesPlayedThisYear()}">0</div>
+                </div>
+                <div class="p-4 rounded-lg bg-surface-container-lowest border border-outline-variant">
+                    <div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Current streak</div>
+                    <div class="font-headline-sm text-headline-sm text-on-surface mt-1" th:text="${view.trackedStats().currentStreakDays()} + ' days'">0 days</div>
+                </div>
+            </th:block>
+        </div>
+    </section>
+
+    <!-- Activity heatmap -->
+    <section th:if="${visibility.showHeadlineStats()} and ${view.isTracked()}" class="data-card p-stack-lg rounded-xl">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-primary">calendar_month</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Activity heatmap</h2>
+        </div>
+        <div id="heatmap"></div>
+        <div id="heatmapSource" hidden>
+            <span th:each="day : ${view.trackedStats().heatmap()}"
+                  th:attr="data-date=${day.date()},data-minutes=${day.totalMinutes()}"></span>
+        </div>
+    </section>
+
+    <!-- Enable-tracking CTA (untracked profiles) -->
+    <section th:if="${visibility.showHeadlineStats()} and ${!view.isTracked()}" class="glass-card p-stack-lg rounded-xl glow-hover transition-all duration-150 text-center">
+        <span class="material-symbols-outlined text-primary text-3xl">monitoring</span>
+        <p class="text-on-surface-variant font-body-md mt-2 mb-4">Enable tracking to unlock your activity heatmap and streaks.</p>
+        <a th:href="@{/playing-stats.html(steamId=${view.steamId64()})}"
+           class="badge-btn-primary inline-flex items-center gap-1.5 px-6 py-3 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+            Enable tracking
+        </a>
+    </section>
+
+    <!-- Top games -->
+    <section th:if="${visibility.showTopGames()}" class="data-card p-stack-lg rounded-xl">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-secondary">sports_esports</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Top games · all-time</h2>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+            <div class="game-row flex items-center gap-3 p-3 rounded-lg bg-surface-container-lowest border border-outline-variant min-w-0" th:each="game : ${view.topGamesAllTime()}">
+                <img th:src="${game.iconUrl()}" alt="" width="32" height="32" class="w-8 h-8 rounded shrink-0" loading="lazy" decoding="async"/>
+                <div class="min-w-0">
+                    <div class="font-body-md text-on-surface font-semibold truncate" th:text="${game.name()}">Game</div>
+                    <div class="font-label-sm text-label-sm text-on-surface-variant" th:text="${game.playtimeFormatted()}">0h 0m</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section th:if="${visibility.showTopGames()}" class="data-card p-stack-lg rounded-xl">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-secondary">history</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Top games · last 2 weeks</h2>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+            <div class="game-row flex items-center gap-3 p-3 rounded-lg bg-surface-container-lowest border border-outline-variant min-w-0" th:each="game : ${view.topGamesRecent()}">
+                <img th:src="${game.iconUrl()}" alt="" width="32" height="32" class="w-8 h-8 rounded shrink-0" loading="lazy" decoding="async"/>
+                <div class="min-w-0">
+                    <div class="font-body-md text-on-surface font-semibold truncate" th:text="${game.name()}">Game</div>
+                    <div class="font-label-sm text-label-sm text-on-surface-variant" th:text="${game.playtimeFormatted()}">0h 0m</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
+    <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
+        <div class="flex flex-col items-center md:items-start gap-2">
+            <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
+            <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6">
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
+        </div>
+        <div class="flex items-center gap-4 text-on-surface-variant">
+            <a href="https://sharky.codes" target="_blank" rel="noopener noreferrer" class="hover:text-primary cursor-pointer transition-colors" title="Created by Sharky">
+                <span class="material-symbols-outlined">code</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script defer src="/js/layout-effects.js"></script>
+<script defer src="/js/profile-heatmap.js"></script>
+</body>
+</html>
