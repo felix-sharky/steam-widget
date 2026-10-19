@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="/css/badge-ui.css">
     <style>
         #heatmap { overflow-x: auto; padding-bottom: 2px; }
+        .heatmap-graph { width: max-content; margin: 0 auto; }
         .heatmap-months { position: relative; height: 14px; margin-left: 28px; white-space: nowrap; }
         .heatmap-month-label { position: absolute; top: 0; font-size: 11px; line-height: 14px; color: rgb(var(--c-on-surface-variant)); white-space: nowrap; }
         .heatmap-body { display: flex; gap: 3px; width: max-content; }
@@ -104,12 +105,12 @@
         <img th:if="${view.avatarUrl()} != null" th:src="${view.avatarUrl()}" alt=""
              class="w-24 h-24 rounded-full border-2 border-outline-variant shrink-0"/>
         <div class="min-w-0">
-            <h1 class="font-headline-xl text-headline-xl text-on-surface inline-flex items-center gap-3">
-                <span th:text="${view.displayName()}">Steam profile</span>
+            <h1 class="font-headline-xl text-headline-xl text-on-surface inline-flex flex-wrap items-center gap-3">
+                <span class="break-words" th:text="${view.displayName()}">Steam profile</span>
                 <span th:if="${view.countryFlag()} != null" th:text="${view.countryFlag()}" class="text-3xl"></span>
             </h1>
             <p class="text-on-surface-variant font-body-md mt-1" th:text="${view.statusText()}">Status</p>
-            <div class="flex items-center gap-2 mt-3">
+            <div class="flex flex-wrap items-center gap-2 mt-3">
                 <a th:if="${!visibility.claimed()}" th:href="@{'/steam/login'(returnTo='/u/' + ${view.steamId64()})}"
                    rel="nofollow"
                    class="badge-btn-primary inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
@@ -188,7 +189,7 @@
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Top games · all-time</h2>
         </div>
         <div class="grid md:grid-cols-2 gap-3">
-            <div class="game-row flex items-center gap-3 p-3 rounded-lg bg-surface-container-lowest border border-outline-variant" th:each="game : ${view.topGamesAllTime()}">
+            <div class="game-row flex items-center gap-3 p-3 rounded-lg bg-surface-container-lowest border border-outline-variant min-w-0" th:each="game : ${view.topGamesAllTime()}">
                 <img th:src="${game.iconUrl()}" alt="" width="32" height="32" class="w-8 h-8 rounded shrink-0" loading="lazy" decoding="async"/>
                 <div class="min-w-0">
                     <div class="font-body-md text-on-surface font-semibold truncate" th:text="${game.name()}">Game</div>
@@ -204,7 +205,7 @@
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Top games · last 2 weeks</h2>
         </div>
         <div class="grid md:grid-cols-2 gap-3">
-            <div class="game-row flex items-center gap-3 p-3 rounded-lg bg-surface-container-lowest border border-outline-variant" th:each="game : ${view.topGamesRecent()}">
+            <div class="game-row flex items-center gap-3 p-3 rounded-lg bg-surface-container-lowest border border-outline-variant min-w-0" th:each="game : ${view.topGamesRecent()}">
                 <img th:src="${game.iconUrl()}" alt="" width="32" height="32" class="w-8 h-8 rounded shrink-0" loading="lazy" decoding="async"/>
                 <div class="min-w-0">
                     <div class="font-body-md text-on-surface font-semibold truncate" th:text="${game.name()}">Game</div>
@@ -220,7 +221,7 @@
 <footer class="bg-surface-dim border-t border-outline-variant py-stack-lg mt-stack-lg">
     <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-stack-md">
         <div class="flex flex-col items-center md:items-start gap-2">
-            <div class="font-headline-sm text-headline-sm text-on-surface">steam-widget</div>
+            <a href="/" class="font-headline-sm text-headline-sm text-on-surface">steam-widget</a>
             <p class="font-label-md text-label-md text-on-surface-variant">© 2026 steam-widget. Powered by Steam Web API.</p>
         </div>
         <div class="flex flex-wrap justify-center gap-6">

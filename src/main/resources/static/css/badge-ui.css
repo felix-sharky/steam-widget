@@ -9,6 +9,12 @@ body {
 }
 body > main {
     flex: 1 0 auto;
+    /* Without an explicit width, a column flex item won't shrink below the
+       max-content width of its widest descendant (e.g. a horizontally
+       scrollable heatmap) — it drags the whole page into horizontal
+       overflow instead of letting that descendant's own overflow:auto
+       scroll internally. */
+    width: 100%;
 }
 body > footer {
     flex-shrink: 0;
