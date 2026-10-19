@@ -38,7 +38,6 @@ public class SitemapController {
         xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
 
         appendStaticUrl(xml, "/", LocalDate.of(2026, 5, 30), "weekly", "1.0");
-        appendStaticUrl(xml, "/tracking.html", LocalDate.of(2026, 5, 30), "weekly", "0.8");
         appendStaticUrl(xml, "/playing-stats.html", LocalDate.of(2026, 5, 30), "weekly", "0.8");
         appendStaticUrl(xml, "/profile-metrics.html", LocalDate.of(2026, 5, 30), "weekly", "0.8");
         appendStaticUrl(xml, "/wrapped.html", LocalDate.of(2026, 10, 7), "weekly", "0.8");

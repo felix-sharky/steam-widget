@@ -172,7 +172,7 @@ const showYearEndBanner = async () => {
 
     const path = window.location.pathname;
     const onWrapped = path.startsWith('/wrapped');
-    const onTracking = path.startsWith('/tracking');
+    const onTracking = path.startsWith('/playing-stats');
 
     if (onWrapped) applyWrapYearToWrappedPage(wrapYear);
 
@@ -193,7 +193,7 @@ const showYearEndBanner = async () => {
         icon: 'auto_awesome', label: 'Get my Wrapped', event: 'year-end-banner-wrapped'
     });
     const trackingLink = (primary) => onTracking ? '' : buildBannerLink({
-        base: '/tracking.html', steamId, variant, primary, wrapYear,
+        base: '/playing-stats.html', steamId, variant, primary, wrapYear,
         icon: 'monitoring', label: 'Start tracking', event: 'year-end-banner-tracking'
     });
 

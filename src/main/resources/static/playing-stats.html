@@ -64,8 +64,6 @@
         <div class="hidden md:flex gap-6 items-center">
             <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
                data-route="/" data-base="/" href="/">Generator</a>
-            <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
-               id="trackingBackNav" data-route="/tracking.html" data-base="/tracking.html" href="/tracking.html">Play Tracking</a>
             <a class="nav-link text-primary font-bold pb-1 transition-colors duration-150 font-label-md text-label-md uppercase"
                aria-current="page" data-route="/playing-stats.html" data-base="/playing-stats.html" href="/playing-stats.html">Playing Stats</a>
             <a class="nav-link text-on-surface-variant font-semibold hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase"
@@ -88,7 +86,6 @@
     </nav>
     <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/tracking.html">Play Tracking</a>
         <a class="font-label-md text-label-md uppercase py-2 text-primary" href="/playing-stats.html">Playing Stats</a>
         <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/wrapped.html">Wrapped</a>
         <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
@@ -115,7 +112,7 @@
             Playing Stats
         </h1>
         <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
-            Dive into your Steam library's long-term playtime trends — monthly and daily breakdowns, activity streaks, top games, and key insights all in one place.
+            Dive into your Steam library's long-term playtime trends — monthly and daily breakdowns, activity streaks, top games, and key insights all in one place. Requires play tracking to be turned on for the profile.
         </p>
     </section>
 
@@ -135,7 +132,29 @@
                 </button>
             </div>
         </form>
+        <p id="disableTrackingHint" class="text-on-surface-variant text-xs mt-4" hidden>
+            Tracking is on for this profile.
+            <a class="text-primary hover:underline" href="/steam/tracking/disable" data-umami-event="tracking_login_disable">Disable tracking</a>
+        </p>
     </div>
+
+    <!-- Activate Tracking — shown instead of the stats below when the profile hasn't turned
+         play tracking on yet; see the gate in playing-stats.js. -->
+    <div class="glass-card p-stack-lg rounded-xl text-center" id="activateTrackingCard" hidden>
+        <div class="flex flex-col items-center gap-3 max-w-md mx-auto">
+            <span class="material-symbols-outlined text-primary text-4xl">toggle_off</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Play tracking isn't on for this profile</h2>
+            <p class="text-on-surface-variant font-body-md">
+                Turn on daily Steam playtime tracking to unlock streaks, trends, top games, and the full stats below.
+            </p>
+            <a class="inline-block transition-transform duration-150 active:scale-95 mt-1" href="/steam/tracking/enable" data-umami-event="tracking_login_enable">
+                <img src="/img/steam_login-button_openid.png" alt="Login with Steam to enable tracking" class="h-10">
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats — only shown once tracking is confirmed on; see the gate in playing-stats.js. -->
+    <div id="statsContent" class="hidden space-y-6">
 
     <!-- ── Insights ─────────────────────────────────────────────────────── -->
     <div id="insightsSection" class="hidden space-y-6">
@@ -255,6 +274,8 @@
             </table>
         </div>
     </div>
+
+    </div>
 </main>
 
 <!-- Footer -->
@@ -266,7 +287,6 @@
         </div>
         <div class="flex flex-wrap justify-center gap-6">
             <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/">Generator</a>
-            <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/tracking.html">Play Tracking</a>
             <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/playing-stats.html">Playing Stats</a>
             <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/wrapped.html">Wrapped</a>
             <a class="text-on-surface-variant hover:text-primary transition-colors duration-150 font-label-md text-label-md uppercase" href="/privacy.html">Privacy</a>
