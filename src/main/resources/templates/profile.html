@@ -103,6 +103,11 @@
                     <span class="material-symbols-outlined text-base">person_add</span>
                     Claim this page
                 </a>
+                <a th:if="${visibility.claimed()} and ${visibility.owner()}" th:href="@{/profile-metrics.html(steamId=${view.steamId64()})}"
+                   class="badge-btn-secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
+                    <span class="material-symbols-outlined text-base">bar_chart</span>
+                    View Widget Traffic
+                </a>
                 <a th:if="${visibility.claimed()} and ${visibility.owner()}" th:href="@{'/u/' + ${view.steamId64()} + '/settings'}"
                    class="badge-btn-secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-150 active:scale-95">
                     <span class="material-symbols-outlined text-base">settings</span>
