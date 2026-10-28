@@ -3,8 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.getElementById('mobileMenu');
 
     if (mobileMenuBtn && mobileMenu) {
+        const closeMobileMenu = () => {
+            mobileMenu.classList.remove('is-open');
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        };
+
         mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+            const isOpen = mobileMenu.classList.toggle('is-open');
+            mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && mobileMenu.classList.contains('is-open')) {
+                closeMobileMenu();
+                mobileMenuBtn.focus();
+            }
         });
     }
 
@@ -343,6 +356,37 @@ const buildNavAccountMenu = (steamId, profile) => {
     return wrapper;
 };
 
+const loggedOutMobileAccountContent = () => `
+    <a href="/steam/login" class="flex items-center gap-2 text-primary font-label-md text-label-md uppercase py-2" data-umami-event="link_steam_login">
+        <span class="material-symbols-outlined text-base">login</span>
+        Login with Steam
+    </a>`;
+
+const loggedInMobileAccountContent = (steamId, profile) => {
+    const name = profile?.name || 'My profile';
+    const avatarUrl = profile?.avatarUrl;
+    const avatarMarkup = avatarUrl
+        ? `<img src="${avatarUrl}" alt="" class="w-6 h-6 rounded-full shrink-0">`
+        : '<span class="material-symbols-outlined text-xl shrink-0">account_circle</span>';
+
+    return `
+        <a href="/u/${steamId}" class="flex items-center gap-2 font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary">
+            ${avatarMarkup}
+            <span class="truncate">${name}</span>
+        </a>
+        <a href="/steam/logout" class="flex items-center gap-2 font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary">
+            <span class="material-symbols-outlined text-base">logout</span>
+            Log out
+        </a>`;
+};
+
+const buildMobileAccountSection = (steamId, profile) => {
+    const section = document.createElement('div');
+    section.className = 'flex flex-col pt-2 mt-1 border-t border-outline-variant';
+    section.innerHTML = steamId ? loggedInMobileAccountContent(steamId, profile) : loggedOutMobileAccountContent();
+    return section;
+};
+
 const showNavLoginIndicator = async () => {
     const nav = document.querySelector('header nav[aria-label="Primary navigation"]');
     if (!nav) return;
@@ -356,6 +400,16 @@ const showNavLoginIndicator = async () => {
     // a 3rd justify-between child and drags the existing links toward the center.
     const linkGroup = nav.querySelector('.hidden.md\\:flex') || nav.querySelector('#navLinkGroup') || nav;
     linkGroup.appendChild(buildNavAccountMenu(steamId, profile));
+
+    // Pages with a desktop-only link group (hidden below md) also render a separate
+    // #mobileMenu panel for small screens; the account control above is invisible there,
+    // so give that panel its own copy. Appended into .mobile-menu-inner (not #mobileMenu
+    // itself) so it becomes a direct child alongside the links/theme row and picks up
+    // their open-state reveal animation and stagger.
+    const mobileMenuInner = document.querySelector('#mobileMenu .mobile-menu-inner');
+    if (mobileMenuInner) {
+        mobileMenuInner.appendChild(buildMobileAccountSection(steamId, profile));
+    }
 };
 
 document.addEventListener('DOMContentLoaded', showNavLoginIndicator);

@@ -79,27 +79,32 @@
                 </button>
             </div>
         </div>
-        <button id="mobileMenuBtn" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
-            <span class="material-symbols-outlined">menu</span>
+        <button id="mobileMenuBtn" type="button" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors" aria-label="Open menu" aria-haspopup="true" aria-expanded="false" aria-controls="mobileMenu">
+            <span class="material-symbols-outlined mobile-menu-icon mobile-menu-icon--menu" aria-hidden="true">menu</span>
+            <span class="material-symbols-outlined mobile-menu-icon mobile-menu-icon--close" aria-hidden="true">close</span>
         </button>
     </nav>
-    <div id="mobileMenu" class="hidden md:hidden border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/playing-stats.html">Playing Stats</a>
-        <a class="font-label-md text-label-md uppercase py-2 text-primary" href="/wrapped.html">Wrapped</a>
-        <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
-            <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
-            <div class="theme-toggle" role="group" aria-label="Theme">
-                <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
-                    <span class="material-symbols-outlined">badge</span>
-                </button>
-                <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
-                    <span class="material-symbols-outlined">dark_mode</span>
-                </button>
-                <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
-                    <span class="material-symbols-outlined">light_mode</span>
-                </button>
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-clip">
+        <div class="mobile-menu-inner border-t border-outline-variant bg-surface-container-lowest px-gutter py-3 flex flex-col gap-3">
+            <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant" href="/">Generator</a>
+            <a class="font-label-md text-label-md uppercase py-2 text-on-surface-variant hover:text-primary" href="/playing-stats.html">Playing Stats</a>
+            <a class="font-label-md text-label-md uppercase py-2 text-primary" href="/wrapped.html">Wrapped</a>
+            <div class="flex items-center justify-between pt-2 mt-1 border-t border-outline-variant">
+                <span class="font-label-md text-label-md uppercase text-on-surface-variant">Theme</span>
+                <div class="theme-toggle" role="group" aria-label="Theme">
+                    <button type="button" class="theme-toggle-btn" data-theme-value="default" title="Conference ID Badge theme" aria-label="Conference ID Badge theme">
+                        <span class="material-symbols-outlined">badge</span>
+                    </button>
+                    <button type="button" class="theme-toggle-btn" data-theme-value="dark" title="Dark theme" aria-label="Dark theme">
+                        <span class="material-symbols-outlined">dark_mode</span>
+                    </button>
+                    <button type="button" class="theme-toggle-btn" data-theme-value="light" title="Light theme" aria-label="Light theme">
+                        <span class="material-symbols-outlined">light_mode</span>
+                    </button>
+                </div>
             </div>
+        </div>
         </div>
     </div>
 </header>

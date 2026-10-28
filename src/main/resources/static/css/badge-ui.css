@@ -267,6 +267,84 @@ code {
     color: rgb(var(--c-on-primary-container));
 }
 
+/* Mobile nav disclosure — the stacked sheet below the hamburger (see DESIGN.md's
+   "Mobile collapses to a stacked sheet") now drops open instead of cutting in with
+   `display:none`. Grid-row sizing animates to the content's natural height without
+   either JS measuring it or animating `height` directly; the trigger icon morphs
+   hamburger→close so the control's own state stays legible without text. */
+.mobile-menu {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mobile-menu.is-open {
+    grid-template-rows: 1fr;
+}
+@media (min-width: 768px) {
+    .mobile-menu {
+        display: none;
+    }
+}
+/* Separate from .mobile-menu-inner (which carries the visible padding/border/background):
+   a padded box's own min-content height never shrinks below its padding+border, so the
+   row-collapsing grid track needs an unpadded clipping layer around it, not on it. */
+.mobile-menu-clip {
+    overflow: hidden;
+}
+.mobile-menu-inner > * {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mobile-menu.is-open .mobile-menu-inner > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+.mobile-menu.is-open .mobile-menu-inner > *:nth-child(1) { transition-delay: 0.05s; }
+.mobile-menu.is-open .mobile-menu-inner > *:nth-child(2) { transition-delay: 0.09s; }
+.mobile-menu.is-open .mobile-menu-inner > *:nth-child(3) { transition-delay: 0.13s; }
+.mobile-menu.is-open .mobile-menu-inner > *:nth-child(4) { transition-delay: 0.17s; }
+.mobile-menu.is-open .mobile-menu-inner > *:nth-child(5) { transition-delay: 0.21s; }
+
+#mobileMenuBtn {
+    position: relative;
+}
+.mobile-menu-icon {
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mobile-menu-icon--close {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.5);
+}
+#mobileMenuBtn[aria-expanded="true"] .mobile-menu-icon--menu {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.5);
+}
+#mobileMenuBtn[aria-expanded="true"] .mobile-menu-icon--close {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-menu {
+        transition: none;
+    }
+    .mobile-menu-inner > * {
+        transition: opacity 0.15s ease;
+        transform: none;
+        transition-delay: 0s !important;
+    }
+    .mobile-menu-icon {
+        transition: opacity 0.1s ease;
+        transform: none !important;
+    }
+}
+
 .glow-hover {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
